@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+
+{% block title %}Clientes - Sistema de Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header da Página -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-users me-2"></i>Gerenciar Clientes
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Total de {{ total_clientes }} cliente{{ total_clientes|pluralize }}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'agendamentos:cliente_create' %}" class="btn btn-success">
+                        <i class="fas fa-user-plus me-2"></i>Novo Cliente
+                    </a>
+                    <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">
+                                <i class="fas fa-search me-2"></i>Buscar Cliente
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="search" 
+                                   name="search" 
+                                   value="{{ search }}"
+                                   placeholder="Nome, email, telefone ou CPF">
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">
+                                <i class="fas fa-filter me-2"></i>Status
+                            </label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos os Status</option>
+                                <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativos</option>
+                                <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativos</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-5 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Filtrar
+                            </button>
+                            <a href="{% url 'agendamentos:cliente_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </a>
+                            <div class="ms-auto">
+                                <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="fas fa-download me-2"></i>Exportar
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Clientes -->
+    <div class="row">
+        <div class="col-12">
+            {% if clientes %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Lista de Clientes
+                        </h5>
+                        <small class="text-muted">
+                            Mostrando {{ clientes|length }} de {{ total_clientes }} cliente{{ total_clientes|pluralize }}
+                        </small>
+                    </div>
+                    
+                    <!-- Versão Desktop -->
+                    <div class="d-none d-lg-block">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Contato</th>
+                                        <th>Idade</th>
+                                        <th>Status</th>
+                                        <th>Cadastrado em</th>
+                                        <th>Agendamentos</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cliente in clientes %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-md bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                    {{ cliente.nome|first|upper }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ cliente.nome }}</strong>
+                                                    <br><small class="text-muted">{{ cliente.cpf }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <i class="fas fa-envelope text-muted me-1"></i>
+                                                <small>{{ cliente.email }}</small>
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-phone text-muted me-1"></i>
+                                                <small>{{ cliente.telefone }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ cliente.idade }} anos</span>
+                                        </td>
+                                        <td>
+                                            {% if cliente.ativo %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Ativo
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-times-circle me-1"></i>Inativo
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ cliente.criado_em|date:"d/m/Y" }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                {{ cliente.agendamento_set.count }} agendamento{{ cliente.agendamento_set.count|pluralize }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'agendamentos:cliente_detail' cliente.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalhes">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'agendamentos:cliente_update' cliente.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'agendamentos:agendamento_create' %}?cliente={{ cliente.pk }}" 
+                                                   class="btn btn-outline-success" 
+                                                   title="Novo agendamento">
+                                                    <i class="fas fa-calendar-plus"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        title="Excluir"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteModal{{ cliente.pk }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Versão Mobile -->
+                    <div class="d-lg-none">
+                        <div class="list-group list-group-flush">
+                            {% for cliente in clientes %}
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-start">
+                                    <div class="avatar-md bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                        {{ cliente.nome|first|upper }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1">{{ cliente.nome }}</h6>
+                                                <small class="text-muted">{{ cliente.cpf }}</small>
+                                            </div>
+                                            {% if cliente.ativo %}
+                                                <span class="badge bg-success">Ativo</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inativo</span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">
+                                                <i class="fas fa-envelope me-1"></i>{{ cliente.email }}
+                                            </small>
+                                            <small class="text-muted d-block">
+                                                <i class="fas fa-phone me-1"></i>{{ cliente.telefone }}
+                                            </small>
+                                            <small class="text-muted d-block">
+                                                <i class="fas fa-birthday-cake me-1"></i>{{ cliente.idade }} anos
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                {{ cliente.agendamento_set.count }} agendamento{{ cliente.agendamento_set.count|pluralize }}
+                                            </small>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'agendamentos:cliente_detail' cliente.pk %}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'agendamentos:cliente_update' cliente.pk %}" 
+                                                   class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'agendamentos:agendamento_create' %}?cliente={{ cliente.pk }}" 
+                                                   class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-calendar-plus"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Paginação -->
+                {% if is_paginated %}
+                <nav aria-label="Navegação de páginas" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Estado Vazio -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        {% if search or status %}
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum cliente encontrado</h5>
+                            <p class="text-muted mb-4">
+                                Não encontramos clientes com os filtros aplicados.
+                                <br>Tente ajustar os critérios de busca.
+                            </p>
+                            <a href="{% url 'agendamentos:cliente_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times me-2"></i>Limpar Filtros
+                            </a>
+                        {% else %}
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum cliente cadastrado</h5>
+                            <p class="text-muted mb-4">
+                                Você ainda não possui clientes cadastrados.
+                                <br>Comece criando seu primeiro cliente!
+                            </p>
+                            <a href="{% url 'agendamentos:cliente_create' %}" class="btn btn-success">
+                                <i class="fas fa-user-plus me-2"></i>Cadastrar Primeiro Cliente
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Confirmação de Exclusão -->
+{% for cliente in clientes %}
+<div class="modal fade" id="deleteModal{{ cliente.pk }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o cliente <strong>{{ cliente.nome }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita. 
+                    Todos os dados relacionados a este cliente serão perdidos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <a href="{% url 'agendamentos:cliente_delete' cliente.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Excluir Cliente
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .avatar-md {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        background-color: #f8f9fa;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+    }
+    
+    .list-group-item:first-child {
+        border-top: none;
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+    
+    .card-hover {
+        transition: transform 0.2s ease;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit do formulário de busca ao digitar (com delay)
+    let searchTimeout;
+    const searchInput = document.getElementById('search');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                // Auto-submit após 1 segundo de inatividade
+                // document.querySelector('form').submit();
+            }, 1000);
+        });
+    }
+    
+    // Confirmar exclusão
+    const deleteButtons = document.querySelectorAll('[data-bs-target^="#deleteModal"]');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const clienteName = this.closest('tr').querySelector('strong').textContent;
+            console.log('Excluindo cliente:', clienteName);
+        });
+    });
+});
+</script>
+{% endblock %}

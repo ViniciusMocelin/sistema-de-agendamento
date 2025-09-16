@@ -5,7 +5,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('agendamentos.urls')),
+    path('auth/', include('authentication.urls')),  # URLs de autenticação
+    path('', include('agendamentos.urls')),         # URLs principais
 ]
 
 # Servir arquivos de media em desenvolvimento
