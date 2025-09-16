@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Sistema de Agendamentos{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 text-center">
+        <h1 class="display-4 mb-4">📅 Sistema de Agendamentos</h1>
+        <p class="lead">Gerencie seus agendamentos de forma simples e eficiente</p>
+        
+        <div class="mt-4">
+            <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-primary btn-lg me-3">
+                Acessar Dashboard
+            </a>
+            <a href="#" class="btn btn-outline-primary btn-lg">
+                Fazer Agendamento
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}cls
