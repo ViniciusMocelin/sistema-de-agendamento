@@ -1,0 +1,504 @@
+{% extends 'base.html' %}
+
+{% block title %}Serviços - Sistema de Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header da Página -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-cogs me-2"></i>Gerenciar Serviços
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Total de {{ total_servicos }} serviço{{ total_servicos|pluralize }}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'agendamentos:servico_create' %}" class="btn btn-info">
+                        <i class="fas fa-plus me-2"></i>Novo Serviço
+                    </a>
+                    <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-5">
+                            <label for="search" class="form-label">
+                                <i class="fas fa-search me-2"></i>Buscar Serviço
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="search" 
+                                   name="search" 
+                                   value="{{ search }}"
+                                   placeholder="Nome ou descrição do serviço">
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">
+                                <i class="fas fa-filter me-2"></i>Status
+                            </label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos os Status</option>
+                                <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativos</option>
+                                <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativos</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Filtrar
+                            </button>
+                            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </a>
+                            <div class="ms-auto">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-download me-2"></i>Exportar
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i>Imprimir</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Serviços -->
+    <div class="row">
+        <div class="col-12">
+            {% if servicos %}
+                <!-- Estatísticas Rápidas -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-info text-center">
+                            <div class="card-body py-3">
+                                <i class="fas fa-cogs fa-2x text-info mb-2"></i>
+                                <h5 class="mb-1">{{ total_servicos }}</h5>
+                                <small class="text-muted">Total de Serviços</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-success text-center">
+                            <div class="card-body py-3">
+                                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                <h5 class="mb-1">{{ servicos_ativos }}</h5>
+                                <small class="text-muted">Serviços Ativos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-warning text-center">
+                            <div class="card-body py-3">
+                                <i class="fas fa-dollar-sign fa-2x text-warning mb-2"></i>
+                                <h5 class="mb-1">R$ {{ preco_medio|floatformat:2 }}</h5>
+                                <small class="text-muted">Preço Médio</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-primary text-center">
+                            <div class="card-body py-3">
+                                <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                                <h5 class="mb-1">{{ duracao_media }}</h5>
+                                <small class="text-muted">Duração Média</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Lista de Serviços
+                        </h5>
+                        <small class="text-muted">
+                            Mostrando {{ servicos|length }} de {{ total_servicos }} serviço{{ total_servicos|pluralize }}
+                        </small>
+                    </div>
+                    
+                    <!-- Versão Desktop -->
+                    <div class="d-none d-lg-block">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Serviço</th>
+                                        <th>Duração</th>
+                                        <th>Preço</th>
+                                        <th>Status</th>
+                                        <th>Agendamentos</th>
+                                        <th>Criado em</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for servico in servicos %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="service-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                    <i class="fas fa-cog"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ servico.nome }}</strong>
+                                                    {% if servico.descricao %}
+                                                        <br><small class="text-muted">{{ servico.descricao|truncatechars:50 }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-clock me-1"></i>{{ servico.duracao_formatada }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="h6 text-success mb-0">
+                                                R$ {{ servico.preco|floatformat:2 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if servico.ativo %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Ativo
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-times-circle me-1"></i>Inativo
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small>{{ servico.criado_em|date:"d/m/Y" }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'agendamentos:servico_update' servico.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'agendamentos:agendamento_create' %}?servico={{ servico.pk }}" 
+                                                   class="btn btn-outline-success" 
+                                                   title="Novo agendamento">
+                                                    <i class="fas fa-calendar-plus"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        title="Excluir"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteModal{{ servico.pk }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Versão Mobile -->
+                    <div class="d-lg-none">
+                        <div class="row g-3 p-3">
+                            {% for servico in servicos %}
+                            <div class="col-12">
+                                <div class="card service-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="service-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                    <i class="fas fa-cog"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">{{ servico.nome }}</h6>
+                                                    {% if servico.ativo %}
+                                                        <span class="badge bg-success">Ativo</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Inativo</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="h6 text-success mb-1">R$ {{ servico.preco|floatformat:2 }}</div>
+                                                <span class="badge bg-primary">{{ servico.duracao_formatada }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if servico.descricao %}
+                                        <p class="text-muted small mb-3">{{ servico.descricao|truncatechars:100 }}</p>
+                                        {% endif %}
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }}
+                                            </small>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'agendamentos:servico_update' servico.pk %}" 
+                                                   class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'agendamentos:agendamento_create' %}?servico={{ servico.pk }}" 
+                                                   class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-calendar-plus"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger btn-sm" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteModal{{ servico.pk }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Paginação -->
+                {% if is_paginated %}
+                <nav aria-label="Navegação de páginas" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Estado Vazio -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        {% if search or status %}
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum serviço encontrado</h5>
+                            <p class="text-muted mb-4">
+                                Não encontramos serviços com os filtros aplicados.
+                                <br>Tente ajustar os critérios de busca.
+                            </p>
+                            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times me-2"></i>Limpar Filtros
+                            </a>
+                        {% else %}
+                            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum serviço cadastrado</h5>
+                            <p class="text-muted mb-4">
+                                Você ainda não possui serviços cadastrados.
+                                <br>Comece criando seu primeiro serviço!
+                            </p>
+                            <a href="{% url 'agendamentos:servico_create' %}" class="btn btn-info">
+                                <i class="fas fa-plus me-2"></i>Cadastrar Primeiro Serviço
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Confirmação de Exclusão -->
+{% for servico in servicos %}
+<div class="modal fade" id="deleteModal{{ servico.pk }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o serviço <strong>{{ servico.nome }}</strong>?</p>
+                
+                {% if servico.agendamento_set.count > 0 %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atenção:</strong> Este serviço possui {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }} associado{{ servico.agendamento_set.count|pluralize }}. 
+                    A exclusão pode afetar esses registros.
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita.
+                </div>
+                {% endif %}
+                
+                <div class="service-preview p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ servico.nome }}</strong>
+                            <br><small class="text-muted">{{ servico.descricao|default:"Sem descrição" }}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-success">R$ {{ servico.preco|floatformat:2 }}</div>
+                            <small class="text-muted">{{ servico.duracao_formatada }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <a href="{% url 'agendamentos:servico_delete' servico.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Excluir Serviço
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .service-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .service-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e9ecef;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        background-color: #f8f9fa;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .service-preview {
+        border-left: 4px solid #17a2b8;
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .service-icon {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit do formulário de busca ao digitar (com delay)
+    let searchTimeout;
+    const searchInput = document.getElementById('search');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                // Auto-submit após 1.5 segundos de inatividade
+                // document.querySelector('form').submit();
+            }, 1500);
+        });
+    }
+    
+    // Animação nos cards de serviços
+    const serviceCards = document.querySelectorAll('.service-card');
+    serviceCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.borderColor = '#17a2b8';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.borderColor = '#e9ecef';
+        });
+    });
+    
+    // Confirmação de exclusão com informações do serviço
+    const deleteButtons = document.querySelectorAll('[data-bs-target^="#deleteModal"]');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const serviceName = this.closest('tr, .card').querySelector('strong').textContent;
+            console.log('Preparando exclusão do serviço:', serviceName);
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     
     # Apps locais
     'agendamentos',
+    'authentication',
 ]
 
 MIDDLEWARE = [
@@ -112,9 +113,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ========================================
 
 # Configurações de Autenticação
-LOGIN_URL = 'login'
+LOGIN_URL = 'authentication:login'
 LOGIN_REDIRECT_URL = 'agendamentos:dashboard'
-LOGOUT_REDIRECT_URL = 'agendamentos:home'
+LOGOUT_REDIRECT_URL = 'authentication:login'
 
 # Configurações de Mensagens Bootstrap
 from django.contrib.messages import constants as messages

@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Editar Serviço{% else %}Novo Serviço{% endif %} - Sistema de Agendamentos
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        {% if object %}Editar Serviço{% else %}Novo Serviço{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Nome do Serviço -->
+                        <div class="mb-3">
+                            <label for="{{ form.nome.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag me-2"></i>Nome do Serviço *
+                            </label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.nome.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Digite um nome claro e descritivo para o serviço
+                            </div>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="mb-3">
+                            <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Descrição
+                            </label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.descricao.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Descreva detalhes importantes sobre o serviço (opcional)
+                            </div>
+                        </div>
+
+                        <!-- Duração do Serviço -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-clock me-2"></i>Duração do Serviço *
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label for="{{ form.duracao_horas.id_for_label }}" class="form-label small">Horas</label>
+                                    {{ form.duracao_horas }}
+                                    {% if form.duracao_horas.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.duracao_horas.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-6">
+                                    <label for="{{ form.duracao_minutos.id_for_label }}" class="form-label small">Minutos</label>
+                                    {{ form.duracao_minutos }}
+                                    {% if form.duracao_minutos.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.duracao_minutos.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Defina quanto tempo em média este serviço demora para ser executado
+                            </div>
+                            <!-- Preview da Duração -->
+                            <div class="mt-2">
+                                <div class="alert alert-info py-2" id="duracao-preview">
+                                    <i class="fas fa-eye me-2"></i>
+                                    <strong>Duração:</strong> <span id="duracao-texto">1h00min</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preço -->
+                        <div class="mb-3">
+                            <label for="{{ form.preco.id_for_label }}" class="form-label">
+                                <i class="fas fa-dollar-sign me-2"></i>Preço do Serviço *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                {{ form.preco }}
+                            </div>
+                            {% if form.preco.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.preco.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-calculator me-1"></i>
+                                Valor que será cobrado por este serviço
+                            </div>
+                        </div>
+
+                        <!-- Status Ativo -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                {{ form.ativo }}
+                                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                                    <i class="fas fa-toggle-on me-2"></i>
+                                    <strong>Serviço Ativo</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Serviços inativos não aparecerão na lista de agendamentos
+                            </div>
+                        </div>
+
+                        <!-- Preview do Serviço -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-eye me-2"></i>Preview do Serviço
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong id="preview-nome">{{ form.nome.value|default:"Nome do Serviço" }}</strong>
+                                        <p class="text-muted mb-2" id="preview-descricao">
+                                            {{ form.descricao.value|default:"Descrição do serviço..." }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <div class="mb-2">
+                                            <span class="badge bg-primary" id="preview-duracao">1h00min</span>
+                                        </div>
+                                        <div class="h5 text-success mb-0">
+                                            R$ <span id="preview-preco">{{ form.preco.value|default:"0,00" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Erros Gerais -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Botões de Ação -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-info">
+                                <i class="fas fa-save me-2"></i>
+                                {% if object %}Atualizar Serviço{% else %}Cadastrar Serviço{% endif %}
+                            </button>
+                            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            {% if object %}
+                                <a href="{% url 'agendamentos:servico_delete' object.pk %}" 
+                                   class="btn btn-outline-danger ms-auto"
+                                   onclick="return confirm('Tem certeza que deseja excluir este serviço?')">
+                                    <i class="fas fa-trash me-2"></i>Excluir Serviço
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dicas e Sugestões -->
+<div class="row mt-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-info">
+            <div class="card-header bg-light">
+                <h6 class="mb-0 text-info">
+                    <i class="fas fa-lightbulb me-2"></i>Dicas para Cadastrar Serviços
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-tag text-primary me-2"></i>Nome do Serviço</h6>
+                        <ul class="small text-muted">
+                            <li>Use nomes claros e descritivos</li>
+                            <li>Evite abreviações confusas</li>
+                            <li>Exemplo: "Corte Masculino", "Manicure Completa"</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-clock text-warning me-2"></i>Duração</h6>
+                        <ul class="small text-muted">
+                            <li>Considere tempo de preparação</li>
+                            <li>Inclua tempo para limpeza</li>
+                            <li>Seja realista com os tempos</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-dollar-sign text-success me-2"></i>Preço</h6>
+                        <ul class="small text-muted">
+                            <li>Pesquise preços da concorrência</li>
+                            <li>Considere seus custos operacionais</li>
+                            <li>Revise periodicamente os valores</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle text-info me-2"></i>Descrição</h6>
+                        <ul class="small text-muted">
+                            <li>Detalhe o que está incluído</li>
+                            <li>Mencione produtos utilizados</li>
+                            <li>Informe possíveis variações</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-check-input:checked {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+    
+    .input-group-text {
+        background-color: #e9ecef;
+        border-color: #ced4da;
+    }
+    
+    .card-header h6 {
+        font-weight: 600;
+    }
+    
+    .badge {
+        font-size: 0.875rem;
+    }
+    
+    #duracao-preview {
+        transition: all 0.3s ease;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+    }
+    
+    .alert-info {
+        border-left: 4px solid #17a2b8;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do formulário
+    const nomeInput = document.getElementById('{{ form.nome.id_for_label }}');
+    const descricaoInput = document.getElementById('{{ form.descricao.id_for_label }}');
+    const horasInput = document.getElementById('{{ form.duracao_horas.id_for_label }}');
+    const minutosInput = document.getElementById('{{ form.duracao_minutos.id_for_label }}');
+    const precoInput = document.getElementById('{{ form.preco.id_for_label }}');
+    
+    // Elementos do preview
+    const previewNome = document.getElementById('preview-nome');
+    const previewDescricao = document.getElementById('preview-descricao');
+    const previewDuracao = document.getElementById('preview-duracao');
+    const previewPreco = document.getElementById('preview-preco');
+    const duracaoTexto = document.getElementById('duracao-texto');
+    
+    // Função para atualizar a duração
+    function atualizarDuracao() {
+        const horas = parseInt(horasInput.value) || 0;
+        const minutos = parseInt(minutosInput.value) || 0;
+        
+        let texto = '';
+        if (horas > 0) {
+            texto += horas + 'h';
+        }
+        if (minutos > 0 || horas === 0) {
+            texto += (minutos < 10 && horas > 0 ? '0' : '') + minutos + 'min';
+        }
+        
+        duracaoTexto.textContent = texto || '0min';
+        previewDuracao.textContent = texto || '0min';
+        
+        // Validação visual
+        if (horas === 0 && minutos === 0) {
+            document.getElementById('duracao-preview').className = 'alert alert-warning py-2';
+        } else {
+            document.getElementById('duracao-preview').className = 'alert alert-info py-2';
+        }
+    }
+    
+    // Função para atualizar preview do nome
+    function atualizarNome() {
+        const nome = nomeInput.value.trim();
+        previewNome.textContent = nome || 'Nome do Serviço';
+    }
+    
+    // Função para atualizar preview da descrição
+    function atualizarDescricao() {
+        const descricao = descricaoInput.value.trim();
+        previewDescricao.textContent = descricao || 'Descrição do serviço...';
+    }
+    
+    // Função para atualizar preview do preço
+    function atualizarPreco() {
+        const preco = parseFloat(precoInput.value) || 0;
+        previewPreco.textContent = preco.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+    
+    // Event listeners
+    nomeInput.addEventListener('input', atualizarNome);
+    descricaoInput.addEventListener('input', atualizarDescricao);
+    horasInput.addEventListener('input', atualizarDuracao);
+    minutosInput.addEventListener('input', atualizarDuracao);
+    precoInput.addEventListener('input', atualizarPreco);
+    
+    // Validações em tempo real
+    horasInput.addEventListener('input', function() {
+        const valor = parseInt(this.value);
+        if (valor < 0) this.value = 0;
+        if (valor > 23) this.value = 23;
+    });
+    
+    minutosInput.addEventListener('input', function() {
+        const valor = parseInt(this.value);
+        if (valor < 0) this.value = 0;
+        if (valor > 59) this.value = 59;
+    });
+    
+    precoInput.addEventListener('input', function() {
+        const valor = parseFloat(this.value);
+        if (valor < 0) this.value = 0;
+    });
+    
+    // Inicializar preview
+    atualizarNome();
+    atualizarDescricao();
+    atualizarDuracao();
+    atualizarPreco();
+    
+    // Auto-focus no primeiro campo
+    nomeInput.focus();
+    
+    // Formatação do preço ao sair do campo
+    precoInput.addEventListener('blur', function() {
+        const valor = parseFloat(this.value) || 0;
+        this.value = valor.toFixed(2);
+    });
+});
+</script>
+{% endblock %}

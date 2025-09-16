@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Editar Agendamento{% else %}Novo Agendamento{% endif %} - Sistema de Agendamentos
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-plus me-2"></i>
+                        {% if object %}Editar Agendamento{% else %}Novo Agendamento{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.cliente.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Cliente *
+                                </label>
+                                {{ form.cliente }}
+                                {% if form.cliente.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.cliente.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <a href="{% url 'agendamentos:cliente_create' %}" class="text-decoration-none">
+                                        <i class="fas fa-plus me-1"></i>Cadastrar novo cliente
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.servico.id_for_label }}" class="form-label">
+                                    <i class="fas fa-cogs me-2"></i>Serviço *
+                                </label>
+                                {{ form.servico }}
+                                {% if form.servico.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.servico.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <a href="{% url 'agendamentos:servico_create' %}" class="text-decoration-none">
+                                        <i class="fas fa-plus me-1"></i>Cadastrar novo serviço
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.data_agendamento.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar me-2"></i>Data do Agendamento *
+                                </label>
+                                {{ form.data_agendamento }}
+                                {% if form.data_agendamento.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.data_agendamento.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.hora_inicio.id_for_label }}" class="form-label">
+                                    <i class="fas fa-clock me-2"></i>Hora de Início *
+                                </label>
+                                {{ form.hora_inicio }}
+                                {% if form.hora_inicio.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.hora_inicio.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.valor_cobrado.id_for_label }}" class="form-label">
+                                <i class="fas fa-dollar-sign me-2"></i>Valor a Cobrar
+                            </label>
+                            {{ form.valor_cobrado }}
+                            {% if form.valor_cobrado.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.valor_cobrado.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Deixe em branco para usar o valor padrão do serviço</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note me-2"></i>Observações
+                            </label>
+                            {{ form.observacoes }}
+                            {% if form.observacoes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.observacoes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {% if object %}Atualizar Agendamento{% else %}Criar Agendamento{% endif %}
+                            </button>
+                            <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-preencher data com hoje se estiver vazio
+    const dataInput = document.getElementById('{{ form.data_agendamento.id_for_label }}');
+    if (!dataInput.value) {
+        const hoje = new Date();
+        const dataFormatada = hoje.toISOString().split('T')[0];
+        dataInput.value = dataFormatada;
+    }
+    
+    // Auto-calcular valor baseado no serviço selecionado
+    const servicoSelect = document.getElementById('{{ form.servico.id_for_label }}');
+    const valorInput = document.getElementById('{{ form.valor_cobrado.id_for_label }}');
+    
+    servicoSelect.addEventListener('change', function() {
+        // Aqui você pode fazer uma requisição AJAX para buscar o preço do serviço
+        // Por enquanto, vamos deixar o usuário preencher manualmente
+    });
+});
+</script>
+{% endblock %}
