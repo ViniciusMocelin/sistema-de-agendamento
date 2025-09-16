@@ -1,7 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import Cliente, TipoServico, Agendamento, ConfiguracaoHorario
+from datetime import datetime, time
+from .models import Cliente, TipoServico, Agendamento
 import re
 
 class ClienteForm(forms.ModelForm):
@@ -210,6 +211,10 @@ class AgendamentoForm(forms.ModelForm):
                 ativo=True
             ).order_by('nome')
 
+        # Adicionar opção vazia
+        self.fields['cliente'].empty_label = "Selecione um cliente"
+        self.fields['servico'].empty_label = "Selecione um serviço"
+
     def clean_data_agendamento(self):
         data = self.cleaned_data.get('data_agendamento')
         if data:
@@ -225,13 +230,20 @@ class AgendamentoForm(forms.ModelForm):
         servico = cleaned_data.get('servico')
         
         if data_agendamento and hora_inicio and servico and self.user:
-            # Verificar conflitos de horário
-            from datetime import datetime, timedelta
-            
+            # Calcular hora_fim baseada no serviço
             inicio_datetime = datetime.combine(data_agendamento, hora_inicio)
             fim_datetime = inicio_datetime + servico.duracao
+            hora_fim = fim_datetime.time()
             
-            # Buscar agendamentos conflitantes
+            # Verificar se o agendamento não passa da meia-noite
+            if fim_datetime.date() > data_agendamento:
+                raise ValidationError({
+                    'hora_inicio': f"O agendamento não pode passar da meia-noite. "
+                                 f"Com duração de {servico.duracao_formatada}, "
+                                 f"o horário máximo de início é {(datetime.combine(data_agendamento, time(23, 59)) - servico.duracao).time().strftime('%H:%M')}"
+                })
+            
+            # Verificar conflitos de horário
             agendamentos_conflitantes = Agendamento.objects.filter(
                 criado_por=self.user,
                 data_agendamento=data_agendamento,
@@ -243,14 +255,66 @@ class AgendamentoForm(forms.ModelForm):
                 agendamentos_conflitantes = agendamentos_conflitantes.exclude(pk=self.instance.pk)
             
             for agendamento in agendamentos_conflitantes:
-                agend_inicio = datetime.combine(data_agendamento, agendamento.hora_inicio)
-                agend_fim = datetime.combine(data_agendamento, agendamento.hora_fim)
+                # Calcular hora_fim do agendamento existente se não estiver definida
+                if agendamento.hora_fim:
+                    agend_fim = agendamento.hora_fim
+                else:
+                    agend_inicio_dt = datetime.combine(data_agendamento, agendamento.hora_inicio)
+                    agend_fim_dt = agend_inicio_dt + agendamento.servico.duracao
+                    agend_fim = agend_fim_dt.time()
+                
+                agend_inicio = agendamento.hora_inicio
                 
                 # Verificar sobreposição
-                if (inicio_datetime < agend_fim and fim_datetime > agend_inicio):
-                    raise ValidationError(
-                        f"Conflito de horário com agendamento existente: "
-                        f"{agendamento.cliente.nome} das {agendamento.hora_inicio} às {agendamento.hora_fim}"
-                    )
+                if (hora_inicio < agend_fim and hora_fim > agend_inicio):
+                    raise ValidationError({
+                        'hora_inicio': f"Conflito de horário com agendamento existente: "
+                                     f"{agendamento.cliente.nome} das {agend_inicio} às {agend_fim}"
+                    })
         
         return cleaned_data
+
+
+class AgendamentoStatusForm(forms.ModelForm):
+    """Form para alterar status do agendamento"""
+    
+    observacoes_status = forms.CharField(
+        required=False,
+        max_length=500,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Observações sobre a mudança de status (opcional)'
+        }),
+        help_text='Adicione observações sobre a mudança de status'
+    )
+    
+    class Meta:
+        model = Agendamento
+        fields = ['status']
+        widgets = {
+            'status': forms.RadioSelect(attrs={
+                'class': 'form-check-input'
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Personalizar choices se necessário
+        self.fields['status'].widget.attrs.update({'class': 'btn-check'})
+        
+    def save(self, commit=True):
+        agendamento = super().save(commit=False)
+        
+        # Adicionar observações sobre mudança de status
+        observacoes_status = self.cleaned_data.get('observacoes_status')
+        if observacoes_status:
+            if agendamento.observacoes:
+                agendamento.observacoes += f"\n\n[{timezone.now().strftime('%d/%m/%Y %H:%M')}] Status alterado para {agendamento.get_status_display()}: {observacoes_status}"
+            else:
+                agendamento.observacoes = f"[{timezone.now().strftime('%d/%m/%Y %H:%M')}] Status alterado para {agendamento.get_status_display()}: {observacoes_status}"
+        
+        if commit:
+            agendamento.save()
+        return agendamento

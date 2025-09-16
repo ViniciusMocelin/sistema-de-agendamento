@@ -1,0 +1,613 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cliente.nome }} - Detalhes do Cliente - Sistema de Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header da Página -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-user me-2"></i>Perfil do Cliente
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Cliente desde {{ cliente.criado_em|date:"d/m/Y" }}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'agendamentos:agendamento_create' %}?cliente={{ cliente.pk }}" class="btn btn-success">
+                        <i class="fas fa-calendar-plus me-2"></i>Novo Agendamento
+                    </a>
+                    <a href="{% url 'agendamentos:cliente_update' cliente.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Editar
+                    </a>
+                    <a href="{% url 'agendamentos:cliente_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações Principais do Cliente -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-xl bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-4">
+                                    {{ cliente.nome|first|upper }}
+                                </div>
+                                <div>
+                                    <h3 class="mb-1">{{ cliente.nome }}</h3>
+                                    <p class="text-muted mb-2">{{ cliente.idade }} anos • {{ cliente.email }}</p>
+                                    <div class="d-flex gap-3">
+                                        <a href="tel:{{ cliente.telefone }}" class="text-decoration-none">
+                                            <i class="fas fa-phone text-primary me-1"></i>{{ cliente.telefone }}
+                                        </a>
+                                        <a href="https://wa.me/55{{ cliente.telefone|cut:' '|cut:'('|cut:')'|cut:'-' }}" 
+                                           target="_blank" class="text-decoration-none text-success">
+                                            <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            {% if cliente.ativo %}
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="fas fa-check-circle me-1"></i>CLIENTE ATIVO
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6 px-3 py-2">
+                                    <i class="fas fa-times-circle me-1"></i>CLIENTE INATIVO
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Rápidas -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-calendar-check fa-2x text-primary mb-3"></i>
+                    <h4 class="text-primary mb-1">{{ total_agendamentos }}</h4>
+                    <small class="text-muted">Total de Agendamentos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                    <h4 class="text-success mb-1">{{ agendamentos_concluidos }}</h4>
+                    <small class="text-muted">Agendamentos Concluídos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-times-circle fa-2x text-danger mb-3"></i>
+                    <h4 class="text-danger mb-1">{{ agendamentos_cancelados }}</h4>
+                    <small class="text-muted">Cancelados/Faltas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-percentage fa-2x text-info mb-3"></i>
+                    <h4 class="text-info mb-1">{{ taxa_comparecimento }}%</h4>
+                    <small class="text-muted">Taxa de Comparecimento</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna Principal -->
+        <div class="col-lg-8">
+            <!-- Informações Pessoais -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-id-card me-2"></i>Informações Pessoais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Nome Completo</label>
+                                <div class="info-value">{{ cliente.nome }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">CPF</label>
+                                <div class="info-value">{{ cliente.cpf }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Data de Nascimento</label>
+                                <div class="info-value">
+                                    {{ cliente.data_nascimento|date:"d/m/Y" }}
+                                    <small class="text-muted">({{ cliente.idade }} anos)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Status</label>
+                                <div class="info-value">
+                                    {% if cliente.ativo %}
+                                        <span class="badge bg-success">Ativo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inativo</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações de Contato -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-address-book me-2"></i>Informações de Contato
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Email</label>
+                                <div class="info-value">
+                                    <a href="mailto:{{ cliente.email }}" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-2"></i>{{ cliente.email }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Telefone</label>
+                                <div class="info-value">
+                                    <a href="tel:{{ cliente.telefone }}" class="text-decoration-none me-3">
+                                        <i class="fas fa-phone me-2"></i>{{ cliente.telefone }}
+                                    </a>
+                                    <a href="https://wa.me/55{{ cliente.telefone|cut:' '|cut:'('|cut:')'|cut:'-' }}" 
+                                       target="_blank" class="text-success text-decoration-none">
+                                        <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% if cliente.endereco %}
+                        <div class="col-12">
+                            <div class="info-group">
+                                <label class="info-label">Endereço</label>
+                                <div class="info-value">
+                                    <i class="fas fa-map-marker-alt me-2"></i>{{ cliente.endereco }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            {% if cliente.observacoes %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>Observações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ cliente.observacoes|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Histórico de Agendamentos -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Histórico de Agendamentos
+                    </h5>
+                    <span class="badge bg-light text-dark">{{ agendamentos.count }} registro{{ agendamentos.count|pluralize }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if agendamentos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Horário</th>
+                                        <th>Serviço</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for agendamento in agendamentos %}
+                                    <tr class="agendamento-row" data-status="{{ agendamento.status }}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="date-mini bg-primary text-white rounded me-2 text-center">
+                                                    <div class="day">{{ agendamento.data_agendamento|date:"d" }}</div>
+                                                    <div class="month">{{ agendamento.data_agendamento|date:"M" }}</div>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ agendamento.data_agendamento|date:"d/m/Y" }}</strong>
+                                                    <br><small class="text-muted">{{ agendamento.data_agendamento|date:"l" }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <strong>{{ agendamento.hora_inicio }}</strong>
+                                            <br><small class="text-muted">{{ agendamento.hora_fim }}</small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ agendamento.servico.nome }}</strong>
+                                            <br><small class="text-muted">{{ agendamento.servico.duracao_formatada }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="text-success fw-bold">
+                                                R$ {{ agendamento.valor_cobrado|default:agendamento.servico.preco|floatformat:2 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ agendamento.status_badge_class }}">
+                                                {% if agendamento.status == 'agendado' %}
+                                                    <i class="fas fa-clock me-1"></i>
+                                                {% elif agendamento.status == 'confirmado' %}
+                                                    <i class="fas fa-check me-1"></i>
+                                                {% elif agendamento.status == 'em_andamento' %}
+                                                    <i class="fas fa-play me-1"></i>
+                                                {% elif agendamento.status == 'concluido' %}
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                {% elif agendamento.status == 'cancelado' %}
+                                                    <i class="fas fa-times me-1"></i>
+                                                {% elif agendamento.status == 'nao_compareceu' %}
+                                                    <i class="fas fa-user-times me-1"></i>
+                                                {% endif %}
+                                                {{ agendamento.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'agendamentos:agendamento_detail' agendamento.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalhes">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if agendamento.pode_editar %}
+                                                <a href="{% url 'agendamentos:agendamento_update' agendamento.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum agendamento encontrado</h5>
+                            <p class="text-muted mb-3">Este cliente ainda não possui agendamentos.</p>
+                            <a href="{% url 'agendamentos:agendamento_create' %}?cliente={{ cliente.pk }}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-2"></i>Criar Primeiro Agendamento
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Lateral -->
+        <div class="col-lg-4">
+            <!-- Ações Rápidas -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'agendamentos:agendamento_create' %}?cliente={{ cliente.pk }}" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus me-2"></i>Novo Agendamento
+                        </a>
+                        <a href="{% url 'agendamentos:cliente_update' cliente.pk %}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit me-2"></i>Editar Cliente
+                        </a>
+                        <a href="tel:{{ cliente.telefone }}" class="btn btn-outline-primary">
+                            <i class="fas fa-phone me-2"></i>Ligar para Cliente
+                        </a>
+                        <a href="mailto:{{ cliente.email }}" class="btn btn-outline-info">
+                            <i class="fas fa-envelope me-2"></i>Enviar Email
+                        </a>
+                        <a href="https://wa.me/55{{ cliente.telefone|cut:' '|cut:'('|cut:')'|cut:'-' }}" 
+                           target="_blank" class="btn btn-outline-success">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                        </a>
+                        <hr>
+                        <button type="button" 
+                                class="btn btn-outline-danger" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deleteModal">
+                            <i class="fas fa-trash me-2"></i>Excluir Cliente
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo Financeiro -->
+            {% if total_agendamentos > 0 %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Resumo Financeiro
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="financial-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-dollar-sign text-success me-2"></i>Total Faturado</span>
+                            <span class="h6 text-success mb-0">R$ {{ total_faturado|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <div class="financial-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-calculator text-info me-2"></i>Ticket Médio</span>
+                            <span class="h6 text-info mb-0">R$ {{ ticket_medio|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <div class="financial-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calendar-check text-primary me-2"></i>Última Visita</span>
+                            <span class="text-muted">{{ ultima_visita|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Informações do Sistema -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Informações do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <div class="mb-2">
+                            <strong>Cliente desde:</strong> {{ cliente.criado_em|date:"d/m/Y H:i" }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Última atualização:</strong> {{ cliente.atualizado_em|date:"d/m/Y H:i" }}
+                        </div>
+                        <div>
+                            <strong>ID do cliente:</strong> #{{ cliente.pk }}
+                        </div>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o cliente <strong>{{ cliente.nome }}</strong>?</p>
+                
+                {% if total_agendamentos > 0 %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atenção:</strong> Este cliente possui {{ total_agendamentos }} agendamento{{ total_agendamentos|pluralize }} associado{{ total_agendamentos|pluralize }}. 
+                    A exclusão pode afetar esses registros.
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita.
+                </div>
+                {% endif %}
+                
+                <div class="cliente-preview p-3 bg-light rounded">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-md bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                            {{ cliente.nome|first|upper }}
+                        </div>
+                        <div>
+                            <strong>{{ cliente.nome }}</strong>
+                            <br><small class="text-muted">{{ cliente.email }} • {{ cliente.telefone }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <a href="{% url 'agendamentos:cliente_delete' cliente.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Excluir Cliente
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-xl {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .avatar-md {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .date-mini {
+        width: 35px;
+        padding: 4px 2px;
+        font-size: 10px;
+        line-height: 1;
+    }
+    
+    .date-mini .day {
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .date-mini .month {
+        font-size: 8px;
+        text-transform: uppercase;
+    }
+    
+    .info-group {
+        margin-bottom: 1rem;
+    }
+    
+    .info-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        color: #495057;
+    }
+    
+    .financial-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .financial-item:last-child {
+        border-bottom: none;
+    }
+    
+    .agendamento-row[data-status="concluido"] {
+        background-color: #f8f9fa;
+    }
+    
+    .agendamento-row[data-status="cancelado"] {
+        background-color: #fff5f5;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        background-color: #f8f9fa;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .cliente-preview {
+        border-left: 4px solid #007bff;
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .avatar-xl {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Destacar linha ao passar o mouse
+    const agendamentoRows = document.querySelectorAll('.agendamento-row');
+    agendamentoRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            const status = this.getAttribute('data-status');
+            if (status === 'concluido') {
+                this.style.backgroundColor = '#f8f9fa';
+            } else if (status === 'cancelado') {
+                this.style.backgroundColor = '#fff5f5';
+            } else {
+                this.style.backgroundColor = '';
+            }
+        });
+    });
+    
+    // Confirmar exclusão
+    const deleteButton = document.querySelector('[data-bs-target="#deleteModal"]');
+    if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+            console.log('Preparando exclusão do cliente: {{ cliente.nome }}');
+        });
+    }
+    
+    // Animar cards de estatísticas
+    const statCards = document.querySelectorAll('.card.border-primary, .card.border-success, .card.border-danger, .card.border-info');
+    statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

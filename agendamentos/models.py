@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.utils import timezone
-from datetime import datetime, time
+from datetime import datetime, timedelta
+from django.core.exceptions import ValidationError
 
 class Cliente(models.Model):
     """Model para armazenar dados dos clientes"""
@@ -95,7 +96,7 @@ class Agendamento(models.Model):
     servico = models.ForeignKey(TipoServico, on_delete=models.CASCADE, verbose_name="Serviço")
     data_agendamento = models.DateField(verbose_name="Data do Agendamento")
     hora_inicio = models.TimeField(verbose_name="Hora de Início")
-    hora_fim = models.TimeField(verbose_name="Hora de Fim")
+    hora_fim = models.TimeField(verbose_name="Hora de Fim", blank=True, null=True)  # Permitir null
     status = models.CharField(
         max_length=20,
         choices=StatusAgendamento.choices,
@@ -125,19 +126,23 @@ class Agendamento(models.Model):
 
     def clean(self):
         """Validações customizadas"""
-        from django.core.exceptions import ValidationError
+        errors = {}
         
         # Validar se a data não é no passado
-        if self.data_agendamento < timezone.now().date():
-            raise ValidationError("Não é possível agendar para datas passadas.")
+        if self.data_agendamento and self.data_agendamento < timezone.now().date():
+            errors['data_agendamento'] = "Não é possível agendar para datas passadas."
         
-        # Validar se hora_fim é maior que hora_inicio
-        if self.hora_fim <= self.hora_inicio:
-            raise ValidationError("Hora de fim deve ser maior que hora de início.")
+        # Validar se hora_fim é maior que hora_inicio (apenas se hora_fim estiver definida)
+        if self.hora_inicio and self.hora_fim:
+            if self.hora_fim <= self.hora_inicio:
+                errors['hora_fim'] = "Hora de fim deve ser maior que hora de início."
+        
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        # Auto-calcular hora_fim baseada na duração do serviço
-        if not self.hora_fim and self.servico:
+        # Auto-calcular hora_fim baseada na duração do serviço (se não estiver definida)
+        if not self.hora_fim and self.servico and self.hora_inicio:
             inicio_datetime = datetime.combine(self.data_agendamento, self.hora_inicio)
             fim_datetime = inicio_datetime + self.servico.duracao
             self.hora_fim = fim_datetime.time()
@@ -145,12 +150,18 @@ class Agendamento(models.Model):
         # Auto-definir valor_cobrado se não informado
         if not self.valor_cobrado and self.servico:
             self.valor_cobrado = self.servico.preco
-            
+        
+        # Executar validações antes de salvar
+        self.full_clean()
+        
         super().save(*args, **kwargs)
 
     @property
     def duracao_total(self):
         """Calcula duração total do agendamento"""
+        if not self.hora_fim:
+            return self.servico.duracao if self.servico else timedelta(hours=1)
+        
         inicio = datetime.combine(self.data_agendamento, self.hora_inicio)
         fim = datetime.combine(self.data_agendamento, self.hora_fim)
         return fim - inicio
@@ -175,31 +186,3 @@ class Agendamento(models.Model):
     def pode_cancelar(self):
         """Verifica se o agendamento pode ser cancelado"""
         return self.status not in ['concluido', 'cancelado']
-
-
-class ConfiguracaoHorario(models.Model):
-    """Model para configurar horários de funcionamento"""
-    DIAS_SEMANA = [
-        (0, 'Segunda-feira'),
-        (1, 'Terça-feira'),
-        (2, 'Quarta-feira'),
-        (3, 'Quinta-feira'),
-        (4, 'Sexta-feira'),
-        (5, 'Sábado'),
-        (6, 'Domingo'),
-    ]
-    
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuário")
-    dia_semana = models.IntegerField(choices=DIAS_SEMANA, verbose_name="Dia da Semana")
-    hora_inicio = models.TimeField(verbose_name="Hora de Início")
-    hora_fim = models.TimeField(verbose_name="Hora de Fim")
-    ativo = models.BooleanField(default=True, verbose_name="Ativo")
-
-    class Meta:
-        verbose_name = "Configuração de Horário"
-        verbose_name_plural = "Configurações de Horários"
-        unique_together = ['usuario', 'dia_semana']
-        ordering = ['dia_semana', 'hora_inicio']
-
-    def __str__(self):
-        return f"{self.get_dia_semana_display()}: {self.hora_inicio} - {self.hora_fim}"
