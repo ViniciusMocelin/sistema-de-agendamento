@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from datetime import datetime, timedelta
 
 from .models import Cliente, TipoServico, Agendamento, StatusAgendamento
-from .forms import ClienteForm, TipoServicoForm, AgendamentoForm
+from .forms import ClienteForm, TipoServicoForm, AgendamentoForm, AgendamentoStatusForm
 
 # ========================================
 # VIEWS PRINCIPAIS
@@ -182,6 +182,35 @@ class ClienteDetailView(LoginRequiredMixin, DetailView):
         context['agendamentos_cancelados'] = Agendamento.objects.filter(
             cliente=cliente, status__in=['cancelado', 'nao_compareceu']
         ).count()
+        
+        # Taxa de comparecimento
+        if context['total_agendamentos'] > 0:
+            context['taxa_comparecimento'] = round(
+                (context['agendamentos_concluidos'] / context['total_agendamentos']) * 100, 1
+            )
+        else:
+            context['taxa_comparecimento'] = 0
+        
+        # Informações financeiras
+        agendamentos_concluidos = Agendamento.objects.filter(
+            cliente=cliente, status='concluido'
+        )
+        
+        if agendamentos_concluidos.exists():
+            valores = []
+            for agendamento in agendamentos_concluidos:
+                valor = agendamento.valor_cobrado or agendamento.servico.preco
+                valores.append(valor)
+            
+            context['total_faturado'] = sum(valores)
+            context['ticket_medio'] = context['total_faturado'] / len(valores)
+            
+            # Última visita
+            context['ultima_visita'] = agendamentos_concluidos.order_by('-data_agendamento').first().data_agendamento
+        else:
+            context['total_faturado'] = 0
+            context['ticket_medio'] = 0
+            context['ultima_visita'] = None
         
         return context
 
@@ -409,6 +438,26 @@ class AgendamentoListView(LoginRequiredMixin, ListView):
         context['data_fim'] = self.request.GET.get('data_fim', '')
         context['status_choices'] = StatusAgendamento.choices
         context['total_agendamentos'] = self.get_queryset().count()
+        
+        # Datas para filtros rápidos
+        hoje = timezone.now().date()
+        context['hoje'] = hoje.strftime('%Y-%m-%d')
+        
+        # Início e fim da semana
+        inicio_semana = hoje - timedelta(days=hoje.weekday())
+        fim_semana = inicio_semana + timedelta(days=6)
+        context['inicio_semana'] = inicio_semana.strftime('%Y-%m-%d')
+        context['fim_semana'] = fim_semana.strftime('%Y-%m-%d')
+        
+        # Início e fim do mês
+        inicio_mes = hoje.replace(day=1)
+        if hoje.month == 12:
+            fim_mes = hoje.replace(year=hoje.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            fim_mes = hoje.replace(month=hoje.month + 1, day=1) - timedelta(days=1)
+        context['inicio_mes'] = inicio_mes.strftime('%Y-%m-%d')
+        context['fim_mes'] = fim_mes.strftime('%Y-%m-%d')
+        
         return context
 
 
@@ -511,23 +560,32 @@ class AgendamentoDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class AgendamentoStatusUpdateView(LoginRequiredMixin, UpdateView):
-    """Atualizar apenas o status do agendamento"""
+    """View para alterar status do agendamento"""
     model = Agendamento
-    fields = ['status', 'observacoes']
+    form_class = AgendamentoStatusForm
     template_name = 'agendamentos/agendamento_status_form.html'
-    success_url = reverse_lazy('agendamentos:agendamento_list')
-    
+    context_object_name = 'agendamento'
+
     def get_queryset(self):
         return Agendamento.objects.filter(criado_por=self.request.user)
-    
-    def form_valid(self, form):
-        agendamento = form.instance
-        status_anterior = Agendamento.objects.get(pk=agendamento.pk).status
-        
+
+    def get_success_url(self):
         messages.success(
             self.request, 
-            f'Status do agendamento alterado de "{status_anterior}" para "{agendamento.get_status_display()}"'
+            f'Status do agendamento alterado para "{self.object.get_status_display()}" com sucesso!'
         )
+        return reverse_lazy('agendamentos:agendamento_detail', kwargs={'pk': self.object.pk})
+
+    def form_valid(self, form):
+        # Log da mudança de status
+        old_status = self.get_object().status
+        new_status = form.cleaned_data['status']
+        
+        if old_status != new_status:
+            # Aqui você pode adicionar lógica adicional
+            # como envio de notificações, emails, etc.
+            pass
+            
         return super().form_valid(form)
 
 

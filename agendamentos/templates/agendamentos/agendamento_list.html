@@ -1,0 +1,619 @@
+{% extends 'base.html' %}
+
+{% block title %}Agendamentos - Sistema de Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header da Página -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-calendar-alt me-2"></i>Gerenciar Agendamentos
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Total de {{ total_agendamentos }} agendamento{{ total_agendamentos|pluralize }}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'agendamentos:agendamento_create' %}" class="btn btn-primary">
+                        <i class="fas fa-calendar-plus me-2"></i>Novo Agendamento
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-2"></i>Ações
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'agendamentos:dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'agendamentos:cliente_list' %}">
+                                <i class="fas fa-users me-2"></i>Clientes
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'agendamentos:servico_list' %}">
+                                <i class="fas fa-cogs me-2"></i>Serviços
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros Avançados -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtros de Busca
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">
+                                <i class="fas fa-search me-2"></i>Buscar
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="search" 
+                                   name="search" 
+                                   value="{{ search }}"
+                                   placeholder="Cliente, serviço ou observações">
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">
+                                <i class="fas fa-flag me-2"></i>Status
+                            </label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos</option>
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label for="data_inicio" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Data Início
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="data_inicio" 
+                                   name="data_inicio" 
+                                   value="{{ data_inicio }}">
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label for="data_fim" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Data Fim
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="data_fim" 
+                                   name="data_fim" 
+                                   value="{{ data_fim }}">
+                        </div>
+                        
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Filtrar
+                            </button>
+                            <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-download me-2"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i>Imprimir</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros Rápidos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="?data_inicio={{ hoje }}&data_fim={{ hoje }}" 
+                   class="btn btn-outline-primary btn-sm {% if data_inicio == hoje and data_fim == hoje %}active{% endif %}">
+                    <i class="fas fa-calendar-day me-1"></i>Hoje
+                </a>
+                <a href="?data_inicio={{ inicio_semana }}&data_fim={{ fim_semana }}" 
+                   class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-calendar-week me-1"></i>Esta Semana
+                </a>
+                <a href="?data_inicio={{ inicio_mes }}&data_fim={{ fim_mes }}" 
+                   class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-calendar me-1"></i>Este Mês
+                </a>
+                <a href="?status=agendado" 
+                   class="btn btn-outline-warning btn-sm {% if status == 'agendado' %}active{% endif %}">
+                    <i class="fas fa-clock me-1"></i>Pendentes
+                </a>
+                <a href="?status=confirmado" 
+                   class="btn btn-outline-primary btn-sm {% if status == 'confirmado' %}active{% endif %}">
+                    <i class="fas fa-check me-1"></i>Confirmados
+                </a>
+                <a href="?status=concluido" 
+                   class="btn btn-outline-success btn-sm {% if status == 'concluido' %}active{% endif %}">
+                    <i class="fas fa-check-circle me-1"></i>Concluídos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Agendamentos -->
+    <div class="row">
+        <div class="col-12">
+            {% if agendamentos %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Lista de Agendamentos
+                        </h5>
+                        <small class="text-muted">
+                            Mostrando {{ agendamentos|length }} de {{ total_agendamentos }} agendamento{{ total_agendamentos|pluralize }}
+                        </small>
+                    </div>
+                    
+                    <!-- Versão Desktop -->
+                    <div class="d-none d-lg-block">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Serviço</th>
+                                        <th>Duração</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for agendamento in agendamentos %}
+                                    <tr class="agendamento-row" data-status="{{ agendamento.status }}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="date-badge bg-primary text-white rounded me-3 text-center">
+                                                    <div class="day">{{ agendamento.data_agendamento|date:"d" }}</div>
+                                                    <div class="month">{{ agendamento.data_agendamento|date:"M" }}</div>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ agendamento.data_agendamento|date:"d/m/Y" }}</strong>
+                                                    <br><small class="text-muted">
+                                                        {{ agendamento.hora_inicio }} - {{ agendamento.hora_fim }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    {{ agendamento.cliente.nome|first|upper }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ agendamento.cliente.nome }}</strong>
+                                                    <br><small class="text-muted">{{ agendamento.cliente.telefone }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ agendamento.servico.nome }}</strong>
+                                                {% if agendamento.observacoes %}
+                                                    <br><small class="text-muted">{{ agendamento.observacoes|truncatechars:30 }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-clock me-1"></i>{{ agendamento.servico.duracao_formatada }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="h6 text-success mb-0">
+                                                R$ {{ agendamento.valor_cobrado|default:agendamento.servico.preco|floatformat:2 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ agendamento.status_badge_class }}">
+                                                {% if agendamento.status == 'agendado' %}
+                                                    <i class="fas fa-clock me-1"></i>
+                                                {% elif agendamento.status == 'confirmado' %}
+                                                    <i class="fas fa-check me-1"></i>
+                                                {% elif agendamento.status == 'em_andamento' %}
+                                                    <i class="fas fa-play me-1"></i>
+                                                {% elif agendamento.status == 'concluido' %}
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                {% elif agendamento.status == 'cancelado' %}
+                                                    <i class="fas fa-times me-1"></i>
+                                                {% elif agendamento.status == 'nao_compareceu' %}
+                                                    <i class="fas fa-user-times me-1"></i>
+                                                {% endif %}
+                                                {{ agendamento.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'agendamentos:agendamento_detail' agendamento.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalhes">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if agendamento.pode_editar %}
+                                                <a href="{% url 'agendamentos:agendamento_update' agendamento.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% endif %}
+                                                <a href="{% url 'agendamentos:agendamento_status' agendamento.pk %}" 
+                                                   class="btn btn-outline-success" 
+                                                   title="Alterar status">
+                                                    <i class="fas fa-flag"></i>
+                                                </a>
+                                                {% if agendamento.pode_cancelar %}
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        title="Excluir"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteModal{{ agendamento.pk }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Versão Mobile -->
+                    <div class="d-lg-none">
+                        <div class="list-group list-group-flush">
+                            {% for agendamento in agendamentos %}
+                            <div class="list-group-item agendamento-card" data-status="{{ agendamento.status }}">
+                                <div class="d-flex align-items-start">
+                                    <div class="date-badge bg-primary text-white rounded me-3 text-center">
+                                        <div class="day">{{ agendamento.data_agendamento|date:"d" }}</div>
+                                        <div class="month">{{ agendamento.data_agendamento|date:"M" }}</div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1">{{ agendamento.cliente.nome }}</h6>
+                                                <small class="text-muted">{{ agendamento.servico.nome }}</small>
+                                            </div>
+                                            <span class="badge {{ agendamento.status_badge_class }}">
+                                                {{ agendamento.get_status_display }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ agendamento.hora_inicio }} - {{ agendamento.hora_fim }}
+                                                </small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-dollar-sign me-1"></i>
+                                                    R$ {{ agendamento.valor_cobrado|default:agendamento.servico.preco|floatformat:2 }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if agendamento.observacoes %}
+                                        <p class="text-muted small mb-2">
+                                            <i class="fas fa-sticky-note me-1"></i>
+                                            {{ agendamento.observacoes|truncatechars:50 }}
+                                        </p>
+                                        {% endif %}
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="fas fa-phone me-1"></i>{{ agendamento.cliente.telefone }}
+                                            </small>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'agendamentos:agendamento_detail' agendamento.pk %}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if agendamento.pode_editar %}
+                                                <a href="{% url 'agendamentos:agendamento_update' agendamento.pk %}" 
+                                                   class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% endif %}
+                                                <a href="{% url 'agendamentos:agendamento_status' agendamento.pk %}" 
+                                                   class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-flag"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Paginação -->
+                {% if is_paginated %}
+                <nav aria-label="Navegação de páginas" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Estado Vazio -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        {% if search or status or data_inicio or data_fim %}
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum agendamento encontrado</h5>
+                            <p class="text-muted mb-4">
+                                Não encontramos agendamentos com os filtros aplicados.
+                                <br>Tente ajustar os critérios de busca.
+                            </p>
+                            <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times me-2"></i>Limpar Filtros
+                            </a>
+                        {% else %}
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum agendamento cadastrado</h5>
+                            <p class="text-muted mb-4">
+                                Você ainda não possui agendamentos cadastrados.
+                                <br>Comece criando seu primeiro agendamento!
+                            </p>
+                            <a href="{% url 'agendamentos:agendamento_create' %}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-2"></i>Criar Primeiro Agendamento
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Confirmação de Exclusão -->
+{% for agendamento in agendamentos %}
+<div class="modal fade" id="deleteModal{{ agendamento.pk }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este agendamento?</p>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita.
+                </div>
+                
+                <div class="agendamento-preview p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ agendamento.cliente.nome }}</strong>
+                            <br><small class="text-muted">{{ agendamento.servico.nome }}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-primary">{{ agendamento.data_agendamento|date:"d/m/Y" }}</div>
+                            <small class="text-muted">{{ agendamento.hora_inicio }} - {{ agendamento.hora_fim }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <a href="{% url 'agendamentos:agendamento_delete' agendamento.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Excluir Agendamento
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .date-badge {
+        width: 50px;
+        padding: 8px 4px;
+        font-size: 12px;
+        line-height: 1;
+    }
+    
+    .date-badge .day {
+        font-size: 16px;
+        font-weight: bold;
+    }
+    
+    .date-badge .month {
+        font-size: 10px;
+        text-transform: uppercase;
+    }
+    
+    .avatar-sm {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .agendamento-row[data-status="concluido"] {
+        background-color: #f8f9fa;
+    }
+    
+    .agendamento-row[data-status="cancelado"] {
+        background-color: #fff5f5;
+    }
+    
+    .agendamento-card[data-status="concluido"] {
+        border-left: 4px solid #28a745;
+    }
+    
+    .agendamento-card[data-status="cancelado"] {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .agendamento-card[data-status="agendado"] {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .agendamento-card[data-status="confirmado"] {
+        border-left: 4px solid #007bff;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        background-color: #f8f9fa;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .agendamento-preview {
+        border-left: 4px solid #007bff;
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .date-badge {
+            width: 40px;
+            padding: 6px 2px;
+        }
+        
+        .date-badge .day {
+            font-size: 14px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit do formulário de busca ao digitar (com delay)
+    let searchTimeout;
+    const searchInput = document.getElementById('search');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                // Auto-submit após 1.5 segundos de inatividade
+                // document.querySelector('form').submit();
+            }, 1500);
+        });
+    }
+    
+    // Destacar linha ao passar o mouse
+    const agendamentoRows = document.querySelectorAll('.agendamento-row');
+    agendamentoRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            const status = this.getAttribute('data-status');
+            if (status === 'concluido') {
+                this.style.backgroundColor = '#f8f9fa';
+            } else if (status === 'cancelado') {
+                this.style.backgroundColor = '#fff5f5';
+            } else {
+                this.style.backgroundColor = '';
+            }
+        });
+    });
+    
+    // Confirmação de exclusão
+    const deleteButtons = document.querySelectorAll('[data-bs-target^="#deleteModal"]');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr, .list-group-item');
+            const clienteName = row.querySelector('strong').textContent;
+            console.log('Preparando exclusão do agendamento de:', clienteName);
+        });
+    });
+    
+    // Atualizar data de hoje nos filtros rápidos
+    const hoje = new Date().toISOString().split('T')[0];
+    const filtroHoje = document.querySelector('a[href*="data_inicio"]');
+    if (filtroHoje) {
+        filtroHoje.href = filtroHoje.href.replace(/data_inicio=[^&]*/, `data_inicio=${hoje}`);
+        filtroHoje.href = filtroHoje.href.replace(/data_fim=[^&]*/, `data_fim=${hoje}`);
+    }
+});
+</script>
+{% endblock %}
