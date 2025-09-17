@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - Perguntas Frequentes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-question-circle me-2"></i>Perguntas Frequentes
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Encontre respostas rápidas para as dúvidas mais comuns
+                    </p>
+                </div>
+                <a href="{% url 'info:home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Busca e Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" name="q" 
+                                       placeholder="Buscar nas perguntas e respostas..." 
+                                       value="{{ busca }}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <select class="form-select" name="categoria">
+                                <option value="">Todas as categorias</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" 
+                                        {% if categoria.id|stringformat:"s" == categoria_selecionada %}selected{% endif %}>
+                                    {{ categoria.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultados da Busca -->
+    {% if busca %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Mostrando resultados para: <strong>"{{ busca }}"</strong>
+                <a href="{% url 'info:faq' %}" class="btn btn-sm btn-outline-info ms-2">
+                    <i class="fas fa-times me-1"></i>Limpar busca
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Lista de FAQs -->
+    <div class="row">
+        <div class="col-12">
+            {% if faqs %}
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item mb-3 shadow-sm border-0">
+                        <h2 class="accordion-header" id="heading{{ faq.id }}">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.id }}" 
+                                    aria-expanded="false" aria-controls="collapse{{ faq.id }}"
+                                    onclick="incrementarVisualizacao({{ faq.id }})">
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <strong>{{ faq.pergunta }}</strong>
+                                        </div>
+                                        <div class="flex-shrink-0 ms-3">
+                                            <span class="badge bg-secondary">{{ faq.categoria.nome }}</span>
+                                            <small class="text-muted ms-2">
+                                                <i class="fas fa-eye me-1"></i>{{ faq.visualizacoes }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ faq.id }}" class="accordion-collapse collapse" 
+                             aria-labelledby="heading{{ faq.id }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <div class="faq-resposta">
+                                    {{ faq.resposta|linebreaks }}
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Atualizado em {{ faq.criado_em|date:"d/m/Y" }}
+                                    </small>
+                                    
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-success me-2" 
+                                                onclick="avaliarResposta({{ faq.id }}, 'util')">
+                                            <i class="fas fa-thumbs-up me-1"></i>Útil
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="avaliarResposta({{ faq.id }}, 'nao_util')">
+                                            <i class="fas fa-thumbs-down me-1"></i>Não útil
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma pergunta encontrada</h5>
+                    {% if busca %}
+                        <p class="text-muted">Tente buscar com outras palavras-chave.</p>
+                        <a href="{% url 'info:faq' %}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>Ver Todas as Perguntas
+                        </a>
+                    {% else %}
+                        <p class="text-muted">Ainda não temos perguntas cadastradas.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Seção de Ajuda Adicional -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-primary text-white border-0">
+                <div class="card-body text-center py-4">
+                    <h4 class="mb-3">
+                        <i class="fas fa-life-ring me-2"></i>
+                        Não encontrou sua resposta?
+                    </h4>
+                    <p class="mb-4">
+                        Explore outras seções da nossa central de ajuda ou acesse os tutoriais completos.
+                    </p>
+                    
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{% url 'info:tutoriais' %}" class="btn btn-light">
+                            <i class="fas fa-graduation-cap me-2"></i>Ver Tutoriais
+                        </a>
+                        <a href="{% url 'info:guia_completo' %}" class="btn btn-outline-light">
+                            <i class="fas fa-book me-2"></i>Guia Completo
+                        </a>
+                        <a href="{% url 'info:demonstracao' %}" class="btn btn-outline-light">
+                            <i class="fas fa-desktop me-2"></i>Demonstração
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .accordion-button {
+        border-radius: 10px !important;
+        box-shadow: none;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    .accordion-item {
+        border-radius: 10px !important;
+        overflow: hidden;
+    }
+    
+    .faq-resposta {
+        font-size: 1.1rem;
+        line-height: 1.7;
+    }
+    
+    .faq-resposta strong {
+        color: #667eea;
+    }
+</style>
+
+<script>
+function incrementarVisualizacao(faqId) {
+    fetch(`/info/ajax/faq/${faqId}/visualizar/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    });
+}
+
+function avaliarResposta(faqId, tipo) {
+    // Simular avaliação (você pode implementar um sistema de avaliação real)
+    const btn = event.target.closest('button');
+    btn.classList.remove('btn-outline-success', 'btn-outline-danger');
+    
+    if (tipo === 'util') {
+        btn.classList.add('btn-success');
+        btn.innerHTML = '<i class="fas fa-check me-1"></i>Obrigado!';
+    } else {
+        btn.classList.add('btn-danger');
+        btn.innerHTML = '<i class="fas fa-times me-1"></i>Obrigado!';
+    }
+    
+    btn.disabled = true;
+    
+    // Aqui você pode fazer uma requisição AJAX para salvar a avaliação
+    console.log(`FAQ ${faqId} avaliado como ${tipo}`);
+}
+</script>
+{% endblock %}

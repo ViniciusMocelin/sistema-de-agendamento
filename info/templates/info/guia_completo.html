@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+
+{% block title %}Guia Completo - Sistema de Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="text-primary mb-1">
+                        <i class="fas fa-book me-2"></i>Guia Completo do Sistema
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Documentação completa de todas as funcionalidades
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'info:home' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </a>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Índice -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Índice
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <nav class="nav nav-pills flex-column">
+                        <a class="nav-link" href="#introducao">
+                            <i class="fas fa-info-circle me-2"></i>Introdução
+                        </a>
+                        <a class="nav-link" href="#autenticacao">
+                            <i class="fas fa-lock me-2"></i>Autenticação
+                        </a>
+                        <a class="nav-link" href="#agendamentos">
+                            <i class="fas fa-calendar me-2"></i>Agendamentos
+                        </a>
+                        <a class="nav-link" href="#clientes">
+                            <i class="fas fa-users me-2"></i>Clientes
+                        </a>
+                        <a class="nav-link" href="#servicos">
+                            <i class="fas fa-cogs me-2"></i>Serviços
+                        </a>
+                        <a class="nav-link" href="#relatorios">
+                            <i class="fas fa-chart-bar me-2"></i>Relatórios
+                        </a>
+                        <a class="nav-link" href="#dicas">
+                            <i class="fas fa-lightbulb me-2"></i>Dicas Avançadas
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="col-lg-9">
+            <!-- Introdução -->
+            <section id="introducao" class="mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h2 class="text-primary mb-4">
+                            <i class="fas fa-info-circle me-2"></i>Introdução
+                        </h2>
+                        
+                        <p class="lead">
+                            O Sistema de Agendamentos é uma solução completa para gerenciar agendamentos, 
+                            clientes e serviços de forma eficiente e organizada.
+                        </p>
+                        
+                        <h4>Principais Funcionalidades:</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Gestão completa de agendamentos</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Cadastro e controle de clientes</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Catálogo de serviços</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Sistema de autenticação seguro</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Relatórios e análises (BI)</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Dashboard interativo</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Controle de status</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Interface responsiva</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Dica:</strong> Este guia está organizado por módulos. 
+                            Use o índice lateral para navegar rapidamente entre as seções.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Autenticação -->
+            <section id="autenticacao" class="mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h2 class="text-primary mb-4">
+                            <i class="fas fa-lock me-2"></i>{{ estrutura_sistema.autenticacao.titulo }}
+                        </h2>
+                        
+                        <p>{{ estrutura_sistema.autenticacao.descricao }}</p>
+                        
+                        <h4>Funcionalidades:</h4>
+                        <ul>
+                            {% for funcionalidade in estrutura_sistema.autenticacao.funcionalidades %}
+                            <li>{{ funcionalidade }}</li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <h4>Como usar:</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Login</h5>
+                                <ol>
+                                    <li>Acesse a página de login</li>
+                                    <li>Digite seu usuário e senha</li>
+                                    <li>Clique em "Entrar"</li>
+                                    <li>Você será redirecionado para o dashboard</li>
+                                </ol>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Logout</h5>
+                                <ol>
+                                    <li>Clique no seu nome no menu superior</li>
+                                    <li>Selecione "Sair"</li>
+                                    <li>Você será desconectado automaticamente</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Segurança:</strong> Sempre faça logout ao terminar de usar o sistema, 
+                            especialmente em computadores compartilhados.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Agendamentos -->
+            <section id="agendamentos" class="mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h2 class="text-primary mb-4">
+                            <i class="fas fa-calendar me-2"></i>{{ estrutura_sistema.agendamentos.titulo }}
+                        </h2>
+                        
+                        <p>{{ estrutura_sistema.agendamentos.descricao }}</p>
+                        
+                        <h4>Status dos Agendamentos:</h4>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-warning me-3">Agendado</span>
+                                    <span>Agendamento criado, aguardando confirmação</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-info me-3">Confirmado</span>
+                                    <span>Cliente confirmou presença</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-3">Em Andamento</span>
+                                    <span>Serviço sendo executado</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-success me-3">Concluído</span>
+                                    <span>Serviço finalizado com sucesso</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-danger me-3">Cancelado</span>
+                                    <span>Agendamento cancelado</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-secondary me-3">Não Compareceu</span>
+                                    <span>Cliente não compareceu</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4>Criando um Agendamento:</h4>
+                        <ol>
+                            <li><strong>Acesse:</strong> Dashboard → "Novo Agendamento" ou Menu → "Agendamentos" → "Criar"</li>
+                            <li><strong>Selecione o Cliente:</strong> Escolha um cliente existente ou cadastre um novo</li>
+                            <li><strong>Escolha o Serviço:</strong> Selecione o serviço a ser realizado</li>
+                            <li><strong>Defina Data e Hora:</strong> Escolha data e horário disponível</li>
+                            <li><strong>Adicione Observações:</strong> Inclua informações importantes (opcional)</li>
+                            <li><strong>Salve:</strong> Clique em "Salvar" para criar o agendamento</li>
+                        </ol>
+                        
+                        <div class="alert alert-success">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Dica:</strong> O sistema verifica automaticamente conflitos de horário 
+                            e não permite agendamentos sobrepostos.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clientes -->
+            <section id="clientes" class="mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h2 class="text-primary mb-4">
+                            <i class="fas fa-users me-2"></i>{{ estrutura_sistema.clientes.titulo }}
+                        </h2>
+                        
+                        <p>{{ estrutura_sistema.clientes.descricao }}</p>
+                        
+                        <h4>Cadastrando um Cliente:</h4>
+                        <ol>
+                            <li>Acesse "Clientes" no menu principal</li>
+                            <li>Clique em "Novo Cliente"</li>
+                            <li>Preencha as informações obrigatórias:
+                                <ul>
+                                    <li>Nome completo</li>
+                                    <li>Telefone</li>
+                                    <li>Email (opcional)</li>
+                                </ul>
+                            </li>
+                            <li>Adicione informações complementares se necessário</li>
+                            <li>Clique em "Salvar"</li>
+                        </ol>
+                        
+                        <h4>Gerenciando Clientes:</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Busca e Filtros</h5>
+                                <ul>
+                                    <li>Busque por nome, telefone ou email</li>
+                                    <li>Use filtros para encontrar rapidamente</li>
+                                    <li>Visualize histórico de agendamentos</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Ações Disponíveis</h5>
+                                <ul>
+                                    <li>Editar informações do cliente</li>
+                                    <li>Ver detalhes e histórico</li>
+                                    <li>Criar novo agendamento</li>
+                                    <li>Excluir cliente (se necessário)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Serviços -->
+            <section id="servicos" class="mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h2 class="text-primary mb-4">
+                            <i class="fas fa-cogs me-2"></i>{{ estrutura_sistema.servicos.titulo }}
+                        </h2>
+                        
+                        <p>{{ estrutura_sistema.servicos.descricao }}</p>
+                        
+                        <h4>Cadastrando um Serviço:</h4>
+                        <ol>
+                            <li>Acesse "Serviços" no menu</li>
+                            <li>Clique em "Novo Serviço"</li>
+                            <li>Preencha as informações:
+                                <ul>
+                                    <li><strong>Nome:</strong> Nome do serviço</li>
+                                    <li><strong>Descrição:</strong> Detalhes do serviço</li>
+                                    <li><strong>Preço:</strong> Valor cobrado</li>
+                                    <li><strong>Duração:</strong> Tempo estimado</li>
+                                </ul>
+                            </li>
+                            <li>Salve o serviço</li>
+                        </ol>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Importante:</strong> A duração do serviço é usada para calcular 
+                            automaticamente o horário de término dos agendamentos.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Relatórios -->
+            <section id="relatorios" class="mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h2 class="text-primary mb-4">
+                            <i class="fas fa-chart-bar me-2"></i>{{ estrutura_sistema.relatorios.titulo }}
+                        </h2>
+                        
+                        <p>{{ estrutura_sistema.relatorios.descricao }}</p>
+                        
+                        <h4>Tipos de Relatórios:</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Dashboard</h5>
+                                <ul>
+                                    <li>KPIs principais</li>
+                                    <li>Gráfico de agendamentos por dia</li>
+                                    <li>Próximos agendamentos</li>
+                                    <li>Resumo mensal</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Relatórios Avançados</h5>
+                                <ul>
+                                    <li>Faturamento detalhado</li>
+                                    <li>Serviços mais procurados</li>
+                                    <li>Clientes mais frequentes</li>
+                                    <li>Análise de crescimento</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <h4>Como Usar os Filtros:</h4>
+                        <ol>
+                            <li>Acesse a página de relatórios</li>
+                            <li>Clique em "Filtros"</li>
+                            <li>Selecione o período desejado</li>
+                            <li>Use períodos rápidos (7, 30, 90 dias, 1 ano)</li>
+                            <li>Clique em "Aplicar Filtros"</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dicas Avançadas -->
+            <section id="dicas" class="mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h2 class="text-primary mb-4">
+                            <i class="fas fa-lightbulb me-2"></i>Dicas Avançadas
+                        </h2>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Produtividade</h4>
+                                <ul>
+                                    <li>Use os filtros para encontrar informações rapidamente</li>
+                                    <li>Marque agendamentos como "Em Andamento" durante o atendimento</li>
+                                    <li>Mantenha os dados dos clientes sempre atualizados</li>
+                                    <li>Use as observações para registrar informações importantes</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Organização</h4>
+                                <ul>
+                                    <li>Confirme agendamentos com antecedência</li>
+                                    <li>Mantenha um catálogo de serviços atualizado</li>
+                                    <li>Revise os relatórios semanalmente</li>
+                                    <li>Use o dashboard como ponto de partida diário</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-star me-2"></i>Melhores Práticas</h5>
+                            <ul class="mb-0">
+                                <li>Sempre confirme agendamentos por telefone ou WhatsApp</li>
+                                <li>Mantenha backup regular dos dados importantes</li>
+                                <li>Treine sua equipe para usar o sistema corretamente</li>
+                                <li>Monitore os KPIs para identificar oportunidades de melhoria</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn, .card-header, .sticky-top {
+            display: none !important;
+        }
+        
+        .container {
+            max-width: 100% !important;
+        }
+        
+        .col-lg-3 {
+            display: none !important;
+        }
+        
+        .col-lg-9 {
+            width: 100% !important;
+        }
+    }
+    
+    .nav-pills .nav-link {
+        color: #666;
+        border-radius: 0;
+        border-left: 3px solid transparent;
+        padding: 0.75rem 1rem;
+    }
+    
+    .nav-pills .nav-link:hover {
+        background-color: #f8f9fa;
+        border-left-color: #667eea;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: #667eea;
+        border-left-color: #667eea;
+    }
+    
+    section {
+        scroll-margin-top: 100px;
+    }
+</style>
+
+<script>
+// Smooth scroll para links internos
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            
+            // Atualizar nav ativo
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            this.classList.add('active');
+        }
+    });
+});
+
+// Spy scroll para atualizar nav
+window.addEventListener('scroll', function() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 150;
+        if (pageYOffset >= sectionTop) {
+            current = section.getAttribute('id');
+        }
+    });
+    
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}

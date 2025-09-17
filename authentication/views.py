@@ -10,6 +10,12 @@ from django.views.generic import (
     DetailView, TemplateView
 )
 from .forms import CustomUserCreationForm, CustomUserChangeForm
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import PreferenciasUsuario
+from django.views.decorators.csrf import csrf_protect
 
 # ========================================
 # VIEWS DE AUTENTICAÇÃO
@@ -28,14 +34,22 @@ class CustomLoginView(LoginView):
         return super().form_valid(form)
 
 
-class CustomLogoutView(LogoutView):
-    """View personalizada para logout"""
-    next_page = reverse_lazy('authentication:login')
+def custom_logout_view(request):
+    """View simples para logout"""
+    logout(request)
+    return redirect('agendamentos:home')  # Redireciona para página inicial
+
+
+class RegisterView(CreateView):
+    """View para registro de novos usuários"""
+    model = User
+    form_class = CustomUserCreationForm
+    template_name = 'authentication/register.html'
+    success_url = reverse_lazy('authentication:login')
     
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            messages.info(request, 'Logout realizado com sucesso!')
-        return super().dispatch(request, *args, **kwargs)
+    def form_valid(self, form):
+        messages.success(self.request, 'Usuário criado com sucesso! Faça login para continuar.')
+        return super().form_valid(form)
 
 
 class RegisterView(CreateView):
@@ -149,3 +163,57 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Perfil atualizado com sucesso!')
         return super().form_valid(form)
+    
+
+@login_required
+@require_POST
+def alterar_tema(request):
+    """AJAX para alterar tema do usuário"""
+    tema = request.POST.get('tema')
+    
+    if tema not in ['default', 'emerald', 'sunset', 'ocean', 'purple']:
+        return JsonResponse({'error': 'Tema inválido'}, status=400)
+    
+    preferencias = PreferenciasUsuario.get_or_create_for_user(request.user)
+    preferencias.tema = tema
+    preferencias.save()
+    
+    return JsonResponse({
+        'success': True,
+        'tema': tema,
+        'message': f'Tema alterado para {preferencias.get_tema_display()}'
+    })
+
+
+@login_required
+@require_POST
+@csrf_protect
+def alterar_modo(request):
+    """AJAX para alterar modo claro/escuro"""
+    try:
+        modo = request.POST.get('modo')
+        
+        if modo not in ['light', 'dark']:
+            return JsonResponse({'success': False, 'error': 'Modo inválido'}, status=400)
+        
+        preferencias = PreferenciasUsuario.get_or_create_for_user(request.user)
+        if not preferencias:
+            return JsonResponse({'success': False, 'error': 'Erro ao obter preferências'}, status=500)
+        
+        # CORRIGIDO: Salvar o modo atual antes de alterar
+        modo_anterior = preferencias.modo
+        preferencias.modo = modo
+        preferencias.save()
+        
+        # CORRIGIDO: Mostrar mensagem baseada no novo modo
+        modo_nome = 'Escuro' if modo == 'dark' else 'Claro'
+        
+        return JsonResponse({
+            'success': True,
+            'modo': modo,
+            'modo_anterior': modo_anterior,
+            'message': f'Modo alterado para {modo_nome} com sucesso!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

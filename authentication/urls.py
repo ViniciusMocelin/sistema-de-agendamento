@@ -6,7 +6,7 @@ app_name = 'authentication'
 urlpatterns = [
     # Autenticação
     path('login/', views.CustomLoginView.as_view(), name='login'),
-    path('logout/', views.CustomLogoutView.as_view(), name='logout'),
+    path('logout/', views.custom_logout_view, name='logout'),  # Mudança aqui
     path('register/', views.RegisterView.as_view(), name='register'),
     
     # Gerenciamento de usuários (admin)
@@ -19,4 +19,8 @@ urlpatterns = [
     # Perfil do usuário
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/update/', views.ProfileUpdateView.as_view(), name='profile_update'),
+
+    # Preferencias do Usuario
+    path('ajax/alterar-tema/', views.alterar_tema, name='alterar_tema'),
+    path('ajax/alterar-modo/', views.alterar_modo, name='alterar_modo'),
 ]

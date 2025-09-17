@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     # Apps locais
     'agendamentos',
     'authentication',
+    'info',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.tema_context',
+                
             ],
         },
     },
@@ -112,10 +115,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CONFIGURAÇÕES PERSONALIZADAS
 # ========================================
 
-# Configurações de Autenticação
-LOGIN_URL = 'authentication:login'
-LOGIN_REDIRECT_URL = 'agendamentos:dashboard'
-LOGOUT_REDIRECT_URL = 'authentication:login'
+# URLs de redirecionamento
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'  # ou onde quiser redirecionar após login
+LOGOUT_REDIRECT_URL = '/auth/login/'
+
+# Configuração adicional para logout
+LOGOUT_URL = '/auth/logout/'
 
 # Configurações de Mensagens Bootstrap
 from django.contrib.messages import constants as messages

@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Central de Ajuda - Sistema de Agendamentos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white border-0 shadow-lg">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-graduation-cap fa-4x mb-4"></i>
+                    <h1 class="display-4 fw-bold mb-3">Central de Ajuda</h1>
+                    <p class="lead mb-4">
+                        Aprenda a usar todas as funcionalidades do sistema de agendamentos
+                    </p>
+                    
+                    {% if user.is_authenticated %}
+                        <div class="row justify-content-center mb-4">
+                            <div class="col-md-8">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ progresso_geral }}%" 
+                                         aria-valuenow="{{ progresso_geral }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ progresso_geral }}% Concluído
+                                    </div>
+                                </div>
+                                <small class="text-light mt-2 d-block">
+                                    {{ tutoriais_concluidos }} de {{ total_tutoriais }} tutoriais concluídos
+                                </small>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{% url 'info:tutoriais' %}" class="btn btn-light btn-lg">
+                            <i class="fas fa-play me-2"></i>Começar Tutoriais
+                        </a>
+                        <a href="{% url 'info:guia_completo' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-book me-2"></i>Guia Completo
+                        </a>
+                        <a href="{% url 'info:demonstracao' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-desktop me-2"></i>Demonstração
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categorias de Tutoriais -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-folder-open text-primary me-2"></i>
+                Categorias de Tutoriais
+            </h2>
+        </div>
+        
+        {% for categoria in categorias %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-0 tutorial-card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="{{ categoria.icone }} fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">{{ categoria.nome }}</h5>
+                    <p class="card-text text-muted">{{ categoria.descricao }}</p>
+                    <a href="{% url 'info:tutoriais' %}?categoria={{ categoria.id }}" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right me-2"></i>Ver Tutoriais
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Tutoriais Populares -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-star text-warning me-2"></i>
+                    Tutoriais Populares
+                </h2>
+                <a href="{% url 'info:tutoriais' %}" class="btn btn-outline-primary">
+                    Ver Todos
+                </a>
+            </div>
+        </div>
+        
+        {% for tutorial in tutoriais_populares %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-0 tutorial-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-{{ tutorial.tipo|default:'primary' }} tutorial-badge">
+                            {{ tutorial.get_tipo_display }}
+                        </span>
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>{{ tutorial.tempo_estimado }}min
+                        </small>
+                    </div>
+                    
+                    <h5 class="card-title">{{ tutorial.titulo }}</h5>
+                    <p class="card-text text-muted">{{ tutorial.descricao|truncatewords:15 }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-folder me-1"></i>{{ tutorial.categoria.nome }}
+                        </small>
+                        
+                        {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+                            <span class="text-success">
+                                <i class="fas fa-check-circle me-1"></i>Concluído
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'info:tutorial_detail' tutorial.pk %}" 
+                           class="btn btn-primary w-100">
+                            <i class="fas fa-play me-2"></i>Iniciar Tutorial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Dicas Rápidas -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-lightbulb text-warning me-2"></i>
+                Dicas Rápidas
+            </h2>
+        </div>
+        
+        {% for dica in dicas %}
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card h-100 border-{{ dica.cor }} shadow-sm">
+                <div class="card-body text-center">
+                    <i class="{{ dica.icone }} fa-2x text-{{ dica.cor }} mb-3"></i>
+                    <h6 class="card-title">{{ dica.titulo }}</h6>
+                    <p class="card-text small">{{ dica.conteudo|truncatewords:20 }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Links Úteis -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'info:faq' %}" class="text-decoration-none">
+                                <i class="fas fa-question-circle fa-2x text-info mb-2 d-block"></i>
+                                <h6>FAQ</h6>
+                                <small class="text-muted">Perguntas Frequentes</small>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'info:guia_completo' %}" class="text-decoration-none">
+                                <i class="fas fa-book fa-2x text-success mb-2 d-block"></i>
+                                <h6>Guia Completo</h6>
+                                <small class="text-muted">Documentação Completa</small>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'info:demonstracao' %}" class="text-decoration-none">
+                                <i class="fas fa-desktop fa-2x text-warning mb-2 d-block"></i>
+                                <h6>Demonstração</h6>
+                                <small class="text-muted">Demo Interativa</small>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'agendamentos:dashboard' %}" class="text-decoration-none">
+                                <i class="fas fa-tachometer-alt fa-2x text-primary mb-2 d-block"></i>
+                                <h6>Dashboard</h6>
+                                <small class="text-muted">Voltar ao Sistema</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .tutorial-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .tutorial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    }
+    
+    .tutorial-badge {
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}

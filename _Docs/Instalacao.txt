@@ -1,0 +1,154 @@
+🚀 Guia Rápido de Instalação - Sistema de Agendamentos
+📋 Pré-requisitos
+Python 3.8+ instalado
+Git instalado
+Terminal/Prompt de comando
+
+##############################################
+🪟 WINDOWS                                  ##
+##############################################
+
+1. Clonar o Repositório
+git clone <url-do-repositorio>
+cd sistema-de-agendamento
+
+
+2. Criar Ambiente Virtual
+python -m venv venv
+
+
+3. Ativar Ambiente Virtual
+venv\Scripts\activate
+
+
+4. Instalar Dependências
+pip install -r requirements.txt
+
+
+5. Configurar Banco de Dados
+python manage.py makemigrations
+python manage.py migrate
+
+
+6. Criar Superusuário
+python manage.py createsuperuser
+Digite: nome de usuário, email (opcional), senha
+
+
+7. Popular Dados Iniciais
+python manage.py popular_info
+
+
+8. Executar Sistema
+python manage.py runserver
+
+
+9. Acessar no Navegador
+Sistema: 
+127.0.0.1
+Admin: 
+127.0.0.1
+
+###############################################
+🐧 LINUX/MAC                                 ##
+###############################################
+
+1. Clonar o Repositório
+git clone <url-do-repositorio>
+cd sistema-de-agendamento
+
+
+2. Criar Ambiente Virtual
+python3 -m venv venv
+
+
+3. Ativar Ambiente Virtual
+source venv/bin/activate
+
+
+4. Instalar Dependências
+pip install -r requirements.txt
+
+
+5. Configurar Banco de Dados
+python manage.py makemigrations
+python manage.py migrate
+
+
+6. Criar Superusuário
+python manage.py createsuperuser
+Digite: nome de usuário, email (opcional), senha
+
+
+7. Popular Dados Iniciais
+python manage.py popular_info
+
+
+8. Executar Sistema
+python manage.py runserver
+
+
+9. Acessar no Navegador
+Sistema: 
+127.0.0.1
+Admin: 
+127.0.0.1
+
+
+🔄 Comandos para Próximas Execuções
+Windows:
+cd sistema-de-agendamento
+venv\Scripts\activate
+python manage.py runserver
+Linux/Mac:
+bash
+Copiar
+
+cd sistema-de-agendamento
+source venv/bin/activate
+python manage.py runserver
+⚠️ Problemas Comuns
+❌ Erro: "python não é reconhecido"
+Windows: Use py ao invés de python
+
+cmd
+Copiar
+
+py -m venv venv
+py manage.py runserver
+❌ Erro: "Permission denied"
+Linux/Mac: Use python3 ao invés de python
+
+bash
+Copiar
+
+python3 -m venv venv
+python3 manage.py runserver
+❌ Erro: "No module named django"
+Solução: Certifique-se de que o ambiente virtual está ativado
+
+bash
+Copiar
+
+# Verificar se está ativado (deve aparecer (venv) no prompt)
+# Se não estiver, ativar novamente:
+
+# Windows:
+venv\Scripts\activate
+
+# Linux/Mac:
+source venv/bin/activate
+❌ Erro: "Port already in use"
+Solução: Usar porta diferente
+
+bash
+Copiar
+
+python manage.py runserver 8001
+🎯 Primeiro Acesso
+Fazer Login com o superusuário criado
+Ir para Dashboard
+Criar primeiro serviço: Ações → Novo Serviço
+Criar primeiro cliente: Ações → Novo Cliente
+Criar primeiro agendamento: Novo Agendamento
+Explorar Central de Ajuda: Menu → Ajuda

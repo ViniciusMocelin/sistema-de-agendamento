@@ -6,13 +6,15 @@ from django.views.generic import (
     TemplateView, ListView, CreateView, UpdateView, 
     DeleteView, DetailView
 )
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Sum
 from django.utils import timezone
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
+import json
 from .models import Cliente, TipoServico, Agendamento, StatusAgendamento
 from .forms import ClienteForm, TipoServicoForm, AgendamentoForm, AgendamentoStatusForm
+from django.db.models.functions import TruncMonth
 
 # ========================================
 # VIEWS PRINCIPAIS
@@ -24,70 +26,44 @@ class HomeView(TemplateView):
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
-    """View do dashboard (apenas usuários logados)"""
+    """Dashboard principal com gráficos e KPIs"""
     template_name = 'agendamentos/dashboard.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        
+        # Data atual
         hoje = timezone.now().date()
-
-        context['today'] = hoje.strftime('%Y-%m-%d')
-        
-        # Estatísticas gerais
-        context['total_clientes'] = Cliente.objects.filter(criado_por=user, ativo=True).count()
-        context['total_servicos'] = TipoServico.objects.filter(criado_por=user, ativo=True).count()
-        
-        # Agendamentos de hoje
-        agendamentos_hoje = Agendamento.objects.filter(
-            criado_por=user,
-            data_agendamento=hoje
-        ).exclude(status='cancelado')
-        context['agendamentos_hoje'] = agendamentos_hoje.count()
-        
-        # Agendamentos desta semana
         inicio_semana = hoje - timedelta(days=hoje.weekday())
         fim_semana = inicio_semana + timedelta(days=6)
-        context['agendamentos_semana'] = Agendamento.objects.filter(
-            criado_por=user,
+        inicio_mes = hoje.replace(day=1)
+        
+        # Queryset base
+        agendamentos = Agendamento.objects.filter(criado_por=user)
+        
+        # Estatísticas básicas
+        context['agendamentos_hoje'] = agendamentos.filter(data_agendamento=hoje).count()
+        context['agendamentos_semana'] = agendamentos.filter(
             data_agendamento__range=[inicio_semana, fim_semana]
-        ).exclude(status='cancelado').count()
-        
-        # Agendamentos pendentes de confirmação
-        context['agendamentos_pendentes'] = Agendamento.objects.filter(
-            criado_por=user,
-            status='agendado',
-            data_agendamento__gte=hoje
         ).count()
+        context['total_clientes'] = Cliente.objects.filter(criado_por=user).count()
+        context['agendamentos_pendentes'] = agendamentos.filter(status='agendado').count()
         
-        # Próximos agendamentos (próximos 7 dias)
-        proximos_agendamentos = Agendamento.objects.filter(
-            criado_por=user,
-            data_agendamento__range=[hoje, hoje + timedelta(days=7)]
-        ).exclude(status__in=['cancelado', 'concluido']).order_by('data_agendamento', 'hora_inicio')[:5]
-        context['proximos_agendamentos'] = proximos_agendamentos
+        # Próximos agendamentos
+        context['proximos_agendamentos'] = agendamentos.filter(
+            data_agendamento__gte=hoje
+        ).order_by('data_agendamento', 'hora_inicio')[:5]
         
         # Estatísticas do mês
-        inicio_mes = hoje.replace(day=1)
-        context['agendamentos_mes_realizados'] = Agendamento.objects.filter(
-            criado_por=user,
-            data_agendamento__gte=inicio_mes,
-            status='concluido'
-        ).count()
-        
-        context['agendamentos_mes_cancelados'] = Agendamento.objects.filter(
-            criado_por=user,
-            data_agendamento__gte=inicio_mes,
+        agendamentos_mes = agendamentos.filter(data_agendamento__gte=inicio_mes)
+        context['agendamentos_mes_realizados'] = agendamentos_mes.filter(status='concluido').count()
+        context['agendamentos_mes_cancelados'] = agendamentos_mes.filter(
             status__in=['cancelado', 'nao_compareceu']
         ).count()
         
         # Taxa de comparecimento
-        total_mes = Agendamento.objects.filter(
-            criado_por=user,
-            data_agendamento__gte=inicio_mes,
-            data_agendamento__lt=hoje
-        ).count()
-        
+        total_mes = agendamentos_mes.count()
         if total_mes > 0:
             context['taxa_comparecimento'] = round(
                 (context['agendamentos_mes_realizados'] / total_mes) * 100, 1
@@ -95,8 +71,237 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             context['taxa_comparecimento'] = 0
         
+        # Dados para gráfico de agendamentos por dia (últimos 30 dias)
+        context['grafico_agendamentos_dados'] = self.get_agendamentos_por_dia(user)
+        
+        # Dados para outros contextos
+        context['today'] = hoje
+        
         return context
+    
+    def get_agendamentos_por_dia(self, user):
+        """Gera dados para gráfico de agendamentos por dia"""
+        hoje = timezone.now().date()
+        inicio_periodo = hoje - timedelta(days=29)  # Últimos 30 dias
+        
+        # Buscar agendamentos do período
+        agendamentos = Agendamento.objects.filter(
+            criado_por=user,
+            data_agendamento__range=[inicio_periodo, hoje]
+        ).values('data_agendamento').annotate(
+            total=Count('id')
+        ).order_by('data_agendamento')
+        
+        # Criar lista de todos os dias do período
+        dados = {}
+        data_atual = inicio_periodo
+        while data_atual <= hoje:
+            dados[data_atual.strftime('%Y-%m-%d')] = 0
+            data_atual += timedelta(days=1)
+        
+        # Preencher com dados reais
+        for item in agendamentos:
+            data_str = item['data_agendamento'].strftime('%Y-%m-%d')
+            dados[data_str] = item['total']
+        
+        # Preparar dados para o gráfico
+        categorias = []
+        valores = []
+        
+        for data_str, total in dados.items():
+            data_obj = datetime.strptime(data_str, '%Y-%m-%d').date()
+            categorias.append(data_obj.strftime('%d/%m'))
+            valores.append(total)
+        
+        return {
+            'categorias': json.dumps(categorias),
+            'valores': json.dumps(valores)
+        }
 
+
+class RelatoriosView(LoginRequiredMixin, TemplateView):
+    """View para relatórios avançados com gráficos"""
+    template_name = 'agendamentos/relatorios.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Período padrão (últimos 3 meses)
+        hoje = timezone.now().date()
+        inicio_periodo = hoje - timedelta(days=90)
+        
+        # Filtros da URL
+        data_inicio = self.request.GET.get('data_inicio')
+        data_fim = self.request.GET.get('data_fim')
+        
+        if data_inicio:
+            inicio_periodo = datetime.strptime(data_inicio, '%Y-%m-%d').date()
+        if data_fim:
+            hoje = datetime.strptime(data_fim, '%Y-%m-%d').date()
+        
+        context['data_inicio'] = inicio_periodo
+        context['data_fim'] = hoje
+        
+        # Queryset base
+        agendamentos = Agendamento.objects.filter(
+            criado_por=user,
+            data_agendamento__range=[inicio_periodo, hoje],
+            status='concluido'  # Apenas agendamentos concluídos para relatórios
+        )
+        
+        # Gráfico de serviços mais realizados
+        context['servicos_dados'] = self.get_servicos_mais_realizados(agendamentos)
+        
+        # Gráfico de clientes mais frequentes
+        context['clientes_dados'] = self.get_clientes_mais_frequentes(agendamentos)
+        
+        # Gráfico de faturamento por dia
+        context['faturamento_dados'] = self.get_faturamento_por_dia(agendamentos, inicio_periodo, hoje)
+        
+        # KPIs financeiros
+        context['kpis_financeiros'] = self.get_kpis_financeiros(agendamentos, inicio_periodo, hoje)
+        
+        return context
+    
+    def get_servicos_mais_realizados(self, agendamentos):
+        """Dados para gráfico de pizza dos serviços mais realizados"""
+        servicos = agendamentos.values('servico__nome').annotate(
+            total=Count('id')
+        ).order_by('-total')[:10]
+        
+        dados = []
+        for item in servicos:
+            dados.append({
+                'name': item['servico__nome'],
+                'data': item['total']
+            })
+        
+        return json.dumps(dados)
+    
+    def get_clientes_mais_frequentes(self, agendamentos):
+        """Dados para gráfico de clientes mais frequentes"""
+        clientes = agendamentos.values('cliente__nome').annotate(
+            total=Count('id')
+        ).order_by('-total')[:10]
+        
+        categorias = []
+        valores = []
+        
+        for item in clientes:
+            categorias.append(item['cliente__nome'])
+            valores.append(item['total'])
+        
+        return {
+            'categorias': json.dumps(categorias),
+            'valores': json.dumps(valores)
+        }
+    
+    def get_faturamento_por_dia(self, agendamentos, inicio, fim):
+        """Dados para gráfico de faturamento por dia"""
+        # Agrupar por data e somar valores
+        faturamento = agendamentos.values('data_agendamento').annotate(
+            total=Sum('valor_cobrado')
+        ).order_by('data_agendamento')
+        
+        # Criar dicionário com todas as datas
+        dados = {}
+        data_atual = inicio
+        while data_atual <= fim:
+            dados[data_atual.strftime('%Y-%m-%d')] = 0
+            data_atual += timedelta(days=1)
+        
+        # Preencher com dados reais
+        for item in faturamento:
+            if item['total']:
+                data_str = item['data_agendamento'].strftime('%Y-%m-%d')
+                dados[data_str] = float(item['total'])
+            else:
+                # Se valor_cobrado for None, usar preço do serviço
+                agendamento_item = agendamentos.filter(data_agendamento=item['data_agendamento']).first()
+                if agendamento_item:
+                    data_str = item['data_agendamento'].strftime('%Y-%m-%d')
+                    dados[data_str] = float(agendamento_item.servico.preco)
+        
+        categorias = []
+        valores = []
+        
+        for data_str, valor in dados.items():
+            data_obj = datetime.strptime(data_str, '%Y-%m-%d').date()
+            categorias.append(data_obj.strftime('%d/%m'))
+            valores.append(valor)
+        
+        return {
+            'categorias': json.dumps(categorias),
+            'valores': json.dumps(valores)
+        }
+    
+    def get_kpis_financeiros(self, agendamentos, inicio, fim):
+        """KPIs financeiros do período - CORRIGIDO para SQLite"""
+        # Faturamento total
+        total_valor_cobrado = agendamentos.filter(
+            valor_cobrado__isnull=False
+        ).aggregate(total=Sum('valor_cobrado'))['total'] or 0
+        
+        # Para agendamentos sem valor_cobrado, usar preço do serviço
+        agendamentos_sem_valor = agendamentos.filter(valor_cobrado__isnull=True)
+        total_preco_servico = 0
+        for agendamento in agendamentos_sem_valor:
+            total_preco_servico += float(agendamento.servico.preco)
+        
+        faturamento_total = float(total_valor_cobrado) + total_preco_servico
+        
+        # Ticket médio
+        total_agendamentos = agendamentos.count()
+        ticket_medio = faturamento_total / total_agendamentos if total_agendamentos > 0 else 0
+        
+        # Faturamento por mês usando TruncMonth (compatível com SQLite)
+        meses = agendamentos.annotate(
+            mes=TruncMonth('data_agendamento')
+        ).values('mes').annotate(
+            total_valor=Sum('valor_cobrado'),
+            count_agendamentos=Count('id')
+        ).order_by('mes')
+        
+        faturamento_mensal = []
+        for item in meses:
+            mes_obj = item['mes']
+            valor_cobrado = float(item['total_valor'] or 0)
+            
+            # Calcular valor dos serviços sem valor_cobrado neste mês
+            agendamentos_mes_sem_valor = agendamentos.filter(
+                data_agendamento__year=mes_obj.year,
+                data_agendamento__month=mes_obj.month,
+                valor_cobrado__isnull=True
+            )
+            
+            valor_servicos = 0
+            for agendamento in agendamentos_mes_sem_valor:
+                valor_servicos += float(agendamento.servico.preco)
+            
+            valor_total_mes = valor_cobrado + valor_servicos
+            
+            faturamento_mensal.append({
+                'mes': mes_obj.strftime('%m/%Y'),
+                'valor': valor_total_mes
+            })
+        
+        # Crescimento mensal
+        crescimento = 0
+        if len(faturamento_mensal) >= 2:
+            ultimo = faturamento_mensal[-1]['valor']
+            penultimo = faturamento_mensal[-2]['valor']
+            if penultimo > 0:
+                crescimento = ((ultimo - penultimo) / penultimo) * 100
+        
+        return {
+            'faturamento_total': faturamento_total,
+            'ticket_medio': ticket_medio,
+            'total_agendamentos': total_agendamentos,
+            'faturamento_mensal': faturamento_mensal,
+            'crescimento_mensal': round(crescimento, 1),
+            'dias_periodo': (fim - inicio).days + 1
+        }
 
 # ========================================
 # VIEWS DE CLIENTES
