@@ -28,6 +28,9 @@ urlpatterns = [
     path('agendamentos/<int:pk>/editar/', views.AgendamentoUpdateView.as_view(), name='agendamento_update'),
     path('agendamentos/<int:pk>/deletar/', views.AgendamentoDeleteView.as_view(), name='agendamento_delete'),
     path('agendamentos/<int:pk>/status/', views.AgendamentoStatusUpdateView.as_view(), name='agendamento_status'),
+
+    # Relatorios
+    path('relatorios/', views.RelatoriosView.as_view(), name='relatorios'),
     
     
     # Configurações

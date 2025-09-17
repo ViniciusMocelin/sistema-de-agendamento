@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tutorial.titulo }} - Tutorial{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'info:home' %}">Central de Ajuda</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'info:tutoriais' %}">Tutoriais</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'info:tutoriais' %}?categoria={{ tutorial.categoria.id }}">
+                                    {{ tutorial.categoria.nome }}
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">{{ tutorial.titulo }}</li>
+                        </ol>
+                    </nav>
+                    
+                    <h1 class="text-primary mb-2">{{ tutorial.titulo }}</h1>
+                    <p class="text-muted mb-3">{{ tutorial.descricao }}</p>
+                    
+                    <div class="d-flex gap-3 flex-wrap">
+                        <span class="badge bg-{% if tutorial.tipo == 'basico' %}success{% elif tutorial.tipo == 'intermediario' %}warning{% else %}danger{% endif %} fs-6">
+                            {{ tutorial.get_tipo_display }}
+                        </span>
+                        <span class="badge bg-secondary fs-6">
+                            <i class="fas fa-clock me-1"></i>{{ tutorial.tempo_estimado }} minutos
+                        </span>
+                        <span class="badge bg-info fs-6">
+                            <i class="fas fa-folder me-1"></i>{{ tutorial.categoria.nome }}
+                        </span>
+                        {% if user.is_authenticated and progresso.concluido %}
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle me-1"></i>Concluído
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    {% if user.is_authenticated %}
+                        {% if not progresso.concluido %}
+                            <button class="btn btn-success mb-2" onclick="marcarConcluido({{ tutorial.id }})">
+                                <i class="fas fa-check me-2"></i>Marcar como Concluído
+                            </button>
+                        {% else %}
+                            <button class="btn btn-outline-success mb-2" disabled>
+                                <i class="fas fa-check-circle me-2"></i>Concluído em {{ progresso.data_conclusao|date:"d/m/Y" }}
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <div class="btn-group">
+                        {% if tutorial_anterior %}
+                            <a href="{% url 'info:tutorial_detail' tutorial_anterior.pk %}" 
+                               class="btn btn-outline-primary" title="Tutorial Anterior">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'info:tutoriais' %}?categoria={{ tutorial.categoria.id }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>Lista
+                        </a>
+                        
+                        {% if proximo_tutorial %}
+                            <a href="{% url 'info:tutorial_detail' proximo_tutorial.pk %}" 
+                               class="btn btn-outline-primary" title="Próximo Tutorial">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo do Tutorial -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="tutorial-content">
+                        {{ tutorial.conteudo|safe }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navegação -->
+            <div class="card mt-4 bg-light border-0">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if tutorial_anterior %}
+                                <a href="{% url 'info:tutorial_detail' tutorial_anterior.pk %}" 
+                                   class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    <div class="text-start">
+                                        <small class="d-block">Anterior</small>
+                                        <strong>{{ tutorial_anterior.titulo|truncatechars:40 }}</strong>
+                                    </div>
+                                </a>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {% if proximo_tutorial %}
+                                <a href="{% url 'info:tutorial_detail' proximo_tutorial.pk %}" 
+                                   class="btn btn-primary w-100">
+                                    <div class="text-start">
+                                        <small class="d-block">Próximo</small>
+                                        <strong>{{ proximo_tutorial.titulo|truncatechars:40 }}</strong>
+                                    </div>
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            {% else %}
+                                <div class="text-center">
+                                    <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                                    <h6>Parabéns!</h6>
+                                    <small class="text-muted">Você concluiu esta categoria</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Progresso da Categoria -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Progresso - {{ tutorial.categoria.nome }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                        {% with tutoriais_categoria=tutorial.categoria.tutorial_set.all %}
+                            {% with concluidos_categoria=tutoriais_categoria|length %}
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                                        75%
+                                    </div>
+                                </div>
+                                <small class="text-muted">3 de 4 tutoriais concluídos</small>
+                            {% endwith %}
+                        {% endwith %}
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Faça login para acompanhar seu progresso
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Ações Rápidas -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-tachometer-alt me-2"></i>Ir para Dashboard
+                        </a>
+                        <a href="{% url 'info:faq' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-question-circle me-2"></i>Ver FAQ
+                        </a>
+                        <a href="{% url 'info:demonstracao' %}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-desktop me-2"></i>Demonstração
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tutoriais Relacionados -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-link me-2"></i>Tutoriais Relacionados
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for relacionado in tutorial.categoria.tutorial_set.all|slice:":3" %}
+                        {% if relacionado.id != tutorial.id %}
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <span class="badge bg-{% if relacionado.tipo == 'basico' %}success{% elif relacionado.tipo == 'intermediario' %}warning{% else %}danger{% endif %}">
+                                        {{ relacionado.get_tipo_display|slice:":1" }}
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">
+                                        <a href="{% url 'info:tutorial_detail' relacionado.pk %}" 
+                                           class="text-decoration-none">
+                                            {{ relacionado.titulo|truncatechars:40 }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>{{ relacionado.tempo_estimado }}min
+                                    </small>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tutorial-content {
+        line-height: 1.8;
+        font-size: 1.1rem;
+    }
+    
+    .tutorial-content h1, .tutorial-content h2, .tutorial-content h3 {
+        color: #667eea;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .tutorial-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin: 1rem 0;
+    }
+    
+    .tutorial-content pre {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .tutorial-content blockquote {
+        border-left: 4px solid #28a745;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+    }
+</style>
+
+<script>
+function marcarConcluido(tutorialId) {
+    fetch(`/info/ajax/tutorial/${tutorialId}/concluir/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erro ao marcar tutorial como concluído');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao marcar tutorial como concluído');
+    });
+}
+</script>
+{% endblock %}

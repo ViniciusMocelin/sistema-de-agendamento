@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Tutoriais - Central de Ajuda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-graduation-cap me-2"></i>Tutoriais
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Aprenda passo a passo como usar o sistema
+                    </p>
+                </div>
+                <a href="{% url 'info:home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="categoria" class="form-label">Categoria</label>
+                            <select class="form-select" id="categoria" name="categoria">
+                                <option value="">Todas as categorias</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" 
+                                        {% if categoria.id|stringformat:"s" == categoria_selecionada %}selected{% endif %}>
+                                    {{ categoria.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="tipo" class="form-label">Nível</label>
+                            <select class="form-select" id="tipo" name="tipo">
+                                <option value="">Todos os níveis</option>
+                                <option value="basico" {% if tipo_selecionado == 'basico' %}selected{% endif %}>
+                                    Básico
+                                </option>
+                                <option value="intermediario" {% if tipo_selecionado == 'intermediario' %}selected{% endif %}>
+                                    Intermediário
+                                </option>
+                                <option value="avancado" {% if tipo_selecionado == 'avancado' %}selected{% endif %}>
+                                    Avançado
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-filter me-2"></i>Filtrar
+                            </button>
+                            <a href="{% url 'info:tutoriais' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Tutoriais -->
+    <div class="row">
+        {% for tutorial in tutoriais %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-0 tutorial-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-{% if tutorial.tipo == 'basico' %}success{% elif tutorial.tipo == 'intermediario' %}warning{% else %}danger{% endif %}">
+                            {{ tutorial.get_tipo_display }}
+                        </span>
+                        <div class="text-end">
+                            <small class="text-muted d-block">
+                                <i class="fas fa-clock me-1"></i>{{ tutorial.tempo_estimado }}min
+                            </small>
+                            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>Concluído
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <h5 class="card-title">{{ tutorial.titulo }}</h5>
+                    <p class="card-text text-muted">{{ tutorial.descricao|truncatewords:20 }}</p>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-folder me-1"></i>{{ tutorial.categoria.nome }}
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'info:tutorial_detail' tutorial.pk %}" 
+                           class="btn {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}btn-outline-success{% else %}btn-primary{% endif %}">
+                            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+                                <i class="fas fa-eye me-2"></i>Revisar
+                            {% else %}
+                                <i class="fas fa-play me-2"></i>Iniciar
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhum tutorial encontrado</h5>
+                <p class="text-muted">Tente ajustar os filtros ou volte mais tarde.</p>
+                <a href="{% url 'info:tutoriais' %}" class="btn btn-primary">
+                    <i class="fas fa-refresh me-2"></i>Ver Todos os Tutoriais
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if is_paginated %}
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="Paginação dos tutoriais">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .tutorial-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .tutorial-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+    }
+</style>
+{% endblock %}
