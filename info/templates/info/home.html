@@ -2,217 +2,923 @@
 
 {% block title %}Central de Ajuda - Sistema de Agendamentos{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* Header personalizado */
+  .help-header {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .help-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .help-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Hero section */
+  .hero-card {
+    background: var(--gradient-bg);
+    color: white !important;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 50px;
+  }
+
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+  }
+
+  .hero-card * {
+    color: white !important;
+  }
+
+  .hero-icon {
+    font-size: 5rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+    line-height: 1.5;
+  }
+
+  /* Progress section */
+  .progress-section {
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+  }
+
+  .progress-bar-custom {
+    height: 25px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.2);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: width 1s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  .progress-text {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  /* Hero buttons */
+  .hero-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-btn {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white !important;
+    font-weight: 600;
+    padding: 15px 25px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    color: white !important;
+    text-decoration: none;
+  }
+
+  .hero-btn.primary {
+    background: rgba(255,255,255,0.9);
+    color: var(--primary-color) !important;
+    border-color: rgba(255,255,255,0.9);
+  }
+
+  .hero-btn.primary:hover {
+    background: white;
+    color: var(--primary-color) !important;
+    border-color: white;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin-bottom: 30px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .section-title i {
+    color: var(--primary-color);
+  }
+
+  /* Category cards */
+  .category-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    background: var(--surface-color);
+  }
+
+  .category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-bg);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .category-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  }
+
+  .category-card .card-body {
+    padding: 30px 25px;
+    text-align: center;
+  }
+
+  .category-icon {
+    font-size: 3.5rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .category-card:hover .category-icon {
+    transform: scale(1.1);
+    color: var(--info-color);
+  }
+
+  .category-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin-bottom: 15px;
+  }
+
+  .category-description {
+    color: var(--text-muted-color) !important;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .category-btn {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color) !important;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .category-btn:hover {
+    background: var(--primary-color);
+    color: white !important;
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  /* Tutorial cards */
+  .tutorial-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+    background: var(--surface-color);
+  }
+
+  .tutorial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  }
+
+  .tutorial-card .card-body {
+    padding: 25px;
+  }
+
+  .tutorial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 10px;
+  }
+
+  .tutorial-badge {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tutorial-badge.basico {
+    background: var(--success-color) !important;
+    color: white !important;
+  }
+
+  .tutorial-badge.intermediario {
+    background: var(--warning-color) !important;
+    color: white !important;
+  }
+
+  .tutorial-badge.avancado {
+    background: var(--danger-color) !important;
+    color: white !important;
+  }
+
+  .tutorial-time {
+    color: var(--text-muted-color) !important;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tutorial-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .tutorial-description {
+    color: var(--text-muted-color) !important;
+    line-height: 1.5;
+    margin-bottom: 15px;
+  }
+
+  .tutorial-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+  }
+
+  .tutorial-category {
+    color: var(--text-muted-color) !important;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tutorial-status {
+    color: var(--success-color) !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tutorial-btn {
+    background: var(--gradient-bg);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .tutorial-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    color: white !important;
+    text-decoration: none;
+  }
+
+  /* Tips cards */
+  .tip-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+    background: var(--surface-color);
+  }
+
+  .tip-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  .tip-card .card-body {
+    padding: 25px;
+    text-align: center;
+  }
+
+  .tip-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .tip-card:hover .tip-icon {
+    transform: scale(1.1);
+  }
+
+  .tip-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 10px;
+  }
+
+  .tip-content {
+    color: var(--text-muted-color) !important;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Quick links */
+  .quick-links-card {
+    background: var(--light-color) !important;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+  }
+
+  .quick-links-card .card-body {
+    padding: 30px;
+  }
+
+  .quick-link {
+    text-decoration: none;
+    color: var(--text-color) !important;
+    transition: all 0.3s ease;
+    display: block;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .quick-link:hover {
+    background: var(--surface-color);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: var(--primary-color) !important;
+  }
+
+  .quick-link i {
+    transition: all 0.3s ease;
+  }
+
+  .quick-link:hover i {
+    transform: scale(1.1);
+  }
+
+  .quick-link h6 {
+    margin: 10px 0 5px 0;
+    font-weight: 600;
+  }
+
+  .quick-link small {
+    color: var(--text-muted-color) !important;
+  }
+
+  .quick-link:hover small {
+    color: var(--text-color) !important;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+  }
+
+  .section-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-header .btn {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color) !important;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .section-header .btn:hover {
+    background: var(--primary-color);
+    color: white !important;
+    text-decoration: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+
+    .hero-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-btn {
+      width: 100%;
+      max-width: 250px;
+      justify-content: center;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .category-card .card-body {
+      padding: 25px 20px;
+    }
+
+    .tutorial-card .card-body {
+      padding: 20px;
+    }
+
+    .quick-links-card .card-body {
+      padding: 25px 20px;
+    }
+  }
+
+  /* Animations */
+  .category-card, .tutorial-card, .tip-card {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Loading states */
+  .loading-skeleton {
+    background: linear-gradient(90deg, var(--border-color) 25%, var(--light-color) 50%, var(--border-color) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <!-- Hero Section -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card bg-gradient-primary text-white border-0 shadow-lg">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-graduation-cap fa-4x mb-4"></i>
-                    <h1 class="display-4 fw-bold mb-3">Central de Ajuda</h1>
-                    <p class="lead mb-4">
-                        Aprenda a usar todas as funcionalidades do sistema de agendamentos
-                    </p>
-                    
-                    {% if user.is_authenticated %}
-                        <div class="row justify-content-center mb-4">
-                            <div class="col-md-8">
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar bg-success" role="progressbar" 
-                                         style="width: {{ progresso_geral }}%" 
-                                         aria-valuenow="{{ progresso_geral }}" 
-                                         aria-valuemin="0" aria-valuemax="100">
-                                        {{ progresso_geral }}% Concluído
-                                    </div>
-                                </div>
-                                <small class="text-light mt-2 d-block">
-                                    {{ tutoriais_concluidos }} de {{ total_tutoriais }} tutoriais concluídos
-                                </small>
-                            </div>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="d-flex gap-3 justify-content-center flex-wrap">
-                        <a href="{% url 'info:tutoriais' %}" class="btn btn-light btn-lg">
-                            <i class="fas fa-play me-2"></i>Começar Tutoriais
-                        </a>
-                        <a href="{% url 'info:guia_completo' %}" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-book me-2"></i>Guia Completo
-                        </a>
-                        <a href="{% url 'info:demonstracao' %}" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-desktop me-2"></i>Demonstração
-                        </a>
-                    </div>
-                </div>
+<!-- Hero Section -->
+<div class="card hero-card">
+  <div class="card-body text-center py-5">
+    <i class="fas fa-graduation-cap hero-icon"></i>
+    <h1 class="hero-title">Central de Ajuda</h1>
+    <p class="hero-subtitle">
+      Domine todas as funcionalidades do sistema de agendamentos com nossos tutoriais interativos,
+      <br>guias completos e demonstrações práticas
+    </p>
+    
+    {% if user.is_authenticated %}
+      <div class="progress-section">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="progress-bar-custom">
+              <div class="progress-fill" style="width: {{ progresso_geral|default:0 }}%">
+                {{ progresso_geral|default:0 }}% Concluído
+              </div>
             </div>
+            <div class="progress-text">
+              <i class="fas fa-trophy me-1"></i>
+              {{ tutoriais_concluidos|default:0 }} de {{ total_tutoriais|default:0 }} tutoriais concluídos
+            </div>
+          </div>
         </div>
+      </div>
+    {% endif %}
+    
+    <div class="hero-buttons">
+      <a href="{% url 'info:tutoriais' %}" class="hero-btn primary">
+        <i class="fas fa-play"></i>Começar Tutoriais
+      </a>
+      <a href="{% url 'info:guia_completo' %}" class="hero-btn">
+        <i class="fas fa-book"></i>Guia Completo
+      </a>
+      <a href="{% url 'info:demonstracao' %}" class="hero-btn">
+        <i class="fas fa-desktop"></i>Demonstração Interativa
+      </a>
     </div>
-
-    <!-- Categorias de Tutoriais -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h2 class="text-center mb-4">
-                <i class="fas fa-folder-open text-primary me-2"></i>
-                Categorias de Tutoriais
-            </h2>
-        </div>
-        
-        {% for categoria in categorias %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 shadow-sm border-0 tutorial-card">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="{{ categoria.icone }} fa-3x text-primary"></i>
-                    </div>
-                    <h5 class="card-title">{{ categoria.nome }}</h5>
-                    <p class="card-text text-muted">{{ categoria.descricao }}</p>
-                    <a href="{% url 'info:tutoriais' %}?categoria={{ categoria.id }}" 
-                       class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-right me-2"></i>Ver Tutoriais
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Tutoriais Populares -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>
-                    <i class="fas fa-star text-warning me-2"></i>
-                    Tutoriais Populares
-                </h2>
-                <a href="{% url 'info:tutoriais' %}" class="btn btn-outline-primary">
-                    Ver Todos
-                </a>
-            </div>
-        </div>
-        
-        {% for tutorial in tutoriais_populares %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 shadow-sm border-0 tutorial-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <span class="badge bg-{{ tutorial.tipo|default:'primary' }} tutorial-badge">
-                            {{ tutorial.get_tipo_display }}
-                        </span>
-                        <small class="text-muted">
-                            <i class="fas fa-clock me-1"></i>{{ tutorial.tempo_estimado }}min
-                        </small>
-                    </div>
-                    
-                    <h5 class="card-title">{{ tutorial.titulo }}</h5>
-                    <p class="card-text text-muted">{{ tutorial.descricao|truncatewords:15 }}</p>
-                    
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="fas fa-folder me-1"></i>{{ tutorial.categoria.nome }}
-                        </small>
-                        
-                        {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
-                            <span class="text-success">
-                                <i class="fas fa-check-circle me-1"></i>Concluído
-                            </span>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mt-3">
-                        <a href="{% url 'info:tutorial_detail' tutorial.pk %}" 
-                           class="btn btn-primary w-100">
-                            <i class="fas fa-play me-2"></i>Iniciar Tutorial
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Dicas Rápidas -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h2 class="text-center mb-4">
-                <i class="fas fa-lightbulb text-warning me-2"></i>
-                Dicas Rápidas
-            </h2>
-        </div>
-        
-        {% for dica in dicas %}
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card h-100 border-{{ dica.cor }} shadow-sm">
-                <div class="card-body text-center">
-                    <i class="{{ dica.icone }} fa-2x text-{{ dica.cor }} mb-3"></i>
-                    <h6 class="card-title">{{ dica.titulo }}</h6>
-                    <p class="card-text small">{{ dica.conteudo|truncatewords:20 }}</p>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Links Úteis -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card bg-light border-0">
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'info:faq' %}" class="text-decoration-none">
-                                <i class="fas fa-question-circle fa-2x text-info mb-2 d-block"></i>
-                                <h6>FAQ</h6>
-                                <small class="text-muted">Perguntas Frequentes</small>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'info:guia_completo' %}" class="text-decoration-none">
-                                <i class="fas fa-book fa-2x text-success mb-2 d-block"></i>
-                                <h6>Guia Completo</h6>
-                                <small class="text-muted">Documentação Completa</small>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'info:demonstracao' %}" class="text-decoration-none">
-                                <i class="fas fa-desktop fa-2x text-warning mb-2 d-block"></i>
-                                <h6>Demonstração</h6>
-                                <small class="text-muted">Demo Interativa</small>
-                            </a>
-                        </div>
-                        
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'agendamentos:dashboard' %}" class="text-decoration-none">
-                                <i class="fas fa-tachometer-alt fa-2x text-primary mb-2 d-block"></i>
-                                <h6>Dashboard</h6>
-                                <small class="text-muted">Voltar ao Sistema</small>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
 
-<style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+<!-- Categorias de Tutoriais -->
+<section class="mb-5">
+  <h2 class="section-title">
+    <i class="fas fa-folder-open"></i>
+    Categorias de Tutoriais
+  </h2>
+  
+  <div class="row g-4">
+    {% for categoria in categorias %}
+    <div class="col-lg-4 col-md-6">
+      <div class="card category-card">
+        <div class="card-body">
+          <i class="{{ categoria.icone|default:'fas fa-folder' }} category-icon"></i>
+          <h5 class="category-title">{{ categoria.nome }}</h5>
+          <p class="category-description">{{ categoria.descricao|default:"Tutoriais essenciais para esta categoria" }}</p>
+          <a href="{% url 'info:tutoriais' %}?categoria={{ categoria.id }}" 
+             class="category-btn">
+            <i class="fas fa-arrow-right"></i>Ver Tutoriais
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="text-center py-4">
+        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhuma categoria disponível</h5>
+        <p class="text-muted">As categorias de tutoriais serão adicionadas em breve.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Tutoriais Populares -->
+<section class="mb-5">
+  <div class="section-header">
+    <h2>
+      <i class="fas fa-star text-warning"></i>
+      Tutoriais Populares
+    </h2>
+    <a href="{% url 'info:tutoriais' %}" class="btn">
+      Ver Todos os Tutoriais
+    </a>
+  </div>
+  
+  <div class="row g-4">
+    {% for tutorial in tutoriais_populares %}
+    <div class="col-lg-4 col-md-6">
+      <div class="card tutorial-card">
+        <div class="card-body">
+          <div class="tutorial-header">
+            <span class="tutorial-badge {{ tutorial.tipo|default:'basico' }}">
+              {{ tutorial.get_tipo_display|default:'Básico' }}
+            </span>
+            <div class="tutorial-time">
+              <i class="fas fa-clock"></i>{{ tutorial.tempo_estimado|default:10 }}min
+            </div>
+          </div>
+          
+          <h5 class="tutorial-title">{{ tutorial.titulo }}</h5>
+          <p class="tutorial-description">{{ tutorial.descricao|truncatewords:15 }}</p>
+          
+          <div class="tutorial-footer">
+            <div class="tutorial-category">
+              <i class="fas fa-folder"></i>{{ tutorial.categoria.nome|default:'Geral' }}
+            </div>
+            
+            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+              <div class="tutorial-status">
+                <i class="fas fa-check-circle"></i>Concluído
+              </div>
+            {% endif %}
+          </div>
+          
+          <a href="{% url 'info:tutorial_detail' tutorial.pk %}" 
+             class="tutorial-btn">
+            <i class="fas fa-play"></i>
+            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+              Revisar Tutorial
+            {% else %}
+              Iniciar Tutorial
+            {% endif %}
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="text-center py-4">
+        <i class="fas fa-star fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhum tutorial disponível</h5>
+        <p class="text-muted">Os tutoriais populares serão exibidos aqui conforme forem criados.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Dicas Rápidas -->
+<section class="mb-5">
+  <h2 class="section-title">
+    <i class="fas fa-lightbulb text-warning"></i>
+    Dicas Rápidas
+  </h2>
+  
+  <div class="row g-4">
+    {% for dica in dicas %}
+    <div class="col-lg-3 col-md-6">
+      <div class="card tip-card">
+        <div class="card-body">
+          <i class="{{ dica.icone|default:'fas fa-lightbulb' }} tip-icon text-{{ dica.cor|default:'warning' }}"></i>
+          <h6 class="tip-title">{{ dica.titulo }}</h6>
+          <p class="tip-content">{{ dica.conteudo|truncatewords:20 }}</p>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <!-- Dicas padrão se não houver no banco -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card tip-card">
+        <div class="card-body">
+          <i class="fas fa-rocket tip-icon text-primary"></i>
+          <h6 class="tip-title">Comece pelo Básico</h6>
+          <p class="tip-content">Inicie pelos tutoriais básicos para entender os fundamentos do sistema.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card tip-card">
+        <div class="card-body">
+          <i class="fas fa-clock tip-icon text-success"></i>
+          <h6 class="tip-title">Pratique Regularmente</h6>
+          <p class="tip-content">Dedique alguns minutos por dia para praticar e fixar o aprendizado.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card tip-card">
+        <div class="card-body">
+          <i class="fas fa-question-circle tip-icon text-info"></i>
+          <h6 class="tip-title">Use o FAQ</h6>
+          <p class="tip-content">Consulte as perguntas frequentes para esclarecer dúvidas rapidamente.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card tip-card">
+        <div class="card-body">
+          <i class="fas fa-desktop tip-icon text-warning"></i>
+          <h6 class="tip-title">Veja a Demo</h6>
+          <p class="tip-content">Explore a demonstração interativa para ver o sistema em ação.</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Links Úteis -->
+<section>
+  <div class="card quick-links-card">
+    <div class="card-body">
+      <div class="row text-center g-4">
+        <div class="col-md-3">
+          <a href="{% url 'info:faq' %}" class="quick-link">
+            <i class="fas fa-question-circle fa-2x text-info d-block"></i>
+            <h6>Perguntas Frequentes</h6>
+            <small>Respostas para as dúvidas mais comuns</small>
+          </a>
+        </div>
+        
+        <div class="col-md-3">
+          <a href="{% url 'info:guia_completo' %}" class="quick-link">
+            <i class="fas fa-book fa-2x text-success d-block"></i>
+            <h6>Guia Completo</h6>
+            <small>Documentação detalhada do sistema</small>
+          </a>
+        </div>
+        
+        <div class="col-md-3">
+          <a href="{% url 'info:demonstracao' %}" class="quick-link">
+            <i class="fas fa-desktop fa-2x text-warning d-block"></i>
+            <h6>Demonstração</h6>
+            <small>Veja o sistema funcionando na prática</small>
+          </a>
+        </div>
+        
+        <div class="col-md-3">
+          <a href="{% url 'agendamentos:dashboard' %}" class="quick-link">
+            <i class="fas fa-tachometer-alt fa-2x text-primary d-block"></i>
+            <h6>Dashboard</h6>
+            <small>Voltar para o sistema principal</small>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação da barra de progresso
+    const progressFill = document.querySelector('.progress-fill');
+    if (progressFill) {
+        const targetWidth = progressFill.style.width;
+        progressFill.style.width = '0%';
+        setTimeout(() => {
+            progressFill.style.width = targetWidth;
+        }, 1000);
     }
     
-    .tutorial-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+    // Animação de entrada escalonada para cards
+    const cards = document.querySelectorAll('.category-card, .tutorial-card, .tip-card');
+    cards.forEach((card, index) => {
+        // Aplicar delay baseado no índice
+        card.style.animationDelay = `${index * 0.1}s`;
+        
+        // Hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
     
-    .tutorial-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-    }
+    // Smooth scroll para links internos
+    const internalLinks = document.querySelectorAll('a[href^="#"]');
+    internalLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
     
-    .tutorial-badge {
-        font-size: 0.75rem;
+    // Loading states para botões
+    const buttons = document.querySelectorAll('.tutorial-btn, .category-btn, .hero-btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.href && !this.href.includes('#')) {
+                const originalContent = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Carregando...';
+                this.style.pointerEvents = 'none';
+                
+                // Restaurar após um tempo (para demonstração)
+                setTimeout(() => {
+                    this.innerHTML = originalContent;
+                    this.style.pointerEvents = 'auto';
+                }, 2000);
+            }
+        });
+    });
+    
+    // Hero icon animation
+    const heroIcon = document.querySelector('.hero-icon');
+    if (heroIcon) {
+        setInterval(() => {
+            heroIcon.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                heroIcon.style.transform = 'scale(1)';
+            }, 200);
+        }, 3000);
     }
-</style>
+});
+</script>
 {% endblock %}

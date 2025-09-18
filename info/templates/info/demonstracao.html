@@ -1,324 +1,709 @@
-{% extends 'base.html' %} {% block title %}Demonstração Interativa - Sistema de
-Agendamentos{% endblock %} {% block content %}
-<div class="container mt-4">
-  <!-- Header -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h1 class="text-primary mb-1">
-            <i class="fas fa-desktop me-2"></i>Demonstração Interativa
-          </h1>
-          <p class="text-muted mb-0">
-            Explore o sistema através de uma demonstração prática e interativa
-          </p>
-        </div>
-        <a href="{% url 'info:home' %}" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left me-2"></i>Voltar
-        </a>
-      </div>
-    </div>
+{% extends 'base.html' %}
+
+{% block title %}Demonstração Interativa - Sistema de Agendamentos{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Header personalizado */
+  .demo-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .demo-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .demo-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Ações no Header */
+  .header-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 768px) {
+    .header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .demo-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Hero section */
+  .hero-card {
+    background: var(--gradient-bg);
+    color: white !important;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+  }
+
+  .hero-card * {
+    color: white !important;
+  }
+
+  .hero-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    opacity: 0.9;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .hero-btn {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white !important;
+    font-weight: 600;
+    padding: 15px 30px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    color: white !important;
+  }
+
+  /* Demo cards */
+  .demo-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .demo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-bg);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .demo-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .demo-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  }
+
+  .demo-card .card-header {
+    border: none;
+    padding: 20px 25px;
+    font-weight: 600;
+  }
+
+  .demo-card .card-body {
+    padding: 25px;
+  }
+
+  /* Demo previews */
+  .demo-preview {
+    background: var(--light-color) !important;
+    border: 2px dashed var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .demo-card:hover .demo-preview {
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05) !important;
+    border-style: solid;
+  }
+
+  /* KPI demos */
+  .demo-kpi {
+    text-align: center;
+    padding: 15px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .demo-kpi:hover {
+    transform: scale(1.05);
+  }
+
+  .demo-kpi h4 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+
+  .demo-kpi small {
+    color: var(--text-muted-color) !important;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Chart animations */
+  .chart-bar {
+    border-radius: 6px;
+    animation: chartGrow 3s ease-in-out infinite alternate;
+    background: var(--gradient-bg) !important;
+  }
+
+  @keyframes chartGrow {
+    0% { width: 60%; }
+    100% { width: 85%; }
+  }
+
+  .demo-chart {
+    margin-top: 15px;
+  }
+
+  /* Avatar demos */
+  .demo-avatar {
+    background: var(--gradient-bg) !important;
+    color: white !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  /* Agendamento items */
+  .demo-agendamento {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .demo-agendamento:hover {
+    border-color: var(--primary-color);
+    transform: translateX(5px);
+  }
+
+  /* Cliente items */
+  .demo-cliente {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .demo-cliente:hover {
+    border-color: var(--info-color);
+    transform: scale(1.02);
+  }
+
+  /* Video section */
+  .video-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+
+  .video-placeholder {
+    background: var(--light-color) !important;
+    border: 2px dashed var(--border-color);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .video-placeholder:hover {
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05) !important;
+  }
+
+  .video-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+  }
+
+  /* CTA section */
+  .cta-card {
+    background: var(--light-color) !important;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-btn {
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-decoration: none;
+  }
+
+  .cta-btn-primary {
+    background: var(--gradient-bg);
+    color: white !important;
+    border: none;
+  }
+
+  .cta-btn-outline {
+    background: transparent;
+    color: var(--primary-color) !important;
+    border: 2px solid var(--primary-color);
+  }
+
+  .cta-btn-outline:hover {
+    background: var(--primary-color);
+    color: white !important;
+  }
+
+  /* Modal styling */
+  .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface-color);
+    border-radius: 15px 15px 0 0;
+  }
+
+  .modal-body {
+    background: var(--surface-color);
+    padding: 30px;
+  }
+
+  .modal-footer {
+    border-top: 1px solid var(--border-color);
+    background: var(--surface-color);
+    border-radius: 0 0 15px 15px;
+  }
+
+  /* Demo screenshots */
+  .demo-screenshot {
+    background: var(--surface-color) !important;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .kpi-card {
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .kpi-card:hover {
+    transform: scale(1.05);
+  }
+
+  .kpi-card h6 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+
+  .cliente-item {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+  }
+
+  .cliente-item:hover {
+    border-color: var(--primary-color);
+    transform: translateX(5px);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero-card .card-body {
+      padding: 30px 20px;
+    }
+
+    .hero-icon {
+      font-size: 3.5rem;
+    }
+
+    .demo-card .card-body {
+      padding: 20px;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cta-btn {
+      width: 100%;
+      max-width: 250px;
+      justify-content: center;
+    }
+
+    .header-actions {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  /* Animations */
+  .demo-card {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Badge animations */
+  .badge {
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header da Demonstração -->
+<div class="demo-header">
+  <h1 class="demo-title">
+    <i class="fas fa-desktop"></i>
+    Demonstração Interativa
+  </h1>
+  <p class="demo-subtitle">
+    Explore o sistema através de uma demonstração prática e interativa
+  </p>
+  
+  <!-- Ações no Header -->
+  <div class="header-actions">
+    <a href="{% url 'info:home' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
   </div>
+</div>
 
-  <!-- Tour Interativo -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="card bg-gradient-primary text-white border-0 shadow-lg">
-        <div class="card-body text-center py-5">
-          <i class="fas fa-play-circle fa-4x mb-4"></i>
-          <h2 class="mb-3">Tour Guiado do Sistema</h2>
-          <p class="lead mb-4">
-            Faça um tour completo pelas principais funcionalidades do sistema
-          </p>
-          <button class="btn btn-light btn-lg" onclick="iniciarTour()">
-            <i class="fas fa-rocket me-2"></i>Iniciar Tour
-          </button>
-        </div>
-      </div>
-    </div>
+<!-- Hero Section - Tour Interativo -->
+<div class="card hero-card">
+  <div class="card-body text-center py-5">
+    <i class="fas fa-play-circle hero-icon"></i>
+    <h2 class="mb-3">Tour Guiado do Sistema</h2>
+    <p class="lead mb-4">
+      Faça um tour completo pelas principais funcionalidades do sistema
+      <br>e descubra como ele pode transformar seu negócio
+    </p>
+    <button class="hero-btn" onclick="iniciarTour()">
+      <i class="fas fa-rocket me-2"></i>Iniciar Tour Completo
+    </button>
   </div>
+</div>
 
-  <!-- Seções da Demonstração -->
-  <div class="row">
-    <!-- Dashboard Demo -->
-    <div class="col-lg-6 mb-4">
-      <div
-        class="card h-100 shadow-sm border-0 demo-card"
-        data-demo="dashboard"
-      >
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">
-            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-          </h5>
-        </div>
-        <div class="card-body">
-          <p class="card-text">
-            Visualize KPIs, gráficos e informações importantes do seu negócio em
-            tempo real.
-          </p>
+<!-- Seções da Demonstração -->
+<div class="row g-4 mb-5">
+  <!-- Dashboard Demo -->
+  <div class="col-lg-6">
+    <div class="card demo-card" data-demo="dashboard">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-tachometer-alt me-2"></i>Dashboard Inteligente
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text mb-3">
+          Visualize KPIs, gráficos e informações importantes do seu negócio em tempo real com nossa central de comando.
+        </p>
 
-          <!-- Mini Dashboard Demo -->
-          <div class="demo-preview bg-light p-3 rounded mb-3">
-            <div class="row text-center">
-              <div class="col-6">
-                <div class="demo-kpi">
-                  <h4 class="text-primary">15</h4>
-                  <small>Hoje</small>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="demo-kpi">
-                  <h4 class="text-success">89</h4>
-                  <small>Semana</small>
-                </div>
+        <!-- Mini Dashboard Demo -->
+        <div class="demo-preview">
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div class="demo-kpi">
+                <h4 class="text-primary">15</h4>
+                <small>Hoje</small>
               </div>
             </div>
-            <div class="demo-chart mt-3">
-              <div
-                class="chart-bar"
-                style="
-                  height: 20px;
-                  background: linear-gradient(90deg, #667eea 60%, #f8f9fa 60%);
-                "
-              ></div>
-              <small class="text-muted">Agendamentos por dia</small>
+            <div class="col-6">
+              <div class="demo-kpi">
+                <h4 class="text-success">89</h4>
+                <small>Semana</small>
+              </div>
             </div>
           </div>
-
-          <button
-            class="btn btn-primary w-100"
-            onclick="demonstrarFuncionalidade('dashboard')"
-          >
-            <i class="fas fa-eye me-2"></i>Ver Demonstração
-          </button>
+          <div class="demo-chart">
+            <div class="chart-bar" style="height: 20px;"></div>
+            <small class="text-muted mt-2 d-block">
+              <i class="fas fa-chart-line me-1"></i>Agendamentos por dia
+            </small>
+          </div>
         </div>
+
+        <button class="btn btn-primary w-100" onclick="demonstrarFuncionalidade('dashboard')">
+          <i class="fas fa-eye me-2"></i>Ver Demonstração Completa
+        </button>
       </div>
     </div>
+  </div>
 
-    <!-- Agendamentos Demo -->
-    <div class="col-lg-6 mb-4">
-      <div
-        class="card h-100 shadow-sm border-0 demo-card"
-        data-demo="agendamentos"
-      >
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Agendamentos</h5>
-        </div>
-        <div class="card-body">
-          <p class="card-text">
-            Crie, edite e gerencie agendamentos com controle completo de status
-            e horários.
-          </p>
+  <!-- Agendamentos Demo -->
+  <div class="col-lg-6">
+    <div class="card demo-card" data-demo="agendamentos">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-calendar me-2"></i>Gestão de Agendamentos
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text mb-3">
+          Crie, edite e gerencie agendamentos com controle completo de status, horários e notificações automáticas.
+        </p>
 
-          <!-- Mini Agendamento Demo -->
-          <div class="demo-preview bg-light p-3 rounded mb-3">
-            <div class="demo-agendamento d-flex align-items-center mb-2">
-              <div
-                class="demo-avatar bg-primary text-white rounded-circle me-2"
-                style="
-                  width: 30px;
-                  height: 30px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                "
-              >
+        <!-- Mini Agendamento Demo -->
+        <div class="demo-preview">
+          <div class="demo-agendamento mb-2">
+            <div class="d-flex align-items-center">
+              <div class="demo-avatar me-2" style="width: 30px; height: 30px;">
                 <small>JS</small>
               </div>
               <div class="flex-grow-1">
                 <small><strong>João Silva</strong></small>
-                <br /><small class="text-muted">Corte de Cabelo - 14:00</small>
+                <br><small class="text-muted">Corte de Cabelo - 14:00</small>
               </div>
               <span class="badge bg-warning">Agendado</span>
             </div>
-            <div class="demo-agendamento d-flex align-items-center">
-              <div
-                class="demo-avatar bg-success text-white rounded-circle me-2"
-                style="
-                  width: 30px;
-                  height: 30px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                "
-              >
+          </div>
+          <div class="demo-agendamento">
+            <div class="d-flex align-items-center">
+              <div class="demo-avatar me-2" style="width: 30px; height: 30px; background: var(--success-color) !important;">
                 <small>MS</small>
               </div>
               <div class="flex-grow-1">
                 <small><strong>Maria Santos</strong></small>
-                <br /><small class="text-muted">Manicure - 15:30</small>
+                <br><small class="text-muted">Manicure - 15:30</small>
               </div>
               <span class="badge bg-success">Concluído</span>
             </div>
           </div>
-
-          <button
-            class="btn btn-success w-100"
-            onclick="demonstrarFuncionalidade('agendamentos')"
-          >
-            <i class="fas fa-eye me-2"></i>Ver Demonstração
-          </button>
         </div>
+
+        <button class="btn btn-success w-100" onclick="demonstrarFuncionalidade('agendamentos')">
+          <i class="fas fa-eye me-2"></i>Ver Demonstração Completa
+        </button>
       </div>
     </div>
+  </div>
 
-    <!-- Clientes Demo -->
-    <div class="col-lg-6 mb-4">
-      <div class="card h-100 shadow-sm border-0 demo-card" data-demo="clientes">
-        <div class="card-header bg-info text-white">
-          <h5 class="mb-0"><i class="fas fa-users me-2"></i>Clientes</h5>
-        </div>
-        <div class="card-body">
-          <p class="card-text">
-            Mantenha um cadastro completo de clientes com histórico de
-            agendamentos.
-          </p>
+  <!-- Clientes Demo -->
+  <div class="col-lg-6">
+    <div class="card demo-card" data-demo="clientes">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-users me-2"></i>Base de Clientes
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text mb-3">
+          Mantenha um cadastro completo de clientes com histórico detalhado e ferramentas de relacionamento.
+        </p>
 
-          <!-- Mini Cliente Demo -->
-          <div class="demo-preview bg-light p-3 rounded mb-3">
-            <div class="demo-cliente mb-2">
+        <!-- Mini Cliente Demo -->
+        <div class="demo-preview">
+          <div class="demo-cliente">
+            <div class="d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center">
                 <i class="fas fa-user-circle fa-2x text-primary me-2"></i>
                 <div>
                   <small><strong>Ana Costa</strong></small>
-                  <br /><small class="text-muted">(11) 99999-9999</small>
+                  <br><small class="text-muted">(11) 99999-9999</small>
                 </div>
               </div>
-              <small class="text-success">
-                <i class="fas fa-calendar me-1"></i>12 agendamentos
-              </small>
+              <div class="text-end">
+                <span class="badge bg-success">12 agendamentos</span>
+                <br><small class="text-muted">Cliente VIP</small>
+              </div>
             </div>
           </div>
-
-          <button
-            class="btn btn-info w-100"
-            onclick="demonstrarFuncionalidade('clientes')"
-          >
-            <i class="fas fa-eye me-2"></i>Ver Demonstração
-          </button>
         </div>
-      </div>
-    </div>
 
-    <!-- Relatórios Demo -->
-    <div class="col-lg-6 mb-4">
-      <div
-        class="card h-100 shadow-sm border-0 demo-card"
-        data-demo="relatorios"
-      >
-        <div class="card-header bg-warning text-white">
-          <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Relatórios</h5>
-        </div>
-        <div class="card-body">
-          <p class="card-text">
-            Analise seu negócio com gráficos interativos e KPIs avançados.
-          </p>
-
-          <!-- Mini Relatório Demo -->
-          <div class="demo-preview bg-light p-3 rounded mb-3">
-            <div class="row text-center mb-2">
-              <div class="col-4">
-                <small class="text-primary"><strong>R\$ 2.850</strong></small>
-                <br /><small class="text-muted">Faturamento</small>
-              </div>
-              <div class="col-4">
-                <small class="text-success"><strong>R\$ 95</strong></small>
-                <br /><small class="text-muted">Ticket Médio</small>
-              </div>
-              <div class="col-4">
-                <small class="text-info"><strong>+15%</strong></small>
-                <br /><small class="text-muted">Crescimento</small>
-              </div>
-            </div>
-            <div class="demo-chart">
-              <div
-                style="
-                  height: 30px;
-                  background: linear-gradient(
-                    90deg,
-                    #ffc107 40%,
-                    #28a745 70%,
-                    #17a2b8 100%
-                  );
-                  border-radius: 4px;
-                "
-              ></div>
-            </div>
-          </div>
-
-          <button
-            class="btn btn-warning w-100"
-            onclick="demonstrarFuncionalidade('relatorios')"
-          >
-            <i class="fas fa-eye me-2"></i>Ver Demonstração
-          </button>
-        </div>
+        <button class="btn btn-info w-100" onclick="demonstrarFuncionalidade('clientes')">
+          <i class="fas fa-eye me-2"></i>Ver Demonstração Completa
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Vídeo Tutorial -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-dark text-white">
-          <h5 class="mb-0"><i class="fas fa-video me-2"></i>Vídeo Tutorial</h5>
-        </div>
-        <div class="card-body text-center">
-          <div
-            class="video-placeholder bg-light d-flex align-items-center justify-content-center"
-            style="height: 300px; border-radius: 8px"
-          >
-            <div>
-              <i class="fas fa-play-circle fa-4x text-primary mb-3"></i>
-              <h5>Vídeo Tutorial Completo</h5>
-              <p class="text-muted">
-                Assista a uma demonstração completa do sistema (Em breve)
-              </p>
-              <button class="btn btn-primary" disabled>
-                <i class="fas fa-play me-2"></i>Assistir Vídeo
-              </button>
+  <!-- Relatórios Demo -->
+  <div class="col-lg-6">
+    <div class="card demo-card" data-demo="relatorios">
+      <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-chart-bar me-2"></i>Analytics Avançado
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text mb-3">
+          Analise seu negócio com gráficos interativos, KPIs avançados e insights para tomada de decisão.
+        </p>
+
+        <!-- Mini Relatório Demo -->
+        <div class="demo-preview">
+          <div class="row g-2 text-center mb-2">
+            <div class="col-4">
+              <small class="text-primary"><strong>R\$ 2.850</strong></small>
+              <br><small class="text-muted">Faturamento</small>
+            </div>
+            <div class="col-4">
+              <small class="text-success"><strong>R\$ 95</strong></small>
+              <br><small class="text-muted">Ticket Médio</small>
+            </div>
+            <div class="col-4">
+              <small class="text-info"><strong>+15%</strong></small>
+              <br><small class="text-muted">Crescimento</small>
             </div>
           </div>
+          <div class="demo-chart">
+            <div style="height: 25px; background: linear-gradient(90deg, var(--warning-color) 40%, var(--success-color) 70%, var(--info-color) 100%); border-radius: 4px;"></div>
+            <small class="text-muted mt-1 d-block">
+              <i class="fas fa-chart-area me-1"></i>Performance mensal
+            </small>
+          </div>
         </div>
+
+        <button class="btn btn-warning w-100" onclick="demonstrarFuncionalidade('relatorios')">
+          <i class="fas fa-eye me-2"></i>Ver Demonstração Completa
+        </button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Próximos Passos -->
-  <div class="row">
-    <div class="col-12">
-      <div class="card bg-light border-0">
-        <div class="card-body text-center py-4">
-          <h4 class="mb-3">
-            <i class="fas fa-rocket me-2"></i>Pronto para começar?
-          </h4>
-          <p class="mb-4">
-            Agora que você conhece o sistema, que tal começar a usar?
-          </p>
-
-          <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a
-              href="{% url 'agendamentos:dashboard' %}"
-              class="btn btn-primary btn-lg"
-            >
-              <i class="fas fa-tachometer-alt me-2"></i>Ir para Dashboard
-            </a>
-            <a
-              href="{% url 'info:tutoriais' %}"
-              class="btn btn-outline-primary btn-lg"
-            >
-              <i class="fas fa-graduation-cap me-2"></i>Ver Tutoriais
-            </a>
-            <a
-              href="{% url 'info:faq' %}"
-              class="btn btn-outline-secondary btn-lg"
-            >
-              <i class="fas fa-question-circle me-2"></i>FAQ
-            </a>
-          </div>
-        </div>
+<!-- Vídeo Tutorial -->
+<div class="card video-card">
+  <div class="card-header bg-dark text-white">
+    <h5 class="mb-0">
+      <i class="fas fa-video me-2"></i>Vídeo Tutorial Completo
+    </h5>
+  </div>
+  <div class="card-body text-center">
+    <div class="video-placeholder d-flex align-items-center justify-content-center" style="height: 300px;">
+      <div>
+        <i class="fas fa-play-circle video-icon"></i>
+        <h5 class="mb-3">Tutorial em Vídeo</h5>
+        <p class="text-muted mb-4">
+          Assista a uma demonstração completa do sistema com todas as funcionalidades explicadas passo a passo
+          <br><small>(Em desenvolvimento)</small>
+        </p>
+        <button class="btn btn-primary" disabled>
+          <i class="fas fa-play me-2"></i>Assistir Vídeo Tutorial
+        </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Call to Action -->
+<div class="card cta-card">
+  <div class="card-body text-center py-5">
+    <h3 class="mb-3">
+      <i class="fas fa-rocket me-2"></i>Pronto para Começar?
+    </h3>
+    <p class="lead mb-4">
+      Agora que você conhece todas as funcionalidades, que tal começar a usar o sistema?
+      <br>Transforme a gestão do seu negócio hoje mesmo!
+    </p>
+
+    <div class="cta-buttons">
+      <a href="{% url 'agendamentos:dashboard' %}" class="cta-btn cta-btn-primary">
+        <i class="fas fa-tachometer-alt me-2"></i>Ir para Dashboard
+      </a>
+      <a href="{% url 'info:tutoriais' %}" class="cta-btn cta-btn-outline">
+        <i class="fas fa-graduation-cap me-2"></i>Ver Tutoriais
+      </a>
+      <a href="{% url 'info:faq' %}" class="cta-btn cta-btn-outline">
+        <i class="fas fa-question-circle me-2"></i>Perguntas Frequentes
+      </a>
     </div>
   </div>
 </div>
@@ -331,18 +716,14 @@ Agendamentos{% endblock %} {% block content %}
         <h5 class="modal-title" id="demoModalTitle">
           <i class="fas fa-desktop me-2"></i>Demonstração
         </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" id="demoModalBody">
         <!-- Conteúdo será carregado dinamicamente -->
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Fechar
+          <i class="fas fa-times me-2"></i>Fechar
         </button>
         <button type="button" class="btn btn-primary" onclick="proximaEtapa()">
           <i class="fas fa-arrow-right me-2"></i>Próxima Etapa
@@ -352,202 +733,151 @@ Agendamentos{% endblock %} {% block content %}
   </div>
 </div>
 
-<style>
-  .bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-
-  .demo-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-  }
-
-  .demo-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
-  }
-
-  .demo-preview {
-    border: 2px dashed #dee2e6;
-    transition: all 0.3s ease;
-  }
-
-  .demo-card:hover .demo-preview {
-    border-color: #667eea;
-    background-color: #f8f9ff !important;
-  }
-
-  .demo-kpi h4 {
-    margin: 0;
-    font-weight: bold;
-  }
-
-  .chart-bar {
-    border-radius: 4px;
-    animation: chartGrow 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes chartGrow {
-    0% {
-      width: 60%;
-    }
-    100% {
-      width: 80%;
-    }
-  }
-
-  .video-placeholder {
-    border: 2px dashed #dee2e6;
-  }
-</style>
-
 <script>
-  let etapaAtual = 0;
-  const etapas = ["dashboard", "agendamentos", "clientes", "relatorios"];
+let etapaAtual = 0;
+const etapas = ['dashboard', 'agendamentos', 'clientes', 'relatorios'];
 
-  function iniciarTour() {
+function iniciarTour() {
     etapaAtual = 0;
     demonstrarFuncionalidade(etapas[etapaAtual]);
-  }
+}
 
-  function proximaEtapa() {
+function proximaEtapa() {
     etapaAtual++;
     if (etapaAtual < etapas.length) {
-      demonstrarFuncionalidade(etapas[etapaAtual]);
+        demonstrarFuncionalidade(etapas[etapaAtual]);
     } else {
-      // Tour finalizado
-      document.getElementById("demoModalTitle").innerHTML =
-        '<i class="fas fa-trophy me-2"></i>Tour Concluído!';
-      document.getElementById("demoModalBody").innerHTML = `
+        // Tour finalizado
+        document.getElementById('demoModalTitle').innerHTML = 
+            '<i class="fas fa-trophy me-2"></i>Tour Concluído!';
+        document.getElementById('demoModalBody').innerHTML = `
             <div class="text-center py-4">
-                <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
-                <h4>Parabéns!</h4>
-                <p class="lead">Você concluiu o tour completo do sistema!</p>
-                <p>Agora você está pronto para usar todas as funcionalidades.</p>
-                <div class="d-flex gap-2 justify-content-center mt-4">
-                    <a href="/dashboard/" class="btn btn-primary">
+                <i class="fas fa-trophy fa-4x text-warning mb-4"></i>
+                <h3 class="mb-3">Parabéns!</h3>
+                <p class="lead mb-3">Você concluiu o tour completo do sistema!</p>
+                <p class="text-muted mb-4">
+                    Agora você conhece todas as principais funcionalidades e está pronto 
+                    para usar o sistema em sua plenitude.
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-primary btn-lg">
                         <i class="fas fa-tachometer-alt me-2"></i>Ir para Dashboard
                     </a>
-                    <a href="/info/tutoriais/" class="btn btn-outline-primary">
+                    <a href="{% url 'info:tutoriais' %}" class="btn btn-outline-primary btn-lg">
                         <i class="fas fa-graduation-cap me-2"></i>Ver Tutoriais
                     </a>
                 </div>
             </div>
         `;
-      document.querySelector(".modal-footer .btn-primary").style.display =
-        "none";
+        document.querySelector('.modal-footer .btn-primary').style.display = 'none';
     }
-  }
+}
 
-  function demonstrarFuncionalidade(tipo) {
-    const modal = new bootstrap.Modal(document.getElementById("demoModal"));
-
+function demonstrarFuncionalidade(tipo) {
+    const modal = new bootstrap.Modal(document.getElementById('demoModal'));
+    
     const demos = {
-      dashboard: {
-        titulo: '<i class="fas fa-tachometer-alt me-2"></i>Dashboard',
-        conteudo: `
+        dashboard: {
+            titulo: '<i class="fas fa-tachometer-alt me-2"></i>Dashboard Inteligente',
+            conteudo: `
                 <div class="demo-dashboard">
-                    <h5>Visão Geral do Dashboard</h5>
-                    <p>O Dashboard é sua central de comando. Aqui você encontra:</p>
+                    <h5 class="mb-4">Central de Comando do Seu Negócio</h5>
+                    <p class="lead mb-4">O Dashboard é sua central de comando. Aqui você tem uma visão completa e em tempo real do seu negócio:</p>
                     
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h6><i class="fas fa-chart-pie text-primary me-2"></i>KPIs Principais</h6>
-                            <ul>
-                                <li>Agendamentos de hoje</li>
-                                <li>Agendamentos da semana</li>
-                                <li>Total de clientes</li>
-                                <li>Agendamentos pendentes</li>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Agendamentos de hoje</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Agendamentos da semana</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Total de clientes</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Agendamentos pendentes</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <h6><i class="fas fa-chart-bar text-success me-2"></i>Gráficos</h6>
-                            <ul>
-                                <li>Agendamentos por dia</li>
-                                <li>Tendências mensais</li>
-                                <li>Comparações de período</li>
+                            <h6><i class="fas fa-chart-bar text-success me-2"></i>Gráficos Interativos</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Agendamentos por dia</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Tendências mensais</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Comparações de período</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Análise de performance</li>
                             </ul>
                         </div>
                     </div>
                     
-                    <div class="alert alert-info">
+                    <div class="alert alert-info border-0">
                         <i class="fas fa-lightbulb me-2"></i>
-                        <strong>Dica:</strong> Use o Dashboard como ponto de partida para suas atividades diárias.
+                        <strong>Dica Profissional:</strong> Use o Dashboard como ponto de partida para suas atividades diárias e tome decisões baseadas em dados reais.
                     </div>
                     
-                    <div class="demo-screenshot bg-light p-3 rounded">
-                        <div class="row text-center mb-3">
+                    <div class="demo-screenshot">
+                        <div class="row g-3 mb-4">
                             <div class="col-3">
-                                <div class="card border-primary">
-                                    <div class="card-body p-2">
-                                        <h6 class="text-primary">8</h6>
-                                        <small>Hoje</small>
-                                    </div>
+                                <div class="kpi-card bg-primary text-white">
+                                    <h6>8</h6>
+                                    <small>Hoje</small>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="card border-success">
-                                    <div class="card-body p-2">
-                                        <h6 class="text-success">45</h6>
-                                        <small>Semana</small>
-                                    </div>
+                                <div class="kpi-card bg-success text-white">
+                                    <h6>45</h6>
+                                    <small>Semana</small>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="card border-warning">
-                                    <div class="card-body p-2">
-                                        <h6 class="text-warning">156</h6>
-                                        <small>Clientes</small>
-                                    </div>
+                                <div class="kpi-card bg-warning text-white">
+                                    <h6>156</h6>
+                                    <small>Clientes</small>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="card border-info">
-                                    <div class="card-body p-2">
-                                        <h6 class="text-info">3</h6>
-                                        <small>Pendentes</small>
-                                    </div>
+                                <div class="kpi-card bg-info text-white">
+                                    <h6>3</h6>
+                                    <small>Pendentes</small>
                                 </div>
                             </div>
                         </div>
-                        <div class="chart-demo" style="height: 100px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
-                            <i class="fas fa-chart-line fa-2x"></i>
+                        <div class="chart-demo" style="height: 100px; background: var(--gradient-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <br><small>Gráfico de Tendências</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            `,
-      },
-      agendamentos: {
-        titulo: '<i class="fas fa-calendar me-2"></i>Gestão de Agendamentos',
-        conteudo: `
+            `
+        },
+        agendamentos: {
+            titulo: '<i class="fas fa-calendar me-2"></i>Gestão de Agendamentos',
+            conteudo: `
                 <div class="demo-agendamentos">
-                    <h5>Como Funciona a Gestão de Agendamentos</h5>
-                    <p>O sistema permite controle completo dos agendamentos:</p>
+                    <h5 class="mb-4">Controle Total dos Seus Agendamentos</h5>
+                    <p class="lead mb-4">O sistema permite controle completo e intuitivo dos agendamentos:</p>
                     
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h6><i class="fas fa-plus text-success me-2"></i>Criar Agendamento</h6>
-                            <ol>
-                                <li>Selecionar cliente</li>
-                                <li>Escolher serviço</li>
-                                <li>Definir data e hora</li>
-                                <li>Adicionar observações</li>
+                            <ol class="list-unstyled">
+                                <li><span class="badge bg-primary me-2">1</span>Selecionar cliente</li>
+                                <li><span class="badge bg-primary me-2">2</span>Escolher serviço</li>
+                                <li><span class="badge bg-primary me-2">3</span>Definir data e hora</li>
+                                <li><span class="badge bg-primary me-2">4</span>Adicionar observações</li>
                             </ol>
                         </div>
                         <div class="col-md-6">
-                            <h6><i class="fas fa-edit text-primary me-2"></i>Gerenciar Status</h6>
-                            <ul>
-                                <li><span class="badge bg-warning">Agendado</span></li>
-                                <li><span class="badge bg-info">Confirmado</span></li>
-                                <li><span class="badge bg-primary">Em Andamento</span></li>
-                                <li><span class="badge bg-success">Concluído</span></li>
-                            </ul>
+                            <h6><i class="fas fa-edit text-primary me-2"></i>Controle de Status</h6>
+                            <div class="d-flex flex-column gap-2">
+                                <span class="badge bg-warning">Agendado</span>
+                                <span class="badge bg-info">Confirmado</span>
+                                <span class="badge bg-primary">Em Andamento</span>
+                                <span class="badge bg-success">Concluído</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="demo-screenshot bg-light p-3 rounded">
-                        <div class="d-flex align-items-center mb-2 p-2 border rounded">
-                            <div class="bg-primary text-white rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <div class="demo-screenshot">
+                        <div class="d-flex align-items-center mb-3 p-3 border rounded">
+                            <div class="demo-avatar me-3" style="width: 40px; height: 40px;">
                                 <strong>JS</strong>
                             </div>
                             <div class="flex-grow-1">
@@ -556,8 +886,8 @@ Agendamentos{% endblock %} {% block content %}
                             </div>
                             <span class="badge bg-warning">Agendado</span>
                         </div>
-                        <div class="d-flex align-items-center p-2 border rounded">
-                            <div class="bg-success text-white rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <div class="d-flex align-items-center p-3 border rounded">
+                            <div class="demo-avatar me-3" style="width: 40px; height: 40px; background: var(--success-color) !important;">
                                 <strong>MS</strong>
                             </div>
                             <div class="flex-grow-1">
@@ -567,40 +897,44 @@ Agendamentos{% endblock %} {% block content %}
                             <span class="badge bg-success">Concluído</span>
                         </div>
                     </div>
+                    
+                    <div class="alert alert-success border-0 mt-3">
+                        <i class="fas fa-star me-2"></i>
+                        <strong>Destaque:</strong> Sistema de notificações automáticas para clientes e lembretes para você!
+                    </div>
                 </div>
-            `,
-      },
-      clientes: {
-        titulo: '<i class="fas fa-users me-2"></i>Gestão de Clientes',
-        conteudo: `
+            `
+        },
+        clientes: {
+            titulo: '<i class="fas fa-users me-2"></i>Base de Clientes',
+            conteudo: `
                 <div class="demo-clientes">
-                    <h5>Cadastro e Gestão de Clientes</h5>
-                    <p>Mantenha um cadastro completo e organizado:</p>
+                    <h5 class="mb-4">Gestão Completa da Sua Base de Clientes</h5>
+                    <p class="lead mb-4">Mantenha um cadastro completo e organizado com ferramentas avançadas:</p>
                     
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <h6><i class="fas fa-user-plus text-primary me-2"></i>Cadastro</h6>
-                            <ul>
-                                <li>Nome completo</li>
-                                <li>Telefone</li>
-                                <li>Email (opcional)</li>
-                                <li>Endereço (opcional)</li>
-                                <li>Observações</li>
+                            <h6><i class="fas fa-user-plus text-primary me-2"></i>Cadastro Completo</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Nome completo</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Telefone e email</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Endereço completo</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Observações personalizadas</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <h6><i class="fas fa-search text-info me-2"></i>Busca e Filtros</h6>
-                            <ul>
-                                <li>Busca por nome</li>
-                                <li>Busca por telefone</li>
-                                <li>Histórico de agendamentos</li>
-                                <li>Clientes mais frequentes</li>
+                            <h6><i class="fas fa-search text-info me-2"></i>Busca Inteligente</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Busca por nome</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Busca por telefone</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Histórico completo</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Clientes VIP</li>
                             </ul>
                         </div>
                     </div>
                     
-                    <div class="demo-screenshot bg-light p-3 rounded">
-                        <div class="cliente-item d-flex align-items-center mb-3 p-3 border rounded">
+                    <div class="demo-screenshot">
+                        <div class="cliente-item d-flex align-items-center mb-3 p-3 rounded">
                             <i class="fas fa-user-circle fa-3x text-primary me-3"></i>
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">Ana Costa</h6>
@@ -610,12 +944,13 @@ Agendamentos{% endblock %} {% block content %}
                                 </small>
                             </div>
                             <div class="text-end">
-                                <span class="badge bg-success">12 agendamentos</span>
+                                <span class="badge bg-success mb-1">12 agendamentos</span>
                                 <br><small class="text-muted">Último: 15/09/2025</small>
+                                <br><span class="badge bg-warning">Cliente VIP</span>
                             </div>
                         </div>
                         
-                        <div class="cliente-item d-flex align-items-center p-3 border rounded">
+                        <div class="cliente-item d-flex align-items-center p-3 rounded">
                             <i class="fas fa-user-circle fa-3x text-secondary me-3"></i>
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">Carlos Oliveira</h6>
@@ -624,64 +959,69 @@ Agendamentos{% endblock %} {% block content %}
                                 </small>
                             </div>
                             <div class="text-end">
-                                <span class="badge bg-info">5 agendamentos</span>
+                                <span class="badge bg-info mb-1">5 agendamentos</span>
                                 <br><small class="text-muted">Último: 10/09/2025</small>
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="alert alert-info border-0 mt-3">
+                        <i class="fas fa-heart me-2"></i>
+                        <strong>Relacionamento:</strong> Mantenha histórico completo e ofereça atendimento personalizado!
+                    </div>
                 </div>
-            `,
-      },
-      relatorios: {
-        titulo: '<i class="fas fa-chart-bar me-2"></i>Relatórios e Analytics',
-        conteudo: `
+            `
+        },
+        relatorios: {
+            titulo: '<i class="fas fa-chart-bar me-2"></i>Analytics Avançado',
+            conteudo: `
                 <div class="demo-relatorios">
-                    <h5>Business Intelligence Avançado</h5>
-                    <p>Analise seu negócio com dados precisos e insights valiosos:</p>
+                    <h5 class="mb-4">Business Intelligence para Seu Negócio</h5>
+                    <p class="lead mb-4">Analise seu negócio com dados precisos e insights valiosos para crescer:</p>
                     
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h6><i class="fas fa-dollar-sign text-success me-2"></i>KPIs Financeiros</h6>
-                            <ul>
-                                <li>Faturamento total</li>
-                                <li>Ticket médio</li>
-                                <li>Crescimento mensal</li>
-                                <li>Projeções</li>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Faturamento total e mensal</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Ticket médio por cliente</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Crescimento percentual</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Projeções futuras</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <h6><i class="fas fa-chart-pie text-warning me-2"></i>Análises</h6>
-                            <ul>
-                                <li>Serviços mais procurados</li>
-                                <li>Clientes mais frequentes</li>
-                                <li>Horários de pico</li>
-                                <li>Sazonalidade</li>
+                            <h6><i class="fas fa-chart-pie text-warning me-2"></i>Análises Detalhadas</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Serviços mais procurados</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Clientes mais frequentes</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Horários de maior movimento</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Análise de sazonalidade</li>
                             </ul>
                         </div>
                     </div>
                     
-                    <div class="demo-screenshot bg-light p-3 rounded">
-                        <div class="row text-center mb-3">
+                    <div class="demo-screenshot">
+                        <div class="row g-3 text-center mb-4">
                             <div class="col-3">
-                                <div class="kpi-card bg-primary text-white p-2 rounded">
+                                <div class="kpi-card bg-primary text-white">
                                     <h6>R\$ 8.450</h6>
                                     <small>Faturamento</small>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="kpi-card bg-success text-white p-2 rounded">
+                                <div class="kpi-card bg-success text-white">
                                     <h6>R\$ 125</h6>
                                     <small>Ticket Médio</small>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="kpi-card bg-info text-white p-2 rounded">
+                                <div class="kpi-card bg-info text-white">
                                     <h6>68</h6>
                                     <small>Atendimentos</small>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="kpi-card bg-warning text-white p-2 rounded">
+                                <div class="kpi-card bg-warning text-white">
                                     <h6>+23%</h6>
                                     <small>Crescimento</small>
                                 </div>
@@ -689,46 +1029,79 @@ Agendamentos{% endblock %} {% block content %}
                         </div>
                         
                         <div class="chart-demo-container">
-                            <div class="chart-demo mb-2" style="height: 60px; background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
-                                <i class="fas fa-chart-area fa-2x"></i>
+                            <div class="chart-demo mb-2" style="height: 60px; background: linear-gradient(90deg, var(--success-color) 0%, var(--warning-color) 50%, var(--danger-color) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                                <div class="text-center">
+                                    <i class="fas fa-chart-area fa-2x mb-1"></i>
+                                    <br><small>Gráfico de Faturamento</small>
+                                </div>
                             </div>
-                            <small class="text-muted">Faturamento por período</small>
                         </div>
                     </div>
                     
-                    <div class="alert alert-success">
+                    <div class="alert alert-success border-0 mt-3">
                         <i class="fas fa-lightbulb me-2"></i>
-                        <strong>Insight:</strong> Use os filtros por período para identificar tendências e oportunidades de crescimento.
+                        <strong>Insight Inteligente:</strong> Use os filtros por período para identificar tendências e oportunidades de crescimento!
                     </div>
                 </div>
-            `,
-      },
+            `
+        }
     };
 
     const demo = demos[tipo];
-    document.getElementById("demoModalTitle").innerHTML = demo.titulo;
-    document.getElementById("demoModalBody").innerHTML = demo.conteudo;
+    document.getElementById('demoModalTitle').innerHTML = demo.titulo;
+    document.getElementById('demoModalBody').innerHTML = demo.conteudo;
 
     // Mostrar/esconder botão próxima etapa
-    const proximaBtn = document.querySelector(".modal-footer .btn-primary");
+    const proximaBtn = document.querySelector('.modal-footer .btn-primary');
     if (etapaAtual < etapas.length - 1) {
-      proximaBtn.style.display = "inline-block";
-      proximaBtn.innerHTML =
-        '<i class="fas fa-arrow-right me-2"></i>Próxima Etapa';
+        proximaBtn.style.display = 'inline-block';
+        proximaBtn.innerHTML = '<i class="fas fa-arrow-right me-2"></i>Próxima Etapa';
     } else if (etapaAtual === etapas.length - 1) {
-      proximaBtn.style.display = "inline-block";
-      proximaBtn.innerHTML = '<i class="fas fa-trophy me-2"></i>Finalizar Tour';
+        proximaBtn.style.display = 'inline-block';
+        proximaBtn.innerHTML = '<i class="fas fa-trophy me-2"></i>Finalizar Tour';
     }
 
     modal.show();
-  }
+}
 
-  // Adicionar evento de clique nos cards
-  document.querySelectorAll(".demo-card").forEach((card) => {
-    card.addEventListener("click", function () {
-      const demoType = this.getAttribute("data-demo");
-      demonstrarFuncionalidade(demoType);
+// Adicionar evento de clique nos cards
+document.addEventListener('DOMContentLoaded', function() {
+    // Cards de demonstração
+    document.querySelectorAll('.demo-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const demoType = this.getAttribute('data-demo');
+            demonstrarFuncionalidade(demoType);
+        });
     });
-  });
+    
+    // Animação de entrada escalonada
+    const cards = document.querySelectorAll('.demo-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+    
+    // Hover effects nos cards
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // Animação no hero button
+    const heroBtn = document.querySelector('.hero-btn');
+    if (heroBtn) {
+        heroBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.05)';
+        });
+        
+        heroBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    }
+});
 </script>
 {% endblock %}
