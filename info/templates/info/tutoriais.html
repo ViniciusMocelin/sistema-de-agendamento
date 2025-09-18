@@ -2,186 +2,795 @@
 
 {% block title %}Tutoriais - Central de Ajuda{% endblock %}
 
-{% block content %}
-<div class="container mt-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="text-primary mb-1">
-                        <i class="fas fa-graduation-cap me-2"></i>Tutoriais
-                    </h2>
-                    <p class="text-muted mb-0">
-                        Aprenda passo a passo como usar o sistema
-                    </p>
-                </div>
-                <a href="{% url 'info:home' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Voltar
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filtros -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-light border-0">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <label for="categoria" class="form-label">Categoria</label>
-                            <select class="form-select" id="categoria" name="categoria">
-                                <option value="">Todas as categorias</option>
-                                {% for categoria in categorias %}
-                                <option value="{{ categoria.id }}" 
-                                        {% if categoria.id|stringformat:"s" == categoria_selecionada %}selected{% endif %}>
-                                    {{ categoria.nome }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="tipo" class="form-label">Nível</label>
-                            <select class="form-select" id="tipo" name="tipo">
-                                <option value="">Todos os níveis</option>
-                                <option value="basico" {% if tipo_selecionado == 'basico' %}selected{% endif %}>
-                                    Básico
-                                </option>
-                                <option value="intermediario" {% if tipo_selecionado == 'intermediario' %}selected{% endif %}>
-                                    Intermediário
-                                </option>
-                                <option value="avancado" {% if tipo_selecionado == 'avancado' %}selected{% endif %}>
-                                    Avançado
-                                </option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class="fas fa-filter me-2"></i>Filtrar
-                            </button>
-                            <a href="{% url 'info:tutoriais' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Limpar
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lista de Tutoriais -->
-    <div class="row">
-        {% for tutorial in tutoriais %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 shadow-sm border-0 tutorial-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <span class="badge bg-{% if tutorial.tipo == 'basico' %}success{% elif tutorial.tipo == 'intermediario' %}warning{% else %}danger{% endif %}">
-                            {{ tutorial.get_tipo_display }}
-                        </span>
-                        <div class="text-end">
-                            <small class="text-muted d-block">
-                                <i class="fas fa-clock me-1"></i>{{ tutorial.tempo_estimado }}min
-                            </small>
-                            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
-                                <small class="text-success">
-                                    <i class="fas fa-check-circle me-1"></i>Concluído
-                                </small>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <h5 class="card-title">{{ tutorial.titulo }}</h5>
-                    <p class="card-text text-muted">{{ tutorial.descricao|truncatewords:20 }}</p>
-                    
-                    <div class="mb-3">
-                        <small class="text-muted">
-                            <i class="fas fa-folder me-1"></i>{{ tutorial.categoria.nome }}
-                        </small>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <a href="{% url 'info:tutorial_detail' tutorial.pk %}" 
-                           class="btn {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}btn-outline-success{% else %}btn-primary{% endif %}">
-                            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
-                                <i class="fas fa-eye me-2"></i>Revisar
-                            {% else %}
-                                <i class="fas fa-play me-2"></i>Iniciar
-                            {% endif %}
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="text-center py-5">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">Nenhum tutorial encontrado</h5>
-                <p class="text-muted">Tente ajustar os filtros ou volte mais tarde.</p>
-                <a href="{% url 'info:tutoriais' %}" class="btn btn-primary">
-                    <i class="fas fa-refresh me-2"></i>Ver Todos os Tutoriais
-                </a>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Paginação -->
-    {% if is_paginated %}
-    <div class="row">
-        <div class="col-12">
-            <nav aria-label="Paginação dos tutoriais">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
-                                <i class="fas fa-angle-double-left"></i>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
-                                <i class="fas fa-angle-left"></i>
-                            </a>
-                        </li>
-                    {% endif %}
-                    
-                    <li class="page-item active">
-                        <span class="page-link">
-                            {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-                        </span>
-                    </li>
-                    
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
-                                <i class="fas fa-angle-right"></i>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
-                                <i class="fas fa-angle-double-right"></i>
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
-    </div>
-    {% endif %}
-</div>
-
+{% block extra_css %}
 <style>
-    .tutorial-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* Header personalizado */
+  .tutorials-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .tutorials-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .tutorials-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Ações no Header */
+  .header-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 768px) {
+    .header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
     }
     
-    .tutorial-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+    .tutorials-title {
+      font-size: 1.5rem;
     }
+  }
+
+  /* Filter card */
+  .filter-card {
+    background: var(--light-color) !important;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+  }
+
+  .filter-card .card-body {
+    padding: 25px;
+  }
+
+  /* Form controls */
+  .form-control, .form-select {
+    border-radius: 8px !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 10px 12px;
+    transition: all 0.3s ease;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem var(--shadow-color) !important;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+
+  /* Buttons */
+  .btn-custom {
+    background: var(--gradient-bg);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    color: white !important;
+  }
+
+  /* Tutorial cards */
+  .tutorial-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    background: var(--surface-color);
+  }
+
+  .tutorial-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-bg);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .tutorial-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .tutorial-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  }
+
+  .tutorial-card .card-body {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* Tutorial header */
+  .tutorial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 15px;
+  }
+
+  .tutorial-level {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .tutorial-level.basico {
+    background: var(--success-color) !important;
+    color: white !important;
+  }
+
+  .tutorial-level.intermediario {
+    background: var(--warning-color) !important;
+    color: white !important;
+  }
+
+  .tutorial-level.avancado {
+    background: var(--danger-color) !important;
+    color: white !important;
+  }
+
+  .tutorial-meta {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .tutorial-time {
+    color: var(--text-muted-color) !important;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: flex-end;
+    margin-bottom: 5px;
+  }
+
+  .tutorial-status {
+    color: var(--success-color) !important;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+
+  /* Tutorial content */
+  .tutorial-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .tutorial-description {
+    color: var(--text-muted-color) !important;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    flex-grow: 1;
+  }
+
+  .tutorial-category {
+    color: var(--text-muted-color) !important;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Tutorial action button */
+  .tutorial-action {
+    margin-top: auto;
+  }
+
+  .tutorial-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .tutorial-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .tutorial-btn.completed {
+    background: transparent;
+    border: 2px solid var(--success-color);
+    color: var(--success-color) !important;
+  }
+
+  .tutorial-btn.completed:hover {
+    background: var(--success-color);
+    color: white !important;
+  }
+
+  .tutorial-btn.start {
+    background: var(--gradient-bg);
+    border: none;
+    color: white !important;
+  }
+
+  .tutorial-btn.start:hover {
+    box-shadow: 0 5px 15px var(--shadow-color);
+    color: white !important;
+  }
+
+  /* Progress indicator */
+  .progress-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--success-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+  }
+
+  .tutorial-card.completed .progress-indicator {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted-color);
+    margin-bottom: 20px;
+  }
+
+  .empty-state h5 {
+    color: var(--text-color) !important;
+    margin-bottom: 10px;
+  }
+
+  .empty-state p {
+    color: var(--text-muted-color) !important;
+    margin-bottom: 25px;
+  }
+
+  /* Pagination */
+  .pagination .page-link {
+    color: var(--text-color) !important;
+    background-color: var(--surface-color) !important;
+    border-color: var(--border-color) !important;
+    border-radius: 8px !important;
+    margin: 0 2px;
+    padding: 8px 12px;
+  }
+
+  .pagination .page-link:hover {
+    color: var(--primary-color) !important;
+    background-color: var(--light-color) !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+  }
+
+  /* Stats section */
+  .stats-section {
+    background: var(--light-color);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-left: 4px solid var(--primary-color);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    text-align: center;
+  }
+
+  .stat-item {
+    background: var(--surface-color);
+    padding: 15px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .stat-item:hover {
+    transform: scale(1.05);
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted-color) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .filter-card .card-body {
+      padding: 20px;
+    }
+
+    .tutorial-card .card-body {
+      padding: 20px;
+    }
+
+    .tutorial-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .tutorial-meta {
+      text-align: left;
+      width: 100%;
+    }
+
+    .tutorial-time,
+    .tutorial-status {
+      justify-content: flex-start;
+    }
+
+    .header-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+  }
+
+  /* Animations */
+  .tutorial-card {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Hover effects */
+  .tutorial-card:hover .tutorial-title {
+    color: var(--primary-color) !important;
+  }
+
+  /* Loading state */
+  .loading-card {
+    background: var(--light-color);
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted-color) !important;
+  }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 15px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
+{% endblock %}
+
+{% block content %}
+<!-- Header dos Tutoriais -->
+<div class="tutorials-header">
+  <h1 class="tutorials-title">
+    <i class="fas fa-graduation-cap"></i>
+    Tutoriais Interativos
+  </h1>
+  <p class="tutorials-subtitle">
+    Aprenda passo a passo como dominar todas as funcionalidades do sistema
+  </p>
+  
+  <!-- Ações no Header -->
+  <div class="header-actions">
+    <a href="{% url 'info:home' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+  </div>
+</div>
+
+<!-- Estatísticas dos Tutoriais -->
+{% if user.is_authenticated %}
+<div class="stats-section">
+  <h6 class="mb-3">
+    <i class="fas fa-chart-line me-2"></i>Seu Progresso
+  </h6>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-number">{{ tutoriais_concluidos|length|default:0 }}</div>
+      <div class="stat-label">Concluídos</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">{{ tutoriais.count|default:0 }}</div>
+      <div class="stat-label">Total</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">
+        {% if tutoriais.count > 0 %}
+          {% widthratio tutoriais_concluidos|length tutoriais.count 100 %}%
+        {% else %}
+          0%
+        {% endif %}
+      </div>
+      <div class="stat-label">Progresso</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">{{ tempo_total_estimado|default:0 }}</div>
+      <div class="stat-label">Min Restantes</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Filtros -->
+<div class="card filter-card">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-4">
+        <label for="categoria" class="form-label">
+          <i class="fas fa-folder me-1"></i>Categoria
+        </label>
+        <select class="form-select" id="categoria" name="categoria">
+          <option value="">Todas as categorias</option>
+          {% for categoria in categorias %}
+          <option value="{{ categoria.id }}" 
+                  {% if categoria.id|stringformat:"s" == categoria_selecionada %}selected{% endif %}>
+            {{ categoria.nome }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="col-md-4">
+        <label for="tipo" class="form-label">
+          <i class="fas fa-layer-group me-1"></i>Nível de Dificuldade
+        </label>
+        <select class="form-select" id="tipo" name="tipo">
+          <option value="">Todos os níveis</option>
+          <option value="basico" {% if tipo_selecionado == 'basico' %}selected{% endif %}>
+            🟢 Básico
+          </option>
+          <option value="intermediario" {% if tipo_selecionado == 'intermediario' %}selected{% endif %}>
+            🟡 Intermediário
+          </option>
+          <option value="avancado" {% if tipo_selecionado == 'avancado' %}selected{% endif %}>
+            🔴 Avançado
+          </option>
+        </select>
+      </div>
+      
+      <div class="col-md-4 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-custom">
+          <i class="fas fa-filter"></i>Filtrar
+        </button>
+        <a href="{% url 'info:tutoriais' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-times"></i>Limpar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Lista de Tutoriais -->
+<div class="row g-4">
+  {% for tutorial in tutoriais %}
+  <div class="col-lg-4 col-md-6">
+    <div class="card tutorial-card {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}completed{% endif %}">
+      
+      <!-- Progress Indicator -->
+      {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+      <div class="progress-indicator">
+        <i class="fas fa-check"></i>
+      </div>
+      {% endif %}
+      
+      <div class="card-body">
+        <!-- Tutorial Header -->
+        <div class="tutorial-header">
+          <span class="tutorial-level {{ tutorial.tipo }}">
+            {{ tutorial.get_tipo_display }}
+          </span>
+          <div class="tutorial-meta">
+            <div class="tutorial-time">
+              <i class="fas fa-clock"></i>
+              {{ tutorial.tempo_estimado }}min
+            </div>
+            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+            <div class="tutorial-status">
+              <i class="fas fa-check-circle"></i>
+              Concluído
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- Tutorial Content -->
+        <h5 class="tutorial-title">{{ tutorial.titulo }}</h5>
+        <p class="tutorial-description">{{ tutorial.descricao|truncatewords:25 }}</p>
+        
+        <div class="tutorial-category">
+          <i class="fas fa-folder"></i>
+          {{ tutorial.categoria.nome }}
+        </div>
+        
+        <!-- Tutorial Action -->
+        <div class="tutorial-action">
+          <a href="{% url 'info:tutorial_detail' tutorial.pk %}" 
+             class="btn tutorial-btn {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}completed{% else %}start{% endif %}">
+            {% if user.is_authenticated and tutorial.id in tutoriais_concluidos %}
+              <i class="fas fa-eye"></i>Revisar Tutorial
+            {% else %}
+              <i class="fas fa-play"></i>Iniciar Tutorial
+            {% endif %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body empty-state">
+        <i class="fas fa-search"></i>
+        <h5>Nenhum tutorial encontrado</h5>
+        <p>
+          Não encontramos tutoriais com os filtros selecionados.
+          <br>Tente ajustar os critérios ou explore outras categorias.
+        </p>
+        <a href="{% url 'info:tutoriais' %}" class="btn btn-custom">
+          <i class="fas fa-refresh me-2"></i>Ver Todos os Tutoriais
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Paginação -->
+{% if is_paginated %}
+<div class="row mt-5">
+  <div class="col-12">
+    <nav aria-label="Paginação dos tutoriais">
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page=1{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+              <i class="fas fa-angle-double-left"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+              <i class="fas fa-angle-left"></i>
+            </a>
+          </li>
+        {% endif %}
+        
+        <li class="page-item active">
+          <span class="page-link">
+            {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+          </span>
+        </li>
+        
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+              <i class="fas fa-angle-right"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if tipo_selecionado %}&tipo={{ tipo_selecionado }}{% endif %}">
+              <i class="fas fa-angle-double-right"></i>
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+{% endif %}
+
+<!-- Call to Action -->
+{% if tutoriais %}
+<div class="row mt-5">
+  <div class="col-12">
+    <div class="card" style="background: var(--gradient-bg); color: white;">
+      <div class="card-body text-center py-4">
+        <h4 class="mb-3">
+          <i class="fas fa-rocket me-2"></i>
+          Pronto para se tornar um especialista?
+        </h4>
+        <p class="lead mb-4">
+          Complete todos os tutoriais e domine completamente o sistema!
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a href="{% url 'info:guia_completo' %}" class="btn btn-light">
+            <i class="fas fa-book me-2"></i>Guia Completo
+          </a>
+          <a href="{% url 'info:demonstracao' %}" class="btn btn-outline-light">
+            <i class="fas fa-desktop me-2"></i>Ver Demonstração
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de entrada escalonada
+    const cards = document.querySelectorAll('.tutorial-card');
+    cards.forEach((card, index) => {
+        // Aplicar delay baseado no índice
+        card.style.animationDelay = `${index * 0.1}s`;
+        
+        // Hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // Smooth scroll para navegação
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Loading state simulation
+    const tutorialBtns = document.querySelectorAll('.tutorial-btn');
+    tutorialBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (!this.href) return;
+            
+            const originalContent = this.innerHTML;
+            this.innerHTML = '<div class="loading-spinner"></div>Carregando...';
+            this.disabled = true;
+            
+            // Simular loading (remover em produção)
+            setTimeout(() => {
+                this.innerHTML = originalContent;
+                this.disabled = false;
+            }, 2000);
+        });
+    });
+    
+    // Progress animation for completed tutorials
+    const completedCards = document.querySelectorAll('.tutorial-card.completed');
+    completedCards.forEach(card => {
+        const progressIndicator = card.querySelector('.progress-indicator');
+        if (progressIndicator) {
+            setTimeout(() => {
+                progressIndicator.style.opacity = '1';
+                progressIndicator.style.transform = 'scale(1)';
+            }, 500);
+        }
+    });
+    
+    // Tooltip for level badges
+    const levelBadges = document.querySelectorAll('.tutorial-level');
+    levelBadges.forEach(badge => {
+        badge.addEventListener('mouseenter', function() {
+            const level = this.classList.contains('basico') ? 'Ideal para iniciantes' :
+                         this.classList.contains('intermediario') ? 'Requer conhecimento básico' :
+                         'Para usuários experientes';
+            
+            this.title = level;
+        });
+    });
+});
+</script>
 {% endblock %}
