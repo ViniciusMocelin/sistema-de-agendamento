@@ -2,10 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.views.generic import (
-    TemplateView, ListView, CreateView, UpdateView, 
-    DeleteView, DetailView
-)
+from django.views.generic import (TemplateView, ListView, CreateView, UpdateView, DeleteView, DetailView)
 from django.db.models import Q, Count, Sum
 from django.utils import timezone
 from django.http import JsonResponse
@@ -807,4 +804,8 @@ class ConfiguracaoView(LoginRequiredMixin, TemplateView):
         # Aqui você pode adicionar configurações específicas
         return context
 
-        
+
+
+# ========================================
+# APIS DE CONFIGURAÇÃO
+# ========================================

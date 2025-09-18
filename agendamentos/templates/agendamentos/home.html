@@ -1,175 +1,1076 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgendaFácil - Sistema de Agendamentos Profissional</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --text-color: #2d3748;
+            --text-muted: #718096;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(102, 126, 234, 0.15);
+        }
 
-{% block title %}Home - Sistema de Agendamentos{% endblock %}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block content %}
-<!-- Hero Section -->
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">
-                    Gerencie seus Agendamentos de Forma Simples
-                </h1>
-                <p class="lead mb-4">
-                    Sistema completo para agendamento de clientes, controle de horários e gestão eficiente do seu negócio.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    {% if not user.is_authenticated %}
-                        <a href="{% url 'authentication:login' %}" class="btn btn-light btn-lg">
-                            <i class="fas fa-sign-in-alt me-2"></i>Fazer Login
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: var(--gradient-hero);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="%23ffffff" stop-opacity="0.1"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/><circle cx="400" cy="700" r="120" fill="url(%23a)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+            color: white;
+        }
+
+        .hero-stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: block;
+        }
+
+        .hero-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn-hero {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-hero-primary {
+            background: rgba(255,255,255,0.9);
+            color: var(--primary-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-hero-primary:hover {
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            color: var(--primary-color);
+        }
+
+        .btn-hero-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-hero-outline:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: white;
+            transform: translateY(-3px);
+            color: white;
+        }
+
+        .hero-image {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-mockup {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2));
+            animation: floatMockup 6s ease-in-out infinite;
+        }
+
+        @keyframes floatMockup {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            padding: 1rem 0;
+        }
+
+        .navbar.scrolled {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white !important;
+        }
+
+        .navbar.scrolled .navbar-brand {
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled .nav-link {
+            color: var(--text-color) !important;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .navbar.scrolled .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 5rem 0;
+            background: white;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            border: none;
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-bg);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-bg);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .feature-description {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Benefits Section */
+        .benefits-section {
+            padding: 5rem 0;
+            background: var(--light-color);
+        }
+
+        .benefit-item {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .benefit-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .benefit-item:hover .benefit-icon {
+            transform: scale(1.1);
+        }
+
+        .benefit-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .benefit-description {
+            color: var(--text-muted);
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            padding: 5rem 0;
+            background: white;
+        }
+
+        .pricing-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px var(--shadow-color);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .pricing-badge {
+            background: var(--gradient-bg);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .pricing-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-period {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features li {
+            padding: 0.5rem 0;
+            color: var(--text-color);
+        }
+
+        .pricing-features i {
+            color: var(--success-color);
+            margin-right: 0.5rem;
+        }
+
+        .btn-pricing {
+            width: 100%;
+            padding: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* Testimonials Section */
+        .testimonials-section {
+            padding: 5rem 0;
+            background: var(--gradient-bg);
+            color: white;
+        }
+
+        .testimonial-card {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            height: 100%;
+        }
+
+        .testimonial-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+        }
+
+        .testimonial-role {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 0;
+            background: var(--dark-color);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .footer-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: white;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .btn-hero {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+                margin-bottom: 2rem;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* Scroll animations */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: transparent;">
+        <div class="container">
+            <a class="navbar-brand" href="#home">
+                <i class="fas fa-calendar-check me-2"></i>AgendaFácil
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Recursos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#benefits">Benefícios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pricing">Preços</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#testimonials">Depoimentos</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'agendamentos:dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                         </a>
-                        <a href="{% url 'authentication:register' %}" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-user-plus me-2"></i>Cadastrar-se
-                        </a>
+                    </li>
                     {% else %}
-                        <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-light btn-lg">
-                            <i class="fas fa-tachometer-alt me-2"></i>Acessar Dashboard
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'authentication:login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Entrar
                         </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="hero-title">
+                        Transforme Seu Negócio com Agendamentos Inteligentes
+                    </h1>
+                    <p class="hero-subtitle">
+                        O sistema mais completo e fácil de usar para gerenciar agendamentos, 
+                        clientes e impulsionar o crescimento do seu negócio.
+                    </p>
+                    
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-number">10k+</span>
+                            <span class="hero-stat-label">Agendamentos</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-number">500+</span>
+                            <span class="hero-stat-label">Empresas</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-number">99%</span>
+                            <span class="hero-stat-label">Satisfação</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-buttons">
+                        {% if not user.is_authenticated %}
+                        <a href="{% url 'authentication:register' %}" class="btn-hero btn-hero-primary">
+                            <i class="fas fa-rocket"></i>Começar Grátis
+                        </a>
+                        <a href="#features" class="btn-hero btn-hero-outline">
+                            <i class="fas fa-play"></i>Ver Demonstração
+                        </a>
+                        {% else %}
+                        <a href="{% url 'agendamentos:dashboard' %}" class="btn-hero btn-hero-primary">
+                            <i class="fas fa-tachometer-alt"></i>Acessar Dashboard
+                        </a>
+                        <a href="{% url 'info:home' %}" class="btn-hero btn-hero-outline">
+                            <i class="fas fa-question-circle"></i>Central de Ajuda
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-6 hero-image text-center">
+                    <div style="position: relative;">
+                        <i class="fas fa-calendar-check hero-mockup" style="font-size: 20rem; color: rgba(255,255,255,0.1);"></i>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                            <i class="fas fa-mobile-alt" style="font-size: 8rem; color: rgba(255,255,255,0.8);"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down fa-2x"></i>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title fade-in-up">Recursos Poderosos</h2>
+                <p class="section-subtitle fade-in-up">Tudo que você precisa para gerenciar seu negócio em um só lugar</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card fade-in-up">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <h3 class="feature-title">Agendamento Inteligente</h3>
+                        <p class="feature-description">
+                            Sistema automatizado que previne conflitos de horários e otimiza sua agenda.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card fade-in-up">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="feature-title">Gestão de Clientes</h3>
+                        <p class="feature-description">
+                            Cadastro completo com histórico, preferências e análise de comportamento.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card fade-in-up">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Relatórios Avançados</h3>
+                        <p class="feature-description">
+                            Analytics completo com insights para crescimento do seu negócio.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card fade-in-up">
+                        <div class="feature-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3 class="feature-title">Notificações Automáticas</h3>
+                        <p class="feature-description">
+                            Lembretes por SMS, email e WhatsApp para você e seus clientes.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card fade-in-up">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="feature-title">App Mobile</h3>
+                        <p class="feature-description">
+                            Acesse de qualquer lugar com nosso app responsivo e intuitivo.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card fade-in-up">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Segurança Total</h3>
+                        <p class="feature-description">
+                            Criptografia avançada e backup automático dos seus dados.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="benefits-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title fade-in-up">Por Que Escolher o AgendaFácil?</h2>
+                <p class="section-subtitle fade-in-up">Resultados comprovados que transformam negócios</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="benefit-item fade-in-up">
+                        <div class="benefit-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h4 class="benefit-title">Economize 5h/dia</h4>
+                        <p class="benefit-description">
+                            Automatize tarefas repetitivas e foque no que realmente importa.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="benefit-item fade-in-up">
+                        <div class="benefit-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="benefit-title">+40% Faturamento</h4>
+                        <p class="benefit-description">
+                            Otimize sua agenda e atenda mais clientes com eficiência.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="benefit-item fade-in-up">
+                        <div class="benefit-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4 class="benefit-title">Clientes Satisfeitos</h4>
+                        <p class="benefit-description">
+                            Reduza faltas e melhore a experiência do cliente.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="benefit-item fade-in-up">
+                        <div class="benefit-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h4 class="benefit-title">Líder do Mercado</h4>
+                        <p class="benefit-description">
+                            Tecnologia premiada e reconhecida pelos profissionais.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title fade-in-up">Planos Que Cabem no Seu Bolso</h2>
+                <p class="section-subtitle fade-in-up">Escolha o plano ideal para o seu negócio</p>
+            </div>
+            
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="pricing-card fade-in-up">
+                        <h3 class="pricing-title">Starter</h3>
+                        <div class="pricing-price">R\$ 29</div>
+                        <div class="pricing-period">por mês</div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Até 100 agendamentos/mês</li>
+                            <li><i class="fas fa-check"></i> 1 usuário</li>
+                            <li><i class="fas fa-check"></i> Relatórios básicos</li>
+                            <li><i class="fas fa-check"></i> Suporte por email</li>
+                        </ul>
+                        <a href="{% url 'authentication:register' %}" class="btn btn-outline-primary btn-pricing">
+                            Começar Agora
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="pricing-card featured fade-in-up">
+                        <div class="pricing-badge">Mais Popular</div>
+                        <h3 class="pricing-title">Professional</h3>
+                        <div class="pricing-price">R\$ 79</div>
+                        <div class="pricing-period">por mês</div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Agendamentos ilimitados</li>
+                            <li><i class="fas fa-check"></i> Até 5 usuários</li>
+                            <li><i class="fas fa-check"></i> Relatórios avançados</li>
+                            <li><i class="fas fa-check"></i> Notificações automáticas</li>
+                            <li><i class="fas fa-check"></i> Suporte prioritário</li>
+                        </ul>
+                        <a href="{% url 'authentication:register' %}" class="btn btn-primary btn-pricing">
+                            Teste Grátis 14 Dias
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="pricing-card fade-in-up">
+                        <h3 class="pricing-title">Enterprise</h3>
+                        <div class="pricing-price">R\$ 149</div>
+                        <div class="pricing-period">por mês</div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Recursos ilimitados</li>
+                            <li><i class="fas fa-check"></i> Usuários ilimitados</li>
+                            <li><i class="fas fa-check"></i> API personalizada</li>
+                            <li><i class="fas fa-check"></i> Integração WhatsApp</li>
+                            <li><i class="fas fa-check"></i> Suporte 24/7</li>
+                        </ul>
+                        <a href="{% url 'authentication:register' %}" class="btn btn-outline-primary btn-pricing">
+                            Falar com Vendas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title fade-in-up" style="color: white;">O Que Nossos Clientes Dizem</h2>
+                <p class="section-subtitle fade-in-up" style="color: rgba(255,255,255,0.8);">
+                    Histórias reais de sucesso
+                </p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="testimonial-card fade-in-up">
+                        <div class="testimonial-avatar">MC</div>
+                        <p class="testimonial-text">
+                            "Revolucionou minha clínica! Agora tenho 40% mais agendamentos e zero conflitos de horário."
+                        </p>
+                        <div class="testimonial-author">Maria Clara</div>
+                        <div class="testimonial-role">Dentista</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="testimonial-card fade-in-up">
+                        <div class="testimonial-avatar">JS</div>
+                        <p class="testimonial-text">
+                            "Sistema incrível! Meus clientes adoram a facilidade de agendar online. Recomendo 100%."
+                        </p>
+                        <div class="testimonial-author">João Silva</div>
+                        <div class="testimonial-role">Barbearia</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="testimonial-card fade-in-up">
+                        <div class="testimonial-avatar">AS</div>
+                        <p class="testimonial-text">
+                            "Economizo 3 horas por dia que antes gastava organizando agenda. Agora foco nos clientes!"
+                        </p>
+                        <div class="testimonial-author">Ana Santos</div>
+                        <div class="testimonial-role">Estética</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="fade-in-up">
+                <h2 class="cta-title">Pronto Para Transformar Seu Negócio?</h2>
+                <p class="cta-subtitle">
+                    Junte-se a milhares de profissionais que já revolucionaram seus agendamentos
+                </p>
+                <div class="hero-buttons">
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'authentication:register' %}" class="btn-hero btn-hero-primary">
+                        <i class="fas fa-rocket"></i>Começar Teste Grátis
+                    </a>
+                    <a href="{% url 'authentication:login' %}" class="btn-hero btn-hero-outline">
+                        <i class="fas fa-sign-in-alt"></i>Já Tenho Conta
+                    </a>
+                    {% else %}
+                    <a href="{% url 'agendamentos:dashboard' %}" class="btn-hero btn-hero-primary">
+                        <i class="fas fa-tachometer-alt"></i>Acessar Minha Conta
+                    </a>
                     {% endif %}
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <i class="fas fa-calendar-check" style="font-size: 15rem; opacity: 0.3;"></i>
-            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Features Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="row text-center mb-5">
-            <div class="col-12">
-                <h2 class="display-5 fw-bold text-primary mb-3">Como Funciona</h2>
-                <p class="lead text-muted">Três passos simples para revolucionar seu agendamento</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <h5 class="footer-title">AgendaFácil</h5>
+                    <p>O sistema mais completo para gestão de agendamentos do mercado.</p>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <h5 class="footer-title">Produto</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#features" class="footer-link">Recursos</a></li>
+                        <li><a href="#pricing" class="footer-link">Preços</a></li>
+                        <li><a href="#" class="footer-link">API</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <h5 class="footer-title">Suporte</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'info:home' %}" class="footer-link">Central de Ajuda</a></li>
+                        <li><a href="#" class="footer-link">Contato</a></li>
+                        <li><a href="#" class="footer-link">Status</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <h5 class="footer-title">Empresa</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="footer-link">Sobre</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Carreiras</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr style="border-color: #333;">
+            <div class="text-center">
+                <p>&copy; 2025 AgendaFácil. Todos os direitos reservados.</p>
             </div>
         </div>
-        
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card feature-card h-100 text-center p-4">
-                    <div class="card-body">
-                        <div class="text-primary mb-3">
-                            <i class="fas fa-user-plus fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">1. Cadastre-se</h5>
-                        <p class="card-text">
-                            Crie sua conta gratuitamente e configure seu perfil em poucos minutos.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card feature-card h-100 text-center p-4">
-                    <div class="card-body">
-                        <div class="text-primary mb-3">
-                            <i class="fas fa-calendar-plus fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">2. Agende</h5>
-                        <p class="card-text">
-                            Configure seus horários disponíveis e permita que clientes façam agendamentos.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card feature-card h-100 text-center p-4">
-                    <div class="card-body">
-                        <div class="text-primary mb-3">
-                            <i class="fas fa-chart-line fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">3. Gerencie</h5>
-                        <p class="card-text">
-                            Acompanhe todos os agendamentos, clientes e relatórios em um só lugar.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+    </footer>
 
-<!-- CTA Section -->
-<section class="cta-section">
-    <div class="container">
-        <div class="row text-center">
-            <div class="col-12">
-                <h2 class="display-6 fw-bold text-primary mb-4">
-                    Pronto para Começar?
-                </h2>
-                <p class="lead text-muted mb-4">
-                    Junte-se a centenas de profissionais que já otimizaram seus agendamentos
-                </p>
-                {% if not user.is_authenticated %}
-                    <a href="{% url 'authentication:login' %}" class="btn btn-custom btn-lg me-3">
-                        <i class="fas fa-rocket me-2"></i>Começar Agora
-                    </a>
-                    <a href="#features" class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-info-circle me-2"></i>Saiba Mais
-                    </a>
-                {% else %}
-                    <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-custom btn-lg">
-                        <i class="fas fa-calendar-check me-2"></i>Realizar Agendamentos
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</section>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
 
-<!-- Benefits Section -->
-<section class="py-5" id="features">
-    <div class="container">
-        <div class="row text-center mb-5">
-            <div class="col-12">
-                <h2 class="display-5 fw-bold text-primary mb-3">Por que Escolher o AgendaFácil?</h2>
-            </div>
-        </div>
-        
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-clock fa-2x"></i>
-                    </div>
-                    <h5>Economia de Tempo</h5>
-                    <p class="text-muted">Automatize seus agendamentos e foque no que realmente importa.</p>
-                </div>
-            </div>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.feature-card, .pricing-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
             
-            <div class="col-md-6 col-lg-3">
-                <div class="text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-mobile-alt fa-2x"></i>
-                    </div>
-                    <h5>Acesso Mobile</h5>
-                    <p class="text-muted">Gerencie seus agendamentos de qualquer lugar, a qualquer hora.</p>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <div class="text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-bell fa-2x"></i>
-                    </div>
-                    <h5>Notificações</h5>
-                    <p class="text-muted">Receba lembretes automáticos de compromissos agendados.</p>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <div class="text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-shield-alt fa-2x"></i>
-                    </div>
-                    <h5>Segurança</h5>
-                    <p class="text-muted">Seus dados protegidos com a mais alta segurança.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-{% endblock %}
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
