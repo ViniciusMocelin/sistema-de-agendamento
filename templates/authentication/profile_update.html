@@ -2,84 +2,690 @@
 
 {% block title %}Editar Perfil - Sistema de Agendamentos{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* Header personalizado */
+  .form-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .form-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .form-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Ações no Header */
+  .header-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 768px) {
+    .header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .form-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Form styling */
+  .form-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .form-card .card-header {
+    background: var(--gradient-bg) !important;
+    border: none;
+    padding: 20px 30px;
+  }
+
+  .form-card .card-body {
+    padding: 30px;
+  }
+
+  /* Avatar section */
+  .avatar-section {
+    text-align: center;
+    background: var(--light-color);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .avatar-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-bg);
+    opacity: 0.05;
+  }
+
+  .current-avatar {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 15px;
+  }
+
+  .avatar-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    background: var(--surface-color);
+    border-radius: 50%;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+
+  .avatar-icon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  .avatar-info {
+    color: var(--text-muted-color) !important;
+    font-size: 0.9rem;
+    margin-top: 10px;
+  }
+
+  /* Form sections */
+  .form-section {
+    background: var(--light-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 4px solid var(--primary-color);
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-label.required::after {
+    content: " *";
+    color: var(--danger-color);
+    font-weight: bold;
+  }
+
+  .form-control {
+    border-radius: 10px !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem var(--shadow-color) !important;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-control::placeholder {
+    color: var(--text-muted-color) !important;
+    opacity: 0.7;
+  }
+
+  .form-text {
+    font-size: 0.875rem;
+    color: var(--text-muted-color) !important;
+    margin-top: 5px;
+  }
+
+  .invalid-feedback {
+    display: block !important;
+    color: var(--danger-color) !important;
+    font-size: 0.875rem;
+    margin-top: 5px;
+  }
+
+  /* Buttons */
+  .btn-custom {
+    background: var(--gradient-bg);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    color: white !important;
+  }
+
+  .btn-outline-secondary {
+    border: 2px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    background: transparent;
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: var(--light-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    transform: translateY(-2px);
+  }
+
+  /* Input groups */
+  .input-group-text {
+    background-color: var(--light-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+    font-weight: 600;
+    border-radius: 10px 0 0 10px !important;
+  }
+
+  .input-group .form-control {
+    border-radius: 0 10px 10px 0 !important;
+  }
+
+  /* Progress indicator */
+  .form-progress {
+    background: var(--light-color);
+    height: 4px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .form-progress-bar {
+    height: 100%;
+    background: var(--gradient-bg);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* Field validation states */
+  .form-control.is-valid {
+    border-color: var(--success-color) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 1.88 1.88 3.75-3.75.94.94-4.69 4.69z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+
+  .form-control.is-invalid {
+    border-color: var(--danger-color) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4'/%3e%3cpath d='m6.2 4.6-1.4 1.4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+
+  /* Preview card */
+  .preview-card {
+    background: var(--surface-color) !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+
+  .preview-card .card-header {
+    background: var(--light-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    border-radius: 10px 10px 0 0 !important;
+    color: var(--text-color) !important;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .form-card .card-body {
+      padding: 20px;
+    }
+
+    .form-section {
+      padding: 15px;
+    }
+
+    .header-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .avatar-icon {
+      font-size: 3rem;
+      padding: 12px;
+    }
+  }
+
+  /* Animations */
+  .form-card {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Loading state */
+  .btn-loading {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+  }
+
+  @keyframes button-loading-spinner {
+    from {
+      transform: rotate(0turn);
+    }
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  /* Success message */
+  .success-message {
+    background: var(--success-color);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .success-message.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
+<!-- Header do Formulário -->
+<div class="form-header">
+  <h1 class="form-title">
+    <i class="fas fa-user-edit"></i>
+    Editar Perfil
+  </h1>
+  <p class="form-subtitle">
+    Atualize suas informações pessoais e mantenha seu perfil sempre atualizado
+  </p>
+  
+  <!-- Ações no Header -->
+  <div class="header-actions">
+    <a href="{% url 'authentication:profile' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-2"></i>Voltar ao Perfil
+    </a>
+  </div>
+</div>
+
+<!-- Barra de Progresso -->
+<div class="form-progress">
+  <div class="form-progress-bar" id="progress-bar"></div>
+</div>
+
+<!-- Formulário -->
 <div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">
-                    <i class="fas fa-user-edit me-2"></i>Editar Perfil
-                </h4>
+  <div class="col-lg-8 mx-auto">
+    <!-- Avatar Atual -->
+    <div class="avatar-section">
+      <div class="current-avatar">
+        <i class="fas fa-user-circle avatar-icon"></i>
+      </div>
+      <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+      <p class="avatar-info">Membro desde {{ user.date_joined|date:"F Y" }}</p>
+    </div>
+
+    <div class="card form-card">
+      <div class="card-header">
+        <h4 class="mb-0 text-white">
+          <i class="fas fa-edit me-2"></i>
+          Atualizar Informações
+        </h4>
+      </div>
+      <div class="card-body">
+        <!-- Mensagem de Sucesso -->
+        <div class="success-message" id="success-message">
+          <i class="fas fa-check-circle me-2"></i>
+          Perfil atualizado com sucesso!
+        </div>
+
+        <form method="post" id="profile-form" novalidate>
+          {% csrf_token %}
+          
+          <!-- Seção: Informações Pessoais -->
+          <div class="form-section">
+            <div class="form-section-title">
+              <i class="fas fa-user"></i>
+              Informações Pessoais
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.first_name.id_for_label }}" class="form-label required">
+                  <i class="fas fa-user"></i>
+                  Nome
+                </label>
+                <input type="text" 
+                       class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                       id="{{ form.first_name.id_for_label }}"
+                       name="{{ form.first_name.name }}" 
+                       value="{{ form.first_name.value|default:'' }}"
+                       placeholder="Digite seu nome">
+                {% if form.first_name.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.first_name.errors %}
+                      <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Como você gostaria de ser chamado
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.last_name.id_for_label }}" class="form-label required">
+                  <i class="fas fa-user"></i>
+                  Sobrenome
+                </label>
+                <input type="text" 
+                       class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
+                       id="{{ form.last_name.id_for_label }}"
+                       name="{{ form.last_name.name }}" 
+                       value="{{ form.last_name.value|default:'' }}"
+                       placeholder="Digite seu sobrenome">
+                {% if form.last_name.errors %}
+                  <div class="invalid-feedback">
+                    {% for error in form.last_name.errors %}
+                      <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Seu nome de família
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Informações de Contato -->
+          <div class="form-section">
+            <div class="form-section-title">
+              <i class="fas fa-envelope"></i>
+              Informações de Contato
+            </div>
+            
+            <div class="mb-3">
+              <label for="{{ form.email.id_for_label }}" class="form-label required">
+                <i class="fas fa-envelope"></i>
+                Email
+              </label>
+              <input type="email" 
+                     class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                     id="{{ form.email.id_for_label }}"
+                     name="{{ form.email.name }}" 
+                     value="{{ form.email.value|default:'' }}"
+                     placeholder="seu@email.com">
+              {% if form.email.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.email.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Usado para login e notificações importantes
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview das Alterações -->
+          <div class="card preview-card">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="fas fa-eye me-2"></i>Preview das Alterações
+              </h6>
             </div>
             <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
-                            <i class="fas fa-user me-2"></i>Nome
-                        </label>
-                        <input type="text" 
-                               class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
-                               id="{{ form.first_name.id_for_label }}"
-                               name="{{ form.first_name.name }}" 
-                               value="{{ form.first_name.value|default:'' }}">
-                        {% if form.first_name.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.first_name.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
-                            <i class="fas fa-user me-2"></i>Sobrenome
-                        </label>
-                        <input type="text" 
-                               class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
-                               id="{{ form.last_name.id_for_label }}"
-                               name="{{ form.last_name.name }}" 
-                               value="{{ form.last_name.value|default:'' }}">
-                        {% if form.last_name.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.last_name.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">
-                            <i class="fas fa-envelope me-2"></i>Email
-                        </label>
-                        <input type="email" 
-                               class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
-                               id="{{ form.email.id_for_label }}"
-                               name="{{ form.email.name }}" 
-                               value="{{ form.email.value|default:'' }}">
-                        {% if form.email.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.email.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Salvar Alterações
-                        </button>
-                        <a href="{% url 'authentication:profile' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>Cancelar
-                        </a>
-                    </div>
-                </form>
+              <div class="d-flex align-items-center">
+                <i class="fas fa-user-circle fa-3x text-primary me-3"></i>
+                <div>
+                  <h6 class="mb-1" id="preview-name">{{ form.first_name.value|default:user.first_name }} {{ form.last_name.value|default:user.last_name }}</h6>
+                  <p class="text-muted mb-0" id="preview-email">{{ form.email.value|default:user.email }}</p>
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
+
+          <!-- Botões de Ação -->
+          <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
+            <a href="{% url 'authentication:profile' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-custom" id="submit-btn">
+              <i class="fas fa-save me-2"></i>Salvar Alterações
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('profile-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const successMessage = document.getElementById('success-message');
+    
+    // Elementos do preview
+    const previewName = document.getElementById('preview-name');
+    const previewEmail = document.getElementById('preview-email');
+    
+    // Campos do formulário
+    const firstNameInput = document.getElementById('{{ form.first_name.id_for_label }}');
+    const lastNameInput = document.getElementById('{{ form.last_name.id_for_label }}');
+    const emailInput = document.getElementById('{{ form.email.id_for_label }}');
+    
+    // Função para atualizar preview
+    function updatePreview() {
+        const firstName = firstNameInput.value.trim() || '{{ user.first_name }}';
+        const lastName = lastNameInput.value.trim() || '{{ user.last_name }}';
+        const email = emailInput.value.trim() || '{{ user.email }}';
+        
+        previewName.textContent = `${firstName} ${lastName}`.trim() || '{{ user.username }}';
+        previewEmail.textContent = email;
+    }
+    
+    // Função para atualizar barra de progresso
+    function updateProgress() {
+        const requiredFields = form.querySelectorAll('input[required]');
+        const filledFields = Array.from(requiredFields).filter(field => field.value.trim() !== '');
+        const progress = (filledFields.length / requiredFields.length) * 100;
+        
+        progressBar.style.width = `${progress}%`;
+        
+        if (progress === 100) {
+            progressBar.style.background = 'var(--success-color)';
+        } else if (progress >= 50) {
+            progressBar.style.background = 'var(--warning-color)';
+        } else {
+            progressBar.style.background = 'var(--gradient-bg)';
+        }
+    }
+    
+    // Event listeners para atualizar preview em tempo real
+    [firstNameInput, lastNameInput, emailInput].forEach(input => {
+        input.addEventListener('input', function() {
+            updatePreview();
+            updateProgress();
+        });
+    });
+    
+    // Validação em tempo real
+    const allInputs = form.querySelectorAll('input');
+    allInputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') && this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Validação de email
+    emailInput.addEventListener('blur', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (this.value && !emailRegex.test(this.value)) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        }
+    });
+    
+    // Loading state no submit
+    form.addEventListener('submit', function(e) {
+        submitBtn.classList.add('btn-loading');
+        submitBtn.disabled = true;
+        
+        // Simular sucesso (remover em produção)
+        setTimeout(() => {
+            submitBtn.classList.remove('btn-loading');
+            submitBtn.disabled = false;
+            successMessage.classList.add('show');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        }, 2000);
+    });
+    
+    // Inicializar
+    updatePreview();
+    updateProgress();
+    
+    // Auto-focus no primeiro campo
+    firstNameInput.focus();
+    
+    // Animação de foco nos inputs
+    allInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'transform 0.2s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Animação no avatar
+    const avatar = document.querySelector('.avatar-icon');
+    if (avatar) {
+        avatar.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        
+        avatar.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    }
+});
+</script>
 {% endblock %}
