@@ -2,466 +2,799 @@
 
 {% block title %}Serviços - Sistema de Agendamentos{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* Header personalizado */
+  .list-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .list-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .list-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Ações no Header */
+  .header-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 768px) {
+    .header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .list-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Cards styling */
+  .filter-card, .list-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .filter-card .card-body {
+    padding: 25px;
+  }
+
+  .list-card .card-header {
+    background: var(--light-color) !important;
+    border: none;
+    padding: 15px 20px;
+  }
+
+  /* Stats cards */
+  .stat-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-bg);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  .stat-card .card-body {
+    padding: 20px;
+    text-align: center;
+  }
+
+  .stat-card i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    opacity: 0.8;
+  }
+
+  .stat-card h5 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--text-color) !important;
+  }
+
+  .stat-card small {
+    color: var(--text-muted-color) !important;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Form controls */
+  .form-control, .form-select {
+    border-radius: 8px !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 10px 12px;
+    transition: all 0.3s ease;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem var(--shadow-color) !important;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+
+  /* Buttons */
+  .btn-custom {
+    background: var(--gradient-bg);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    color: white !important;
+  }
+
+  /* Service icon */
+  .service-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    background: var(--gradient-bg) !important;
+    color: white !important;
+    border-radius: 50%;
+  }
+
+  /* Service cards mobile */
+  .service-card {
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--surface-color);
+  }
+
+  .service-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: var(--info-color);
+  }
+
+  /* Table styling */
+  .table {
+    color: var(--text-color) !important;
+  }
+
+  .table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background-color: var(--light-color) !important;
+    color: var(--text-color) !important;
+    padding: 15px 12px;
+  }
+
+  .table td {
+    padding: 15px 12px;
+    vertical-align: middle;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: var(--light-color) !important;
+    transform: translateX(5px);
+  }
+
+  /* Button groups */
+  .btn-group-sm .btn {
+    padding: 6px 10px;
+    border-radius: 6px !important;
+    margin: 0 2px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted-color);
+    margin-bottom: 20px;
+  }
+
+  .empty-state h5 {
+    color: var(--text-color) !important;
+    margin-bottom: 10px;
+  }
+
+  .empty-state p {
+    color: var(--text-muted-color) !important;
+    margin-bottom: 25px;
+  }
+
+  /* Pagination */
+  .pagination .page-link {
+    color: var(--text-color) !important;
+    background-color: var(--surface-color) !important;
+    border-color: var(--border-color) !important;
+    border-radius: 8px !important;
+    margin: 0 2px;
+    padding: 8px 12px;
+  }
+
+  .pagination .page-link:hover {
+    color: var(--primary-color) !important;
+    background-color: var(--light-color) !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+  }
+
+  /* Modal styling */
+  .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface-color);
+    border-radius: 15px 15px 0 0;
+  }
+
+  .modal-body {
+    background: var(--surface-color);
+  }
+
+  .modal-footer {
+    border-top: 1px solid var(--border-color);
+    background: var(--surface-color);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .service-preview {
+    border-left: 4px solid var(--info-color);
+    background: var(--light-color) !important;
+    border-radius: 8px;
+  }
+
+  /* Badge styling */
+  .badge {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+  }
+
+  /* Price styling */
+  .price-display {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--success-color) !important;
+  }
+
+  /* Duration badge */
+  .duration-badge {
+    background: var(--primary-color) !important;
+    color: white !important;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Stats badge */
+  .stats-badge {
+    background: var(--info-color) !important;
+    color: white !important;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .header-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .filter-card .card-body {
+      padding: 20px;
+    }
+
+    .service-icon {
+      width: 35px;
+      height: 35px;
+      font-size: 14px;
+    }
+
+    .stat-card h5 {
+      font-size: 1.5rem;
+    }
+
+    .stat-card i {
+      font-size: 2rem;
+    }
+  }
+
+  /* Animations */
+  .list-card, .filter-card, .stat-card {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Row hover effects */
+  .table tbody tr {
+    transition: all 0.3s ease;
+  }
+
+  /* Search highlight */
+  .search-highlight {
+    background: var(--warning-color);
+    color: var(--dark-color);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <!-- Header da Página -->
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="text-primary mb-1">
-                        <i class="fas fa-cogs me-2"></i>Gerenciar Serviços
-                    </h2>
-                    <p class="text-muted mb-0">
-                        Total de {{ total_servicos }} serviço{{ total_servicos|pluralize }}
-                    </p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{% url 'agendamentos:servico_create' %}" class="btn btn-info">
-                        <i class="fas fa-plus me-2"></i>Novo Serviço
-                    </a>
-                    <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filtros e Busca -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-5">
-                            <label for="search" class="form-label">
-                                <i class="fas fa-search me-2"></i>Buscar Serviço
-                            </label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="search" 
-                                   name="search" 
-                                   value="{{ search }}"
-                                   placeholder="Nome ou descrição do serviço">
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <label for="status" class="form-label">
-                                <i class="fas fa-filter me-2"></i>Status
-                            </label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="">Todos os Status</option>
-                                <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativos</option>
-                                <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativos</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4 d-flex align-items-end gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search me-2"></i>Filtrar
-                            </button>
-                            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Limpar
-                            </a>
-                            <div class="ms-auto">
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-download me-2"></i>Exportar
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
-                                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
-                                        <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i>Imprimir</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lista de Serviços -->
-    <div class="row">
-        <div class="col-12">
-            {% if servicos %}
-                <!-- Estatísticas Rápidas -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <div class="card border-info text-center">
-                            <div class="card-body py-3">
-                                <i class="fas fa-cogs fa-2x text-info mb-2"></i>
-                                <h5 class="mb-1">{{ total_servicos }}</h5>
-                                <small class="text-muted">Total de Serviços</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-success text-center">
-                            <div class="card-body py-3">
-                                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                                <h5 class="mb-1">{{ servicos_ativos }}</h5>
-                                <small class="text-muted">Serviços Ativos</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-warning text-center">
-                            <div class="card-body py-3">
-                                <i class="fas fa-dollar-sign fa-2x text-warning mb-2"></i>
-                                <h5 class="mb-1">R$ {{ preco_medio|floatformat:2 }}</h5>
-                                <small class="text-muted">Preço Médio</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card border-primary text-center">
-                            <div class="card-body py-3">
-                                <i class="fas fa-clock fa-2x text-primary mb-2"></i>
-                                <h5 class="mb-1">{{ duracao_media }}</h5>
-                                <small class="text-muted">Duração Média</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card shadow-sm">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-list me-2"></i>Lista de Serviços
-                        </h5>
-                        <small class="text-muted">
-                            Mostrando {{ servicos|length }} de {{ total_servicos }} serviço{{ total_servicos|pluralize }}
-                        </small>
-                    </div>
-                    
-                    <!-- Versão Desktop -->
-                    <div class="d-none d-lg-block">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Serviço</th>
-                                        <th>Duração</th>
-                                        <th>Preço</th>
-                                        <th>Status</th>
-                                        <th>Agendamentos</th>
-                                        <th>Criado em</th>
-                                        <th class="text-center">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for servico in servicos %}
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="service-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3">
-                                                    <i class="fas fa-cog"></i>
-                                                </div>
-                                                <div>
-                                                    <strong>{{ servico.nome }}</strong>
-                                                    {% if servico.descricao %}
-                                                        <br><small class="text-muted">{{ servico.descricao|truncatechars:50 }}</small>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary">
-                                                <i class="fas fa-clock me-1"></i>{{ servico.duracao_formatada }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="h6 text-success mb-0">
-                                                R$ {{ servico.preco|floatformat:2 }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if servico.ativo %}
-                                                <span class="badge bg-success">
-                                                    <i class="fas fa-check-circle me-1"></i>Ativo
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">
-                                                    <i class="fas fa-times-circle me-1"></i>Inativo
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-info">
-                                                {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <small>{{ servico.criado_em|date:"d/m/Y" }}</small>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{% url 'agendamentos:servico_update' servico.pk %}" 
-                                                   class="btn btn-outline-warning" 
-                                                   title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="{% url 'agendamentos:agendamento_create' %}?servico={{ servico.pk }}" 
-                                                   class="btn btn-outline-success" 
-                                                   title="Novo agendamento">
-                                                    <i class="fas fa-calendar-plus"></i>
-                                                </a>
-                                                <button type="button" 
-                                                        class="btn btn-outline-danger" 
-                                                        title="Excluir"
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#deleteModal{{ servico.pk }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <!-- Versão Mobile -->
-                    <div class="d-lg-none">
-                        <div class="row g-3 p-3">
-                            {% for servico in servicos %}
-                            <div class="col-12">
-                                <div class="card service-card h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="service-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3">
-                                                    <i class="fas fa-cog"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-1">{{ servico.nome }}</h6>
-                                                    {% if servico.ativo %}
-                                                        <span class="badge bg-success">Ativo</span>
-                                                    {% else %}
-                                                        <span class="badge bg-secondary">Inativo</span>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="h6 text-success mb-1">R$ {{ servico.preco|floatformat:2 }}</div>
-                                                <span class="badge bg-primary">{{ servico.duracao_formatada }}</span>
-                                            </div>
-                                        </div>
-                                        
-                                        {% if servico.descricao %}
-                                        <p class="text-muted small mb-3">{{ servico.descricao|truncatechars:100 }}</p>
-                                        {% endif %}
-                                        
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar me-1"></i>
-                                                {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }}
-                                            </small>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{% url 'agendamentos:servico_update' servico.pk %}" 
-                                                   class="btn btn-outline-warning btn-sm">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="{% url 'agendamentos:agendamento_create' %}?servico={{ servico.pk }}" 
-                                                   class="btn btn-outline-success btn-sm">
-                                                    <i class="fas fa-calendar-plus"></i>
-                                                </a>
-                                                <button type="button" 
-                                                        class="btn btn-outline-danger btn-sm" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#deleteModal{{ servico.pk }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Paginação -->
-                {% if is_paginated %}
-                <nav aria-label="Navegação de páginas" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
-                                    <i class="fas fa-angle-left"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                        
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <li class="page-item active">
-                                    <span class="page-link">{{ num }}</span>
-                                </li>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
-                                    <i class="fas fa-angle-right"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-                
-            {% else %}
-                <!-- Estado Vazio -->
-                <div class="card shadow-sm">
-                    <div class="card-body text-center py-5">
-                        {% if search or status %}
-                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">Nenhum serviço encontrado</h5>
-                            <p class="text-muted mb-4">
-                                Não encontramos serviços com os filtros aplicados.
-                                <br>Tente ajustar os critérios de busca.
-                            </p>
-                            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-primary">
-                                <i class="fas fa-times me-2"></i>Limpar Filtros
-                            </a>
-                        {% else %}
-                            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">Nenhum serviço cadastrado</h5>
-                            <p class="text-muted mb-4">
-                                Você ainda não possui serviços cadastrados.
-                                <br>Comece criando seu primeiro serviço!
-                            </p>
-                            <a href="{% url 'agendamentos:servico_create' %}" class="btn btn-info">
-                                <i class="fas fa-plus me-2"></i>Cadastrar Primeiro Serviço
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-    </div>
+<!-- Header da Lista -->
+<div class="list-header">
+  <h1 class="list-title">
+    <i class="fas fa-cogs"></i>
+    Gerenciar Serviços
+  </h1>
+  <p class="list-subtitle">
+    Total de {{ total_servicos }} serviço{{ total_servicos|pluralize }}
+    {% if search or status %}
+    <span class="text-primary">• Filtros aplicados</span>
+    {% endif %}
+  </p>
+  
+  <!-- Ações no Header -->
+  <div class="header-actions">
+    <a href="{% url 'agendamentos:servico_create' %}" class="btn btn-custom">
+      <i class="fas fa-plus"></i>Novo Serviço
+    </a>
+    <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i>Dashboard
+    </a>
+  </div>
 </div>
+
+<!-- Filtros e Busca -->
+<div class="card filter-card">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-5">
+        <label for="search" class="form-label">
+          <i class="fas fa-search me-1"></i>Buscar Serviço
+        </label>
+        <input type="text" 
+               class="form-control" 
+               id="search" 
+               name="search" 
+               value="{{ search }}"
+               placeholder="Nome ou descrição do serviço">
+      </div>
+      
+      <div class="col-md-3">
+        <label for="status" class="form-label">
+          <i class="fas fa-filter me-1"></i>Status
+        </label>
+        <select class="form-select" id="status" name="status">
+          <option value="">Todos os Status</option>
+          <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativos</option>
+          <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativos</option>
+        </select>
+      </div>
+      
+      <div class="col-md-4 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-custom">
+          <i class="fas fa-search"></i>Filtrar
+        </button>
+        <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-times"></i>Limpar
+        </a>
+        <div class="ms-auto">
+          <div class="dropdown">
+            <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="fas fa-download"></i>Exportar
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i>Imprimir</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Lista de Serviços -->
+{% if servicos %}
+  <!-- Estatísticas Rápidas -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <i class="fas fa-cogs text-info"></i>
+          <h5>{{ total_servicos }}</h5>
+          <small>Total de Serviços</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <i class="fas fa-check-circle text-success"></i>
+          <h5>{{ servicos_ativos }}</h5>
+          <small>Serviços Ativos</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <i class="fas fa-dollar-sign text-warning"></i>
+          <h5>R$ {{ preco_medio|floatformat:2 }}</h5>
+          <small>Preço Médio</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <i class="fas fa-clock text-primary"></i>
+          <h5>{{ duracao_media }}</h5>
+          <small>Duração Média</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card list-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-list me-2"></i>Lista de Serviços
+      </h5>
+      <small class="text-muted">
+        Mostrando {{ servicos|length }} de {{ total_servicos }} serviço{{ total_servicos|pluralize }}
+      </small>
+    </div>
+    
+    <!-- Versão Desktop -->
+    <div class="d-none d-lg-block">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Serviço</th>
+              <th>Duração</th>
+              <th>Preço</th>
+              <th>Status</th>
+              <th>Agendamentos</th>
+              <th>Criado em</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for servico in servicos %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="service-icon d-flex align-items-center justify-content-center me-3">
+                    <i class="fas fa-cog"></i>
+                  </div>
+                  <div>
+                    <strong>{{ servico.nome }}</strong>
+                    {% if servico.descricao %}
+                      <br><small class="text-muted">{{ servico.descricao|truncatechars:50 }}</small>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="duration-badge">
+                  <i class="fas fa-clock me-1"></i>{{ servico.duracao_formatada }}
+                </span>
+              </td>
+              <td>
+                <span class="price-display">
+                  R$ {{ servico.preco|floatformat:2 }}
+                </span>
+              </td>
+              <td>
+                {% if servico.ativo %}
+                  <span class="badge bg-success">
+                    <i class="fas fa-check-circle me-1"></i>Ativo
+                  </span>
+                {% else %}
+                  <span class="badge bg-secondary">
+                    <i class="fas fa-times-circle me-1"></i>Inativo
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="stats-badge">
+                  {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">{{ servico.criado_em|date:"d/m/Y" }}</small>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'agendamentos:servico_update' servico.pk %}" 
+                     class="btn btn-outline-warning" 
+                     title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'agendamentos:agendamento_create' %}?servico={{ servico.pk }}" 
+                     class="btn btn-outline-success" 
+                     title="Novo agendamento">
+                    <i class="fas fa-calendar-plus"></i>
+                  </a>
+                  <button type="button" 
+                          class="btn btn-outline-danger" 
+                          title="Excluir"
+                          data-bs-toggle="modal" 
+                          data-bs-target="#deleteModal{{ servico.pk }}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Versão Mobile -->
+    <div class="d-lg-none">
+      <div class="row g-3 p-3">
+        {% for servico in servicos %}
+        <div class="col-12">
+          <div class="card service-card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="d-flex align-items-center">
+                  <div class="service-icon d-flex align-items-center justify-content-center me-3">
+                    <i class="fas fa-cog"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-1">{{ servico.nome }}</h6>
+                    {% if servico.ativo %}
+                      <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Inativo</span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div class="price-display mb-1">R$ {{ servico.preco|floatformat:2 }}</div>
+                  <span class="duration-badge">{{ servico.duracao_formatada }}</span>
+                </div>
+              </div>
+              
+              {% if servico.descricao %}
+              <p class="text-muted small mb-3">{{ servico.descricao|truncatechars:100 }}</p>
+              {% endif %}
+              
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                  <span class="stats-badge">
+                    {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }}
+                  </span>
+                </small>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'agendamentos:servico_update' servico.pk %}" 
+                     class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'agendamentos:agendamento_create' %}?servico={{ servico.pk }}" 
+                     class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-calendar-plus"></i>
+                  </a>
+                  <button type="button" 
+                          class="btn btn-outline-danger btn-sm" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#deleteModal{{ servico.pk }}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Paginação -->
+  {% if is_paginated %}
+  <nav aria-label="Navegação de páginas" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+          </a>
+        </li>
+      {% endif %}
+      
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+  
+{% else %}
+  <!-- Estado Vazio -->
+  <div class="card">
+    <div class="card-body empty-state">
+      {% if search or status %}
+        <i class="fas fa-search"></i>
+        <h5>Nenhum serviço encontrado</h5>
+        <p>
+          Não encontramos serviços com os filtros aplicados.
+          <br>Tente ajustar os critérios de busca.
+        </p>
+        <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-primary">
+          <i class="fas fa-times me-2"></i>Limpar Filtros
+        </a>
+      {% else %}
+        <i class="fas fa-cogs"></i>
+        <h5>Nenhum serviço cadastrado</h5>
+        <p>
+          Você ainda não possui serviços cadastrados.
+          <br>Comece criando seu primeiro serviço!
+        </p>
+        <a href="{% url 'agendamentos:servico_create' %}" class="btn btn-custom">
+          <i class="fas fa-plus me-2"></i>Cadastrar Primeiro Serviço
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
 
 <!-- Modais de Confirmação de Exclusão -->
 {% for servico in servicos %}
 <div class="modal fade" id="deleteModal{{ servico.pk }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                    Confirmar Exclusão
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja excluir o serviço <strong>{{ servico.nome }}</strong>?</p>
-                
-                {% if servico.agendamento_set.count > 0 %}
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Atenção:</strong> Este serviço possui {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }} associado{{ servico.agendamento_set.count|pluralize }}. 
-                    A exclusão pode afetar esses registros.
-                </div>
-                {% else %}
-                <div class="alert alert-warning">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>Atenção:</strong> Esta ação não pode ser desfeita.
-                </div>
-                {% endif %}
-                
-                <div class="service-preview p-3 bg-light rounded">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ servico.nome }}</strong>
-                            <br><small class="text-muted">{{ servico.descricao|default:"Sem descrição" }}</small>
-                        </div>
-                        <div class="text-end">
-                            <div class="text-success">R$ {{ servico.preco|floatformat:2 }}</div>
-                            <small class="text-muted">{{ servico.duracao_formatada }}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cancelar
-                </button>
-                <a href="{% url 'agendamentos:servico_delete' servico.pk %}" class="btn btn-danger">
-                    <i class="fas fa-trash me-2"></i>Excluir Serviço
-                </a>
-            </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+          Confirmar Exclusão
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o serviço <strong>{{ servico.nome }}</strong>?</p>
+        
+        {% if servico.agendamento_set.count > 0 %}
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Atenção:</strong> Este serviço possui {{ servico.agendamento_set.count }} agendamento{{ servico.agendamento_set.count|pluralize }} associado{{ servico.agendamento_set.count|pluralize }}. 
+          A exclusão pode afetar esses registros.
         </div>
+        {% else %}
+        <div class="alert alert-warning">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Atenção:</strong> Esta ação não pode ser desfeita.
+        </div>
+        {% endif %}
+        
+        <div class="service-preview p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{{ servico.nome }}</strong>
+              <br><small class="text-muted">{{ servico.descricao|default:"Sem descrição" }}</small>
+            </div>
+            <div class="text-end">
+              <div class="text-success">R$ {{ servico.preco|floatformat:2 }}</div>
+              <small class="text-muted">{{ servico.duracao_formatada }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancelar
+        </button>
+        <a href="{% url 'agendamentos:servico_delete' servico.pk %}" class="btn btn-danger">
+          <i class="fas fa-trash me-2"></i>Excluir Serviço
+        </a>
+      </div>
     </div>
+  </div>
 </div>
 {% endfor %}
-
-<style>
-    .service-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-    }
-    
-    .service-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        border: 1px solid #e9ecef;
-    }
-    
-    .service-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    
-    .table th {
-        border-top: none;
-        font-weight: 600;
-        font-size: 0.875rem;
-        background-color: #f8f9fa;
-    }
-    
-    .btn-group-sm .btn {
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .service-preview {
-        border-left: 4px solid #17a2b8;
-    }
-    
-    @media (max-width: 768px) {
-        .container {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
-        
-        .service-icon {
-            width: 35px;
-            height: 35px;
-            font-size: 14px;
-        }
-    }
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -479,15 +812,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Destacar linhas ao passar o mouse
+    const tableRows = document.querySelectorAll('.table tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'var(--light-color)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+    
     // Animação nos cards de serviços
     const serviceCards = document.querySelectorAll('.service-card');
     serviceCards.forEach(card => {
         card.addEventListener('mouseenter', function() {
-            this.style.borderColor = '#17a2b8';
+            this.style.borderColor = 'var(--info-color)';
         });
         
         card.addEventListener('mouseleave', function() {
-            this.style.borderColor = '#e9ecef';
+            this.style.borderColor = 'var(--border-color)';
+        });
+    });
+    
+    // Animar cards de estatísticas
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
         });
     });
     
@@ -495,9 +854,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteButtons = document.querySelectorAll('[data-bs-target^="#deleteModal"]');
     deleteButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const serviceName = this.closest('tr, .card').querySelector('strong').textContent;
+            const row = this.closest('tr, .card');
+            const serviceName = row.querySelector('strong').textContent;
             console.log('Preparando exclusão do serviço:', serviceName);
         });
+    });
+    
+    // Highlight de busca
+    const searchTerm = '{{ search }}';
+    if (searchTerm) {
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        const textElements = document.querySelectorAll('td, .card-body');
+        
+        textElements.forEach(element => {
+            if (element.textContent.toLowerCase().includes(searchTerm.toLowerCase())) {
+                element.innerHTML = element.innerHTML.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+        });
+    }
+    
+    // Animação de entrada escalonada
+    const cards = document.querySelectorAll('.list-card, .filter-card, .stat-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
     });
 });
 </script>

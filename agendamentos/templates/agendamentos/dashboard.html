@@ -4,424 +4,60 @@
 
 {% block extra_css %}
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-{% endblock %}
-
-{% block content %}
-<div class="container mt-4">
-  <!-- Header do Dashboard -->
-  <div class="row">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="text-primary mb-1">
-            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-          </h2>
-          <p class="text-muted mb-0">
-            Bem-vindo, {{ user.get_full_name|default:user.username }}!
-            <small class="text-success">
-              <i class="fas fa-circle me-1"></i>Online
-            </small>
-          </p>
-        </div>
-        <div class="d-flex gap-2">
-          <a href="{% url 'agendamentos:agendamento_create' %}" class="btn btn-custom">
-            <i class="fas fa-plus me-2"></i>Novo Agendamento
-          </a>
-          <a href="{% url 'agendamentos:relatorios' %}" class="btn btn-outline-primary">
-            <i class="fas fa-chart-bar me-2"></i>Relatórios
-          </a>
-          <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-              <i class="fas fa-cog me-2"></i>Ações
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
-              <!-- Ações Principais -->
-              <li>
-                <h6 class="dropdown-header">
-                  <i class="fas fa-bolt me-2"></i>Ações Rápidas
-                </h6>
-              </li>
-              <li>
-                <a class="dropdown-item" href="{% url 'agendamentos:cliente_create' %}">
-                  <i class="fas fa-user-plus me-2"></i>Novo Cliente
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="{% url 'agendamentos:servico_create' %}">
-                  <i class="fas fa-plus-circle me-2"></i>Novo Serviço
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="{% url 'agendamentos:configuracoes' %}">
-                  <i class="fas fa-cog me-2"></i>Configurações
-                </a>
-              </li>
-
-              <!-- Divisor -->
-              <li><hr class="dropdown-divider" /></li>
-
-              <!-- Toggle Modo Escuro -->
-              <li>
-                <h6 class="dropdown-header">
-                  <i class="fas fa-adjust me-2"></i>Aparência
-                </h6>
-              </li>
-              <li class="px-3 py-2">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="mode-text">
-                    <i class="fas fa-{% if is_dark_mode %}moon{% else %}sun{% endif %} mode-icon me-2"></i>
-                    Modo {% if is_dark_mode %}Escuro{% else %}Claro{% endif %}
-                  </span>
-                  <label class="dark-mode-toggle" title="Alternar modo {% if is_dark_mode %}claro{% else %}escuro{% endif %}">
-                    <input type="checkbox" {% if is_dark_mode %}checked{% endif %} onchange="alterarModo(this.checked)" />
-                    <span class="dark-mode-slider"></span>
-                  </label>
-                </div>
-                <small class="text-muted d-block mt-1">
-                  Clique para alternar entre modo claro e escuro
-                </small>
-              </li>
-
-              <!-- Divisor -->
-              <li><hr class="dropdown-divider" /></li>
-
-              <!-- Seletor de Temas -->
-              <li>
-                <h6 class="dropdown-header">
-                  <i class="fas fa-palette me-2"></i>Temas
-                  <small class="text-muted">({{ paleta_cores.name }})</small>
-                </h6>
-              </li>
-
-              {% for tema_key, tema_info in todas_paletas.items %}
-              <li>
-                <a class="dropdown-item tema-dropdown-item {% if tema_key == tema_atual %}active{% endif %}" 
-                   href="#" onclick="alterarTema('{{ tema_key }}', event)">
-                  <div class="d-flex align-items-center">
-                    <div class="tema-preview me-3" 
-                         style="width: 25px; height: 25px; border-radius: 50%; background: {{ tema_info.gradient }}; border: 2px solid {% if tema_key == tema_atual %}var(--primary-color){% else %}var(--border-color){% endif %};"></div>
-                    <div class="flex-grow-1">
-                      <strong>{{ tema_info.name }}</strong>
-                      {% if tema_key == tema_atual %}
-                      <i class="fas fa-check text-success ms-2"></i>
-                      {% endif %}
-                    </div>
-                  </div>
-                </a>
-              </li>
-              {% endfor %}
-
-              <!-- Divisor -->
-              <li><hr class="dropdown-divider" /></li>
-
-              <!-- Links Úteis -->
-              <li>
-                <h6 class="dropdown-header">
-                  <i class="fas fa-link me-2"></i>Links Úteis
-                </h6>
-              </li>
-              <li>
-                <a class="dropdown-item" href="{% url 'info:home' %}">
-                  <i class="fas fa-question-circle me-2"></i>Central de Ajuda
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" href="{% url 'authentication:profile' %}">
-                  <i class="fas fa-user-cog me-2"></i>Meu Perfil
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cards de Estatísticas -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm h-100 card-hover theme-card">
-        <div class="card-body text-center">
-          <div class="text-primary mb-2">
-            <i class="fas fa-calendar-day fa-2x"></i>
-          </div>
-          <h5 class="card-title">Hoje</h5>
-          <h3 class="text-primary mb-0">{{ agendamentos_hoje }}</h3>
-          <small class="text-muted">agendamento{{ agendamentos_hoje|pluralize }}</small>
-          <div class="mt-2">
-            <a href="{% url 'agendamentos:agendamento_list' %}?data_inicio={{ today }}&data_fim={{ today }}" 
-               class="btn btn-sm btn-outline-primary">
-              Ver Detalhes
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm h-100 card-hover theme-card">
-        <div class="card-body text-center">
-          <div class="text-success mb-2">
-            <i class="fas fa-calendar-week fa-2x"></i>
-          </div>
-          <h5 class="card-title">Esta Semana</h5>
-          <h3 class="text-success mb-0">{{ agendamentos_semana }}</h3>
-          <small class="text-muted">agendamento{{ agendamentos_semana|pluralize }}</small>
-          <div class="mt-2">
-            <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-sm btn-outline-success">
-              Ver Agenda
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm h-100 card-hover theme-card">
-        <div class="card-body text-center">
-          <div class="text-warning mb-2">
-            <i class="fas fa-users fa-2x"></i>
-          </div>
-          <h5 class="card-title">Clientes</h5>
-          <h3 class="text-warning mb-0">{{ total_clientes }}</h3>
-          <small class="text-muted">cadastrado{{ total_clientes|pluralize }}</small>
-          <div class="mt-2">
-            <a href="{% url 'agendamentos:cliente_list' %}" class="btn btn-sm btn-outline-warning">
-              Gerenciar
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm h-100 card-hover theme-card">
-        <div class="card-body text-center">
-          <div class="text-info mb-2">
-            <i class="fas fa-clock fa-2x"></i>
-          </div>
-          <h5 class="card-title">Pendentes</h5>
-          <h3 class="text-info mb-0">{{ agendamentos_pendentes }}</h3>
-          <small class="text-muted">confirmação{{ agendamentos_pendentes|pluralize:"ões" }}</small>
-          <div class="mt-2">
-            <a href="{% url 'agendamentos:agendamento_list' %}?status=agendado" 
-               class="btn btn-sm btn-outline-info">
-              Confirmar
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Gráfico de Agendamentos por Dia -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm theme-card">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">
-            <i class="fas fa-chart-bar me-2"></i>Agendamentos por Dia (Últimos 30 dias)
-          </h5>
-        </div>
-        <div class="card-body">
-          <div id="grafico-agendamentos" style="height: 400px;"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Ações Rápidas -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm theme-card">
-        <div class="card-header bg-light">
-          <h5 class="mb-0">
-            <i class="fas fa-bolt me-2 text-warning"></i>Ações Rápidas
-          </h5>
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <a href="{% url 'agendamentos:agendamento_create' %}" 
-                 class="btn btn-custom w-100 py-3 action-card">
-                <i class="fas fa-calendar-plus fa-2x d-block mb-2"></i>
-                <strong>Novo Agendamento</strong>
-                <br><small>Agendar cliente</small>
-              </a>
-            </div>
-            <div class="col-md-4">
-              <a href="{% url 'agendamentos:cliente_create' %}" 
-                 class="btn btn-outline-primary w-100 py-3 action-card">
-                <i class="fas fa-user-plus fa-2x d-block mb-2"></i>
-                <strong>Cadastrar Cliente</strong>
-                <br><small>Novo cliente</small>
-              </a>
-            </div>
-            <div class="col-md-4">
-              <a href="{% url 'agendamentos:relatorios' %}" 
-                 class="btn btn-outline-success w-100 py-3 action-card">
-                <i class="fas fa-chart-line fa-2x d-block mb-2"></i>
-                <strong>Ver Relatórios</strong>
-                <br><small>Análises detalhadas</small>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Próximos Agendamentos e Resumo -->
-  <div class="row">
-    <div class="col-lg-8">
-      <div class="card shadow-sm theme-card">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="fas fa-calendar-alt me-2"></i>Próximos Agendamentos
-          </h5>
-          <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-sm btn-light">
-            <i class="fas fa-external-link-alt me-1"></i>Ver Todos
-          </a>
-        </div>
-        <div class="card-body p-0">
-          {% if proximos_agendamentos %}
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Cliente</th>
-                  <th>Serviço</th>
-                  <th>Data/Hora</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for agendamento in proximos_agendamentos %}
-                <tr>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
-                        {{ agendamento.cliente.nome|first|upper }}
-                      </div>
-                      <div>
-                        <strong>{{ agendamento.cliente.nome }}</strong>
-                        <br><small class="text-muted">{{ agendamento.cliente.telefone }}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <strong>{{ agendamento.servico.nome }}</strong>
-                    <br><small class="text-muted">{{ agendamento.servico.duracao_formatada }}</small>
-                  </td>
-                  <td>
-                    <strong>{{ agendamento.data_agendamento|date:"d/m/Y" }}</strong>
-                    <br><small class="text-muted">{{ agendamento.hora_inicio }} - {{ agendamento.hora_fim }}</small>
-                  </td>
-                  <td>
-                    <span class="badge {{ agendamento.status_badge_class }}">
-                      {{ agendamento.get_status_display }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="btn-group btn-group-sm">
-                      <a href="{% url 'agendamentos:agendamento_detail' agendamento.pk %}" 
-                         class="btn btn-outline-primary btn-sm" title="Ver detalhes">
-                        <i class="fas fa-eye"></i>
-                      </a>
-                      {% if agendamento.pode_editar %}
-                      <a href="{% url 'agendamentos:agendamento_update' agendamento.pk %}" 
-                         class="btn btn-outline-warning btn-sm" title="Editar">
-                        <i class="fas fa-edit"></i>
-                      </a>
-                      {% endif %}
-                      <a href="{% url 'agendamentos:agendamento_status' agendamento.pk %}" 
-                         class="btn btn-outline-success btn-sm" title="Alterar status">
-                        <i class="fas fa-check"></i>
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div class="text-center py-5">
-            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Nenhum agendamento próximo</h5>
-            <p class="text-muted mb-3">Você não possui agendamentos para os próximos 7 dias.</p>
-            <a href="{% url 'agendamentos:agendamento_create' %}" class="btn btn-custom">
-              <i class="fas fa-plus me-2"></i>Criar Primeiro Agendamento
-            </a>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-4">
-      <!-- Resumo do Mês -->
-      <div class="card shadow-sm mb-4 theme-card">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0">
-            <i class="fas fa-chart-pie me-2"></i>Resumo do Mês
-          </h5>
-        </div>
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span><i class="fas fa-check-circle text-success me-2"></i>Realizados</span>
-            <span class="badge bg-success fs-6">{{ agendamentos_mes_realizados }}</span>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span><i class="fas fa-times-circle text-danger me-2"></i>Cancelados</span>
-            <span class="badge bg-danger fs-6">{{ agendamentos_mes_cancelados }}</span>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span><i class="fas fa-percentage text-info me-2"></i>Taxa Comparecimento</span>
-            <span class="badge bg-info fs-6">{{ taxa_comparecimento }}%</span>
-          </div>
-          <hr>
-          <div class="text-center">
-            <a href="{% url 'agendamentos:relatorios' %}" class="btn btn-outline-success btn-sm w-100">
-              <i class="fas fa-chart-bar me-1"></i>Ver Relatório Completo
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Links Rápidos -->
-      <div class="card shadow-sm theme-card">
-        <div class="card-header bg-info text-white">
-          <h5 class="mb-0"><i class="fas fa-link me-2"></i>Links Rápidos</h5>
-        </div>
-        <div class="card-body">
-          <div class="d-grid gap-2">
-            <a href="{% url 'agendamentos:cliente_list' %}" class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-users me-2"></i>Gerenciar Clientes
-            </a>
-            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-cogs me-2"></i>Gerenciar Serviços
-            </a>
-            <a href="{% url 'agendamentos:agendamento_list' %}?status=agendado" 
-               class="btn btn-outline-warning btn-sm">
-              <i class="fas fa-clock me-2"></i>Pendentes Confirmação
-            </a>
-            <a href="{% url 'authentication:profile' %}" class="btn btn-outline-secondary btn-sm">
-              <i class="fas fa-user-cog me-2"></i>Configurar Perfil
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <style>
+  /* Header personalizado do Dashboard */
+  .dashboard-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .dashboard-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .dashboard-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Ações no Header */
+  .header-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 768px) {
+    .header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .dashboard-title {
+      font-size: 1.5rem;
+    }
+  }
+
   .btn-custom {
     background: var(--gradient-bg);
     border: none;
-    color: white;
+    color: white !important;
     font-weight: 600;
     transition: all 0.3s ease;
   }
@@ -429,7 +65,7 @@
   .btn-custom:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px var(--shadow-color);
-    color: white;
+    color: white !important;
   }
 
   .theme-card {
@@ -503,13 +139,6 @@
     font-weight: 600;
     color: var(--primary-color) !important;
     font-size: 0.875rem;
-  }
-
-  .dropdown-menu {
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    border: none;
-    padding: 10px 0;
   }
 
   .dropdown-divider {
@@ -638,7 +267,415 @@
       opacity: 1;
     }
   }
+
 </style>
+{% endblock %}
+
+{% block content %}
+<!-- Header do Dashboard -->
+<div class="dashboard-header">
+  <h1 class="dashboard-title">
+    <i class="fas fa-tachometer-alt"></i>
+    Dashboard
+  </h1>
+  <p class="dashboard-subtitle">
+    Bem-vindo, {{ user.get_full_name|default:user.username }}!
+    <small class="text-success ms-2">
+      <i class="fas fa-circle me-1"></i>Online
+    </small>
+  </p>
+  
+  <!-- Ações no Header -->
+  <div class="header-actions">
+    <a href="{% url 'agendamentos:agendamento_create' %}" class="btn btn-custom">
+      <i class="fas fa-plus me-2"></i>Novo Agendamento
+    </a>
+    <a href="{% url 'agendamentos:relatorios' %}" class="btn btn-outline-primary">
+      <i class="fas fa-chart-bar me-2"></i>Relatórios
+    </a>
+    <div class="dropdown">
+      <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <i class="fas fa-cog me-2"></i>Ações
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+        <!-- Ações Principais -->
+        <li>
+          <h6 class="dropdown-header">
+            <i class="fas fa-bolt me-2"></i>Ações Rápidas
+          </h6>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'agendamentos:cliente_create' %}">
+            <i class="fas fa-user-plus me-2"></i>Novo Cliente
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'agendamentos:servico_create' %}">
+            <i class="fas fa-plus-circle me-2"></i>Novo Serviço
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'agendamentos:configuracoes' %}">
+            <i class="fas fa-cog me-2"></i>Configurações
+          </a>
+        </li>
+
+        <!-- Divisor -->
+        <li><hr class="dropdown-divider" /></li>
+
+        <!-- Toggle Modo Escuro -->
+        <li>
+          <h6 class="dropdown-header">
+            <i class="fas fa-adjust me-2"></i>Aparência
+          </h6>
+        </li>
+        <li class="px-3 py-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="mode-text">
+              <i class="fas fa-{% if is_dark_mode %}moon{% else %}sun{% endif %} mode-icon me-2"></i>
+              Modo {% if is_dark_mode %}Escuro{% else %}Claro{% endif %}
+            </span>
+            <label class="dark-mode-toggle" title="Alternar modo {% if is_dark_mode %}claro{% else %}escuro{% endif %}">
+              <input type="checkbox" {% if is_dark_mode %}checked{% endif %} onchange="alterarModo(this.checked)" />
+              <span class="dark-mode-slider"></span>
+            </label>
+          </div>
+          <small class="text-muted d-block mt-1">
+            Clique para alternar entre modo claro e escuro
+          </small>
+        </li>
+
+        <!-- Divisor -->
+        <li><hr class="dropdown-divider" /></li>
+
+        <!-- Seletor de Temas -->
+        <li>
+          <h6 class="dropdown-header">
+            <i class="fas fa-palette me-2"></i>Temas
+            <small class="text-muted">({{ paleta_cores.name }})</small>
+          </h6>
+        </li>
+
+        {% for tema_key, tema_info in todas_paletas.items %}
+        <li>
+          <a class="dropdown-item tema-dropdown-item {% if tema_key == tema_atual %}active{% endif %}" 
+             href="#" onclick="alterarTema('{{ tema_key }}', event)">
+            <div class="d-flex align-items-center">
+              <div class="tema-preview me-3" 
+                   style="width: 25px; height: 25px; border-radius: 50%; background: {{ tema_info.gradient }}; border: 2px solid {% if tema_key == tema_atual %}var(--primary-color){% else %}var(--border-color){% endif %};"></div>
+              <div class="flex-grow-1">
+                <strong>{{ tema_info.name }}</strong>
+                {% if tema_key == tema_atual %}
+                <i class="fas fa-check text-success ms-2"></i>
+                {% endif %}
+              </div>
+            </div>
+          </a>
+        </li>
+        {% endfor %}
+
+        <!-- Divisor -->
+        <li><hr class="dropdown-divider" /></li>
+
+        <!-- Links Úteis -->
+        <li>
+          <h6 class="dropdown-header">
+            <i class="fas fa-link me-2"></i>Links Úteis
+          </h6>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'info:home' %}">
+            <i class="fas fa-question-circle me-2"></i>Central de Ajuda
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'authentication:profile' %}">
+            <i class="fas fa-user-cog me-2"></i>Meu Perfil
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 card-hover theme-card">
+      <div class="card-body text-center">
+        <div class="text-primary mb-2">
+          <i class="fas fa-calendar-day fa-2x"></i>
+        </div>
+        <h5 class="card-title">Hoje</h5>
+        <h3 class="text-primary mb-0">{{ agendamentos_hoje }}</h3>
+        <small class="text-muted">agendamento{{ agendamentos_hoje|pluralize }}</small>
+        <div class="mt-2">
+          <a href="{% url 'agendamentos:agendamento_list' %}?data_inicio={{ today }}&data_fim={{ today }}" 
+             class="btn btn-sm btn-outline-primary">
+            Ver Detalhes
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 card-hover theme-card">
+      <div class="card-body text-center">
+        <div class="text-success mb-2">
+          <i class="fas fa-calendar-week fa-2x"></i>
+        </div>
+        <h5 class="card-title">Esta Semana</h5>
+        <h3 class="text-success mb-0">{{ agendamentos_semana }}</h3>
+        <small class="text-muted">agendamento{{ agendamentos_semana|pluralize }}</small>
+        <div class="mt-2">
+          <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-sm btn-outline-success">
+            Ver Agenda
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 card-hover theme-card">
+      <div class="card-body text-center">
+        <div class="text-warning mb-2">
+          <i class="fas fa-users fa-2x"></i>
+        </div>
+        <h5 class="card-title">Clientes</h5>
+        <h3 class="text-warning mb-0">{{ total_clientes }}</h3>
+        <small class="text-muted">cadastrado{{ total_clientes|pluralize }}</small>
+        <div class="mt-2">
+          <a href="{% url 'agendamentos:cliente_list' %}" class="btn btn-sm btn-outline-warning">
+            Gerenciar
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 card-hover theme-card">
+      <div class="card-body text-center">
+        <div class="text-info mb-2">
+          <i class="fas fa-clock fa-2x"></i>
+        </div>
+        <h5 class="card-title">Pendentes</h5>
+        <h3 class="text-info mb-0">{{ agendamentos_pendentes }}</h3>
+        <small class="text-muted">confirmação{{ agendamentos_pendentes|pluralize:"ões" }}</small>
+        <div class="mt-2">
+          <a href="{% url 'agendamentos:agendamento_list' %}?status=agendado" 
+             class="btn btn-sm btn-outline-info">
+            Confirmar
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gráfico de Agendamentos por Dia -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm theme-card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-chart-bar me-2"></i>Agendamentos por Dia (Últimos 30 dias)
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="grafico-agendamentos" style="height: 400px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ações Rápidas -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm theme-card">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">
+          <i class="fas fa-bolt me-2 text-warning"></i>Ações Rápidas
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <a href="{% url 'agendamentos:agendamento_create' %}" 
+               class="btn btn-custom w-100 py-3 action-card">
+              <i class="fas fa-calendar-plus fa-2x d-block mb-2"></i>
+              <strong>Novo Agendamento</strong>
+              <br><small>Agendar cliente</small>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="{% url 'agendamentos:cliente_create' %}" 
+               class="btn btn-outline-primary w-100 py-3 action-card">
+              <i class="fas fa-user-plus fa-2x d-block mb-2"></i>
+              <strong>Cadastrar Cliente</strong>
+              <br><small>Novo cliente</small>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="{% url 'agendamentos:relatorios' %}" 
+               class="btn btn-outline-success w-100 py-3 action-card">
+              <i class="fas fa-chart-line fa-2x d-block mb-2"></i>
+              <strong>Ver Relatórios</strong>
+              <br><small>Análises detalhadas</small>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Próximos Agendamentos e Resumo -->
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow-sm theme-card">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="fas fa-calendar-alt me-2"></i>Próximos Agendamentos
+        </h5>
+        <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-sm btn-light">
+          <i class="fas fa-external-link-alt me-1"></i>Ver Todos
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if proximos_agendamentos %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Cliente</th>
+                <th>Serviço</th>
+                <th>Data/Hora</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for agendamento in proximos_agendamentos %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                      {{ agendamento.cliente.nome|first|upper }}
+                    </div>
+                    <div>
+                      <strong>{{ agendamento.cliente.nome }}</strong>
+                      <br><small class="text-muted">{{ agendamento.cliente.telefone }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <strong>{{ agendamento.servico.nome }}</strong>
+                  <br><small class="text-muted">{{ agendamento.servico.duracao_formatada }}</small>
+                </td>
+                <td>
+                  <strong>{{ agendamento.data_agendamento|date:"d/m/Y" }}</strong>
+                  <br><small class="text-muted">{{ agendamento.hora_inicio }} - {{ agendamento.hora_fim }}</small>
+                </td>
+                <td>
+                  <span class="badge {{ agendamento.status_badge_class }}">
+                    {{ agendamento.get_status_display }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a href="{% url 'agendamentos:agendamento_detail' agendamento.pk %}" 
+                       class="btn btn-outline-primary btn-sm" title="Ver detalhes">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    {% if agendamento.pode_editar %}
+                    <a href="{% url 'agendamentos:agendamento_update' agendamento.pk %}" 
+                       class="btn btn-outline-warning btn-sm" title="Editar">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'agendamentos:agendamento_status' agendamento.pk %}" 
+                       class="btn btn-outline-success btn-sm" title="Alterar status">
+                      <i class="fas fa-check"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+          <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">Nenhum agendamento próximo</h5>
+          <p class="text-muted mb-3">Você não possui agendamentos para os próximos 7 dias.</p>
+          <a href="{% url 'agendamentos:agendamento_create' %}" class="btn btn-custom">
+            <i class="fas fa-plus me-2"></i>Criar Primeiro Agendamento
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Resumo do Mês -->
+    <div class="card shadow-sm mb-4 theme-card">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-chart-pie me-2"></i>Resumo do Mês
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span><i class="fas fa-check-circle text-success me-2"></i>Realizados</span>
+          <span class="badge bg-success fs-6">{{ agendamentos_mes_realizados }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span><i class="fas fa-times-circle text-danger me-2"></i>Cancelados</span>
+          <span class="badge bg-danger fs-6">{{ agendamentos_mes_cancelados }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span><i class="fas fa-percentage text-info me-2"></i>Taxa Comparecimento</span>
+          <span class="badge bg-info fs-6">{{ taxa_comparecimento }}%</span>
+        </div>
+        <hr>
+        <div class="text-center">
+          <a href="{% url 'agendamentos:relatorios' %}" class="btn btn-outline-success btn-sm w-100">
+            <i class="fas fa-chart-bar me-1"></i>Ver Relatório Completo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links Rápidos -->
+    <div class="card shadow-sm theme-card">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-link me-2"></i>Links Rápidos</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'agendamentos:cliente_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-users me-2"></i>Gerenciar Clientes
+          </a>
+          <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-cogs me-2"></i>Gerenciar Serviços
+          </a>
+          <a href="{% url 'agendamentos:agendamento_list' %}?status=agendado" 
+             class="btn btn-outline-warning btn-sm">
+            <i class="fas fa-clock me-2"></i>Pendentes Confirmação
+          </a>
+          <a href="{% url 'authentication:profile' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-user-cog me-2"></i>Configurar Perfil
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -663,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const layout = {
         title: {
-            text: 'Agendamentos por Dia',
+            text: '',
             font: { 
                 size: 16,
                 color: 'var(--text-color)'
@@ -678,11 +715,11 @@ document.addEventListener('DOMContentLoaded', function() {
             title: 'Quantidade',
             color: 'var(--text-color)'
         },
-        margin: { t: 50, b: 100, l: 50, r: 50 },
-        paper_bgcolor: 'var(--background-color)',
-        plot_bgcolor: 'var(--surface-color)',
+        margin: { t: 20, b: 100, l: 50, r: 50 },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
         font: { 
-            family: 'Arial, sans-serif',
+            family: 'Inter, sans-serif',
             color: 'var(--text-color)'
         }
     };

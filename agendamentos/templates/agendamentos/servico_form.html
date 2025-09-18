@@ -4,290 +4,753 @@
     {% if object %}Editar Serviço{% else %}Novo Serviço{% endif %} - Sistema de Agendamentos
 {% endblock %}
 
+{% block extra_css %}
+<style>
+  /* Header personalizado */
+  .form-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .form-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .form-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Ações no Header */
+  .header-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 768px) {
+    .header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .form-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Form styling */
+  .form-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .form-card .card-header {
+    background: var(--gradient-bg) !important;
+    border: none;
+    padding: 20px 30px;
+  }
+
+  .form-card .card-body {
+    padding: 30px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-label.required::after {
+    content: " *";
+    color: var(--danger-color);
+    font-weight: bold;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem var(--shadow-color) !important;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-control::placeholder {
+    color: var(--text-muted-color) !important;
+    opacity: 0.7;
+  }
+
+  .form-text {
+    font-size: 0.875rem;
+    color: var(--text-muted-color) !important;
+    margin-top: 5px;
+  }
+
+  .invalid-feedback {
+    display: block !important;
+    color: var(--danger-color) !important;
+    font-size: 0.875rem;
+    margin-top: 5px;
+  }
+
+  /* Form sections */
+  .form-section {
+    background: var(--light-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 4px solid var(--info-color);
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Input groups */
+  .input-group-text {
+    background-color: var(--light-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+    font-weight: 600;
+    border-radius: 10px 0 0 10px !important;
+  }
+
+  .input-group .form-control {
+    border-radius: 0 10px 10px 0 !important;
+  }
+
+  /* Switch styling */
+  .form-check-input {
+    width: 3em;
+    height: 1.5em;
+    border-radius: 1em;
+    background-color: var(--border-color);
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .form-check-input:checked {
+    background-color: var(--info-color) !important;
+    border-color: var(--info-color) !important;
+  }
+
+  .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem var(--shadow-color) !important;
+  }
+
+  .form-check-label {
+    font-weight: 600;
+    color: var(--text-color) !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Preview card */
+  .preview-card {
+    background: var(--light-color) !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .preview-card .card-header {
+    background: var(--surface-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    border-radius: 10px 10px 0 0 !important;
+  }
+
+  .preview-card .card-body {
+    padding: 20px;
+  }
+
+  /* Duration preview */
+  .duration-preview {
+    border-radius: 10px;
+    border: 2px solid var(--info-color);
+    background: rgba(23, 162, 184, 0.1);
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+  }
+
+  .duration-preview.warning {
+    border-color: var(--warning-color);
+    background: rgba(255, 193, 7, 0.1);
+  }
+
+  /* Buttons */
+  .btn-custom {
+    background: var(--gradient-bg);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    color: white !important;
+  }
+
+  .btn-outline-secondary {
+    border: 2px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    background: transparent;
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: var(--light-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    transform: translateY(-2px);
+  }
+
+  .btn-outline-danger {
+    border: 2px solid var(--danger-color) !important;
+    color: var(--danger-color) !important;
+    background: transparent;
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-outline-danger:hover {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+    color: white !important;
+    transform: translateY(-2px);
+  }
+
+  /* Tips card */
+  .tips-card {
+    border-radius: 15px;
+    border: 2px solid var(--info-color);
+    overflow: hidden;
+    margin-top: 25px;
+  }
+
+  .tips-card .card-header {
+    background: var(--info-color) !important;
+    color: white !important;
+    border: none;
+    padding: 15px 20px;
+  }
+
+  .tips-card .card-body {
+    background: var(--surface-color);
+    padding: 20px;
+  }
+
+  .tips-section h6 {
+    color: var(--text-color) !important;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tips-list li {
+    color: var(--text-muted-color) !important;
+    padding: 4px 0;
+    position: relative;
+    padding-left: 20px;
+  }
+
+  .tips-list li::before {
+    content: "•";
+    color: var(--info-color);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+  }
+
+  /* Badge styling */
+  .badge {
+    font-size: 0.875rem;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+  }
+
+  /* Alert styling */
+  .alert {
+    border-radius: 10px;
+    border: none;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+  }
+
+  .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--danger-color) !important;
+    border-left: 4px solid var(--danger-color);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .form-card .card-body {
+      padding: 20px;
+    }
+
+    .form-section {
+      padding: 15px;
+    }
+
+    .header-actions {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .tips-card .card-body {
+      padding: 15px;
+    }
+  }
+
+  /* Animations */
+  .form-card, .tips-card {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Field validation states */
+  .form-control.is-valid {
+    border-color: var(--success-color) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 1.88 1.88 3.75-3.75.94.94-4.69 4.69z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+
+  .form-control.is-invalid {
+    border-color: var(--danger-color) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4'/%3e%3cpath d='m6.2 4.6-1.4 1.4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+
+  /* Character counter */
+  .char-counter {
+    font-size: 0.8rem;
+    color: var(--text-muted-color) !important;
+    text-align: right;
+    margin-top: 5px;
+  }
+
+  /* Loading state */
+  .btn-loading {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+  }
+
+  @keyframes button-loading-spinner {
+    from {
+      transform: rotate(0turn);
+    }
+    to {
+      transform: rotate(1turn);
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-header bg-info text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-cogs me-2"></i>
-                        {% if object %}Editar Serviço{% else %}Novo Serviço{% endif %}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-                        
-                        <!-- Nome do Serviço -->
-                        <div class="mb-3">
-                            <label for="{{ form.nome.id_for_label }}" class="form-label">
-                                <i class="fas fa-tag me-2"></i>Nome do Serviço *
-                            </label>
-                            {{ form.nome }}
-                            {% if form.nome.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.nome.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Digite um nome claro e descritivo para o serviço
-                            </div>
-                        </div>
+<!-- Header do Formulário -->
+<div class="form-header">
+  <h1 class="form-title">
+    <i class="fas fa-cogs"></i>
+    {% if object %}Editar Serviço{% else %}Novo Serviço{% endif %}
+  </h1>
+  <p class="form-subtitle">
+    {% if object %}
+      Atualize as informações do serviço "{{ object.nome }}"
+    {% else %}
+      Preencha os dados para cadastrar um novo serviço
+    {% endif %}
+  </p>
+  
+  <!-- Ações no Header -->
+  <div class="header-actions">
+    <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+    </a>
+    {% if object %}
+    <a href="{% url 'agendamentos:servico_detail' object.pk %}" class="btn btn-outline-primary">
+      <i class="fas fa-eye me-2"></i>Ver Detalhes
+    </a>
+    {% endif %}
+  </div>
+</div>
 
-                        <!-- Descrição -->
-                        <div class="mb-3">
-                            <label for="{{ form.descricao.id_for_label }}" class="form-label">
-                                <i class="fas fa-align-left me-2"></i>Descrição
-                            </label>
-                            {{ form.descricao }}
-                            {% if form.descricao.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.descricao.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <div class="form-text">
-                                <i class="fas fa-lightbulb me-1"></i>
-                                Descreva detalhes importantes sobre o serviço (opcional)
-                            </div>
-                        </div>
-
-                        <!-- Duração do Serviço -->
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-clock me-2"></i>Duração do Serviço *
-                            </label>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <label for="{{ form.duracao_horas.id_for_label }}" class="form-label small">Horas</label>
-                                    {{ form.duracao_horas }}
-                                    {% if form.duracao_horas.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {% for error in form.duracao_horas.errors %}
-                                                {{ error }}
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-6">
-                                    <label for="{{ form.duracao_minutos.id_for_label }}" class="form-label small">Minutos</label>
-                                    {{ form.duracao_minutos }}
-                                    {% if form.duracao_minutos.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {% for error in form.duracao_minutos.errors %}
-                                                {{ error }}
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Defina quanto tempo em média este serviço demora para ser executado
-                            </div>
-                            <!-- Preview da Duração -->
-                            <div class="mt-2">
-                                <div class="alert alert-info py-2" id="duracao-preview">
-                                    <i class="fas fa-eye me-2"></i>
-                                    <strong>Duração:</strong> <span id="duracao-texto">1h00min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Preço -->
-                        <div class="mb-3">
-                            <label for="{{ form.preco.id_for_label }}" class="form-label">
-                                <i class="fas fa-dollar-sign me-2"></i>Preço do Serviço *
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                {{ form.preco }}
-                            </div>
-                            {% if form.preco.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.preco.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <div class="form-text">
-                                <i class="fas fa-calculator me-1"></i>
-                                Valor que será cobrado por este serviço
-                            </div>
-                        </div>
-
-                        <!-- Status Ativo -->
-                        <div class="mb-4">
-                            <div class="form-check form-switch">
-                                {{ form.ativo }}
-                                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
-                                    <i class="fas fa-toggle-on me-2"></i>
-                                    <strong>Serviço Ativo</strong>
-                                </label>
-                            </div>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Serviços inativos não aparecerão na lista de agendamentos
-                            </div>
-                        </div>
-
-                        <!-- Preview do Serviço -->
-                        <div class="card bg-light mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-eye me-2"></i>Preview do Serviço
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <strong id="preview-nome">{{ form.nome.value|default:"Nome do Serviço" }}</strong>
-                                        <p class="text-muted mb-2" id="preview-descricao">
-                                            {{ form.descricao.value|default:"Descrição do serviço..." }}
-                                        </p>
-                                    </div>
-                                    <div class="col-md-6 text-md-end">
-                                        <div class="mb-2">
-                                            <span class="badge bg-primary" id="preview-duracao">1h00min</span>
-                                        </div>
-                                        <div class="h5 text-success mb-0">
-                                            R$ <span id="preview-preco">{{ form.preco.value|default:"0,00" }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Erros Gerais -->
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                {% for error in form.non_field_errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-
-                        <!-- Botões de Ação -->
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-info">
-                                <i class="fas fa-save me-2"></i>
-                                {% if object %}Atualizar Serviço{% else %}Cadastrar Serviço{% endif %}
-                            </button>
-                            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Cancelar
-                            </a>
-                            {% if object %}
-                                <a href="{% url 'agendamentos:servico_delete' object.pk %}" 
-                                   class="btn btn-outline-danger ms-auto"
-                                   onclick="return confirm('Tem certeza que deseja excluir este serviço?')">
-                                    <i class="fas fa-trash me-2"></i>Excluir Serviço
-                                </a>
-                            {% endif %}
-                        </div>
-                    </form>
-                </div>
+<!-- Formulário -->
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="card form-card">
+      <div class="card-header">
+        <h4 class="mb-0 text-white">
+          <i class="fas fa-{% if object %}edit{% else %}plus{% endif %} me-2"></i>
+          Dados do Serviço
+        </h4>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate id="servico-form">
+          {% csrf_token %}
+          
+          <!-- Seção: Informações Básicas -->
+          <div class="form-section">
+            <div class="form-section-title">
+              <i class="fas fa-info-circle"></i>
+              Informações Básicas
             </div>
-        </div>
+            
+            <!-- Nome do Serviço -->
+            <div class="mb-4">
+              <label for="{{ form.nome.id_for_label }}" class="form-label required">
+                <i class="fas fa-tag"></i>
+                Nome do Serviço
+              </label>
+              {{ form.nome }}
+              {% if form.nome.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.nome.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Digite um nome claro e descritivo para o serviço
+              </div>
+            </div>
+
+            <!-- Descrição -->
+            <div class="mb-4">
+              <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                <i class="fas fa-align-left"></i>
+                Descrição
+              </label>
+              {{ form.descricao }}
+              {% if form.descricao.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.descricao.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="d-flex justify-content-between">
+                <div class="form-text">
+                  <i class="fas fa-lightbulb me-1"></i>
+                  Descreva detalhes importantes sobre o serviço (opcional)
+                </div>
+                <div class="char-counter" id="char-counter">0/500</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Duração e Preço -->
+          <div class="form-section">
+            <div class="form-section-title">
+              <i class="fas fa-clock"></i>
+              Duração e Preço
+            </div>
+            
+            <!-- Duração do Serviço -->
+            <div class="mb-4">
+              <label class="form-label required">
+                <i class="fas fa-clock"></i>
+                Duração do Serviço
+              </label>
+              <div class="row g-3">
+                <div class="col-6">
+                  <label for="{{ form.duracao_horas.id_for_label }}" class="form-label small">Horas</label>
+                  {{ form.duracao_horas }}
+                  {% if form.duracao_horas.errors %}
+                    <div class="invalid-feedback">
+                      {% for error in form.duracao_horas.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-6">
+                  <label for="{{ form.duracao_minutos.id_for_label }}" class="form-label small">Minutos</label>
+                  {{ form.duracao_minutos }}
+                  {% if form.duracao_minutos.errors %}
+                    <div class="invalid-feedback">
+                      {% for error in form.duracao_minutos.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-text mb-3">
+                <i class="fas fa-info-circle me-1"></i>
+                Defina quanto tempo em média este serviço demora para ser executado
+              </div>
+              
+              <!-- Preview da Duração -->
+              <div class="duration-preview" id="duracao-preview">
+                <i class="fas fa-eye me-2"></i>
+                <strong>Duração:</strong> <span id="duracao-texto">1h00min</span>
+              </div>
+            </div>
+
+            <!-- Preço -->
+            <div class="mb-4">
+              <label for="{{ form.preco.id_for_label }}" class="form-label required">
+                <i class="fas fa-dollar-sign"></i>
+                Preço do Serviço
+              </label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                {{ form.preco }}
+              </div>
+              {% if form.preco.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.preco.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text">
+                <i class="fas fa-calculator me-1"></i>
+                Valor que será cobrado por este serviço
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Configurações -->
+          <div class="form-section">
+            <div class="form-section-title">
+              <i class="fas fa-cog"></i>
+              Configurações
+            </div>
+            
+            <!-- Status Ativo -->
+            <div class="mb-4">
+              <div class="form-check form-switch">
+                {{ form.ativo }}
+                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                  <i class="fas fa-toggle-on"></i>
+                  Serviço Ativo
+                </label>
+              </div>
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Serviços inativos não aparecerão na lista de agendamentos
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview do Serviço -->
+          <div class="card preview-card mb-4">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="fas fa-eye me-2"></i>Preview do Serviço
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-8">
+                  <h5 class="mb-1" id="preview-nome">{{ form.nome.value|default:"Nome do Serviço" }}</h5>
+                  <p class="text-muted mb-2" id="preview-descricao">
+                    {{ form.descricao.value|default:"Descrição do serviço..." }}
+                  </p>
+                  <span class="badge bg-primary" id="preview-duracao">1h00min</span>
+                </div>
+                <div class="col-md-4 text-md-end">
+                  <div class="h4 text-success mb-0">
+                    R$ <span id="preview-preco">{{ form.preco.value|default:"0,00" }}</span>
+                  </div>
+                  <small class="text-muted">Valor do serviço</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Erros Gerais -->
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Atenção!</strong>
+              {% for error in form.non_field_errors %}
+                <br>{{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <!-- Botões de Ação -->
+          <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
+            <a href="{% url 'agendamentos:servico_list' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+            {% if object %}
+              <a href="{% url 'agendamentos:servico_delete' object.pk %}" 
+                 class="btn btn-outline-danger"
+                 onclick="return confirm('Tem certeza que deseja excluir este serviço?')">
+                <i class="fas fa-trash me-2"></i>Excluir Serviço
+              </a>
+            {% endif %}
+            <button type="submit" class="btn btn-custom" id="submit-btn">
+              <i class="fas fa-{% if object %}save{% else %}plus{% endif %} me-2"></i>
+              {% if object %}Atualizar Serviço{% else %}Cadastrar Serviço{% endif %}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Dicas e Sugestões -->
-<div class="row mt-4">
-    <div class="col-md-8 mx-auto">
-        <div class="card border-info">
-            <div class="card-header bg-light">
-                <h6 class="mb-0 text-info">
-                    <i class="fas fa-lightbulb me-2"></i>Dicas para Cadastrar Serviços
-                </h6>
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="card tips-card">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-lightbulb me-2"></i>Dicas para Cadastrar Serviços
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="tips-section">
+              <h6><i class="fas fa-tag text-primary me-2"></i>Nome do Serviço</h6>
+              <ul class="tips-list">
+                <li>Use nomes claros e descritivos</li>
+                <li>Evite abreviações confusas</li>
+                <li>Exemplo: "Corte Masculino", "Manicure Completa"</li>
+              </ul>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-tag text-primary me-2"></i>Nome do Serviço</h6>
-                        <ul class="small text-muted">
-                            <li>Use nomes claros e descritivos</li>
-                            <li>Evite abreviações confusas</li>
-                            <li>Exemplo: "Corte Masculino", "Manicure Completa"</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-clock text-warning me-2"></i>Duração</h6>
-                        <ul class="small text-muted">
-                            <li>Considere tempo de preparação</li>
-                            <li>Inclua tempo para limpeza</li>
-                            <li>Seja realista com os tempos</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-dollar-sign text-success me-2"></i>Preço</h6>
-                        <ul class="small text-muted">
-                            <li>Pesquise preços da concorrência</li>
-                            <li>Considere seus custos operacionais</li>
-                            <li>Revise periodicamente os valores</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle text-info me-2"></i>Descrição</h6>
-                        <ul class="small text-muted">
-                            <li>Detalhe o que está incluído</li>
-                            <li>Mencione produtos utilizados</li>
-                            <li>Informe possíveis variações</li>
-                        </ul>
-                    </div>
-                </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="tips-section">
+              <h6><i class="fas fa-clock text-warning me-2"></i>Duração</h6>
+              <ul class="tips-list">
+                <li>Considere tempo de preparação</li>
+                <li>Inclua tempo para limpeza</li>
+                <li>Seja realista com os tempos</li>
+              </ul>
             </div>
+          </div>
+          <div class="col-md-6">
+            <div class="tips-section">
+              <h6><i class="fas fa-dollar-sign text-success me-2"></i>Preço</h6>
+              <ul class="tips-list">
+                <li>Pesquise preços da concorrência</li>
+                <li>Considere seus custos operacionais</li>
+                <li>Revise periodicamente os valores</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="tips-section">
+              <h6><i class="fas fa-info-circle text-info me-2"></i>Descrição</h6>
+              <ul class="tips-list">
+                <li>Detalhe o que está incluído</li>
+                <li>Mencione produtos utilizados</li>
+                <li>Informe possíveis variações</li>
+              </ul>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
-
-<style>
-    .form-check-input:checked {
-        background-color: #17a2b8;
-        border-color: #17a2b8;
-    }
-    
-    .input-group-text {
-        background-color: #e9ecef;
-        border-color: #ced4da;
-    }
-    
-    .card-header h6 {
-        font-weight: 600;
-    }
-    
-    .badge {
-        font-size: 0.875rem;
-    }
-    
-    #duracao-preview {
-        transition: all 0.3s ease;
-    }
-    
-    .form-text {
-        font-size: 0.875rem;
-    }
-    
-    .alert-info {
-        border-left: 4px solid #17a2b8;
-    }
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos do formulário
+    const form = document.getElementById('servico-form');
+    const submitBtn = document.getElementById('submit-btn');
     const nomeInput = document.getElementById('{{ form.nome.id_for_label }}');
     const descricaoInput = document.getElementById('{{ form.descricao.id_for_label }}');
     const horasInput = document.getElementById('{{ form.duracao_horas.id_for_label }}');
     const minutosInput = document.getElementById('{{ form.duracao_minutos.id_for_label }}');
     const precoInput = document.getElementById('{{ form.preco.id_for_label }}');
+    const charCounter = document.getElementById('char-counter');
     
     // Elementos do preview
     const previewNome = document.getElementById('preview-nome');
@@ -295,6 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewDuracao = document.getElementById('preview-duracao');
     const previewPreco = document.getElementById('preview-preco');
     const duracaoTexto = document.getElementById('duracao-texto');
+    const duracaoPreview = document.getElementById('duracao-preview');
     
     // Função para atualizar a duração
     function atualizarDuracao() {
@@ -309,14 +773,15 @@ document.addEventListener('DOMContentLoaded', function() {
             texto += (minutos < 10 && horas > 0 ? '0' : '') + minutos + 'min';
         }
         
-        duracaoTexto.textContent = texto || '0min';
-        previewDuracao.textContent = texto || '0min';
+        const textoFinal = texto || '0min';
+        duracaoTexto.textContent = textoFinal;
+        previewDuracao.textContent = textoFinal;
         
         // Validação visual
         if (horas === 0 && minutos === 0) {
-            document.getElementById('duracao-preview').className = 'alert alert-warning py-2';
+            duracaoPreview.className = 'duration-preview warning';
         } else {
-            document.getElementById('duracao-preview').className = 'alert alert-info py-2';
+            duracaoPreview.className = 'duration-preview';
         }
     }
     
@@ -341,6 +806,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Contador de caracteres para descrição
+    if (descricaoInput && charCounter) {
+        descricaoInput.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            const maxLength = 500;
+            
+            charCounter.textContent = `${currentLength}/${maxLength}`;
+            
+            if (currentLength > maxLength * 0.9) {
+                charCounter.className = 'char-counter text-warning';
+            } else if (currentLength > maxLength) {
+                charCounter.className = 'char-counter text-danger';
+                this.classList.add('is-invalid');
+            } else {
+                charCounter.className = 'char-counter text-muted';
+                this.classList.remove('is-invalid');
+            }
+        });
+        
+        // Inicializar contador
+        descricaoInput.dispatchEvent(new Event('input'));
+    }
+    
     // Event listeners
     nomeInput.addEventListener('input', atualizarNome);
     descricaoInput.addEventListener('input', atualizarDescricao);
@@ -353,17 +841,46 @@ document.addEventListener('DOMContentLoaded', function() {
         const valor = parseInt(this.value);
         if (valor < 0) this.value = 0;
         if (valor > 23) this.value = 23;
+        
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
     });
     
     minutosInput.addEventListener('input', function() {
         const valor = parseInt(this.value);
         if (valor < 0) this.value = 0;
         if (valor > 59) this.value = 59;
+        
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
     });
     
     precoInput.addEventListener('input', function() {
         const valor = parseFloat(this.value);
         if (valor < 0) this.value = 0;
+        
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Validação em tempo real para campos obrigatórios
+    const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+    requiredInputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
     });
     
     // Inicializar preview
@@ -379,6 +896,32 @@ document.addEventListener('DOMContentLoaded', function() {
     precoInput.addEventListener('blur', function() {
         const valor = parseFloat(this.value) || 0;
         this.value = valor.toFixed(2);
+        atualizarPreco();
+    });
+    
+    // Loading state no submit
+    form.addEventListener('submit', function() {
+        submitBtn.classList.add('btn-loading');
+        submitBtn.disabled = true;
+        
+        // Remover loading se houver erro
+        setTimeout(() => {
+            submitBtn.classList.remove('btn-loading');
+            submitBtn.disabled = false;
+        }, 5000);
+    });
+    
+    // Animação de foco nos inputs
+    const allInputs = form.querySelectorAll('input, select, textarea');
+    allInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'transform 0.2s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
     });
 });
 </script>

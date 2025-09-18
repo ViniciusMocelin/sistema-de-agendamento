@@ -4,143 +4,443 @@
     {% if object %}Editar Agendamento{% else %}Novo Agendamento{% endif %} - Sistema de Agendamentos
 {% endblock %}
 
+{% block extra_css %}
+<style>
+  /* Header personalizado */
+  .form-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .form-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color) !important;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .form-subtitle {
+    color: var(--text-muted-color) !important;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+  }
+  
+  /* Ações no Header */
+  .header-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  @media (max-width: 768px) {
+    .header-actions {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin-top: 15px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+    
+    .form-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Form styling */
+  .form-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .form-card .card-header {
+    background: var(--gradient-bg) !important;
+    border: none;
+    padding: 20px 30px;
+  }
+
+  .form-card .card-body {
+    padding: 30px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: var(--text-color) !important;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem var(--shadow-color) !important;
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  .form-text {
+    font-size: 0.875rem;
+    color: var(--text-muted-color) !important;
+    margin-top: 5px;
+  }
+
+  .form-text a {
+    color: var(--primary-color) !important;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .form-text a:hover {
+    color: var(--secondary-color) !important;
+    text-decoration: underline;
+  }
+
+  .invalid-feedback {
+    display: block !important;
+    color: var(--danger-color) !important;
+    font-size: 0.875rem;
+    margin-top: 5px;
+  }
+
+  .btn-custom {
+    background: var(--gradient-bg);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    color: white !important;
+  }
+
+  .btn-outline-secondary {
+    border: 2px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    background: transparent;
+    font-weight: 600;
+    padding: 12px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: var(--light-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    transform: translateY(-2px);
+  }
+
+  .alert {
+    border-radius: 10px;
+    border: none;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+  }
+
+  .alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color) !important;
+    border-left: 4px solid var(--danger-color);
+  }
+
+  /* Input groups */
+  .input-group {
+    margin-bottom: 20px;
+  }
+
+  .input-group .form-control:first-child {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  .input-group .form-control:last-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+
+  /* Required field indicator */
+  .required::after {
+    content: " *";
+    color: var(--danger-color);
+    font-weight: bold;
+  }
+
+  /* Form animations */
+  .form-card {
+    animation: slideInUp 0.5s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Textarea styling */
+  textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  /* Select2 compatibility */
+  .select2-container--default .select2-selection--single {
+    border: 2px solid var(--border-color) !important;
+    border-radius: 10px !important;
+    height: 48px !important;
+    background-color: var(--surface-color) !important;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--text-color) !important;
+    line-height: 44px !important;
+    padding-left: 15px !important;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-calendar-plus me-2"></i>
-                        {% if object %}Editar Agendamento{% else %}Novo Agendamento{% endif %}
-                    </h4>
+<!-- Header do Formulário -->
+<div class="form-header">
+  <h1 class="form-title">
+    <i class="fas fa-calendar-plus"></i>
+    {% if object %}Editar Agendamento{% else %}Novo Agendamento{% endif %}
+  </h1>
+  <p class="form-subtitle">
+    {% if object %}
+      Atualize as informações do agendamento de {{ object.cliente.nome }}
+    {% else %}
+      Preencha os dados para criar um novo agendamento
+    {% endif %}
+  </p>
+  
+  <!-- Ações no Header -->
+  <div class="header-actions">
+    <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+    </a>
+    <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-outline-primary">
+      <i class="fas fa-list me-2"></i>Ver Agendamentos
+    </a>
+  </div>
+</div>
+
+<!-- Formulário -->
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="card form-card">
+      <div class="card-header">
+        <h4 class="mb-0 text-white">
+          <i class="fas fa-{% if object %}edit{% else %}plus{% endif %} me-2"></i>
+          Dados do Agendamento
+        </h4>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          
+          <!-- Cliente e Serviço -->
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label for="{{ form.cliente.id_for_label }}" class="form-label required">
+                <i class="fas fa-user text-primary"></i>
+                Cliente
+              </label>
+              {{ form.cliente }}
+              {% if form.cliente.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.cliente.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
                 </div>
-                <div class="card-body">
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.cliente.id_for_label }}" class="form-label">
-                                    <i class="fas fa-user me-2"></i>Cliente *
-                                </label>
-                                {{ form.cliente }}
-                                {% if form.cliente.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.cliente.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <div class="form-text">
-                                    <a href="{% url 'agendamentos:cliente_create' %}" class="text-decoration-none">
-                                        <i class="fas fa-plus me-1"></i>Cadastrar novo cliente
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.servico.id_for_label }}" class="form-label">
-                                    <i class="fas fa-cogs me-2"></i>Serviço *
-                                </label>
-                                {{ form.servico }}
-                                {% if form.servico.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.servico.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <div class="form-text">
-                                    <a href="{% url 'agendamentos:servico_create' %}" class="text-decoration-none">
-                                        <i class="fas fa-plus me-1"></i>Cadastrar novo serviço
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.data_agendamento.id_for_label }}" class="form-label">
-                                    <i class="fas fa-calendar me-2"></i>Data do Agendamento *
-                                </label>
-                                {{ form.data_agendamento }}
-                                {% if form.data_agendamento.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.data_agendamento.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.hora_inicio.id_for_label }}" class="form-label">
-                                    <i class="fas fa-clock me-2"></i>Hora de Início *
-                                </label>
-                                {{ form.hora_inicio }}
-                                {% if form.hora_inicio.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.hora_inicio.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.valor_cobrado.id_for_label }}" class="form-label">
-                                <i class="fas fa-dollar-sign me-2"></i>Valor a Cobrar
-                            </label>
-                            {{ form.valor_cobrado }}
-                            {% if form.valor_cobrado.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.valor_cobrado.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <div class="form-text">Deixe em branco para usar o valor padrão do serviço</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.observacoes.id_for_label }}" class="form-label">
-                                <i class="fas fa-sticky-note me-2"></i>Observações
-                            </label>
-                            {{ form.observacoes }}
-                            {% if form.observacoes.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.observacoes.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                {% for error in form.non_field_errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>
-                                {% if object %}Atualizar Agendamento{% else %}Criar Agendamento{% endif %}
-                            </button>
-                            <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Cancelar
-                            </a>
-                        </div>
-                    </form>
-                </div>
+              {% endif %}
+              <div class="form-text">
+                <a href="{% url 'agendamentos:cliente_create' %}" >
+                  <i class="fas fa-plus me-1"></i>Cadastrar novo cliente
+                </a>
+              </div>
             </div>
-        </div>
+            
+            <div class="col-md-6 mb-4">
+              <label for="{{ form.servico.id_for_label }}" class="form-label required">
+                <i class="fas fa-cogs text-primary"></i>
+                Serviço
+              </label>
+              {{ form.servico }}
+              {% if form.servico.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.servico.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text">
+                <a href="{% url 'agendamentos:servico_create' %}" >
+                  <i class="fas fa-plus me-1"></i>Cadastrar novo serviço
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data e Hora -->
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label for="{{ form.data_agendamento.id_for_label }}" class="form-label required">
+                <i class="fas fa-calendar text-success"></i>
+                Data do Agendamento
+              </label>
+              {{ form.data_agendamento }}
+              {% if form.data_agendamento.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.data_agendamento.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>Selecione a data desejada para o agendamento
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+              <label for="{{ form.hora_inicio.id_for_label }}" class="form-label required">
+                <i class="fas fa-clock text-warning"></i>
+                Hora de Início
+              </label>
+              {{ form.hora_inicio }}
+              {% if form.hora_inicio.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.hora_inicio.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>Formato: HH:MM (ex: 14:30)
+              </div>
+            </div>
+          </div>
+
+          <!-- Valor -->
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label for="{{ form.valor_cobrado.id_for_label }}" class="form-label">
+                <i class="fas fa-dollar-sign text-info"></i>
+                Valor a Cobrar
+              </label>
+              <div class="input-group">
+                <span class="input-group-text">R\$</span>
+                {{ form.valor_cobrado }}
+              </div>
+              {% if form.valor_cobrado.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.valor_cobrado.errors %}
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>Deixe em branco para usar o valor padrão do serviço
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+              <div class="card bg-light border-0 h-100">
+                <div class="card-body d-flex align-items-center">
+                  <div>
+                    <h6 class="mb-1">
+                      <i class="fas fa-lightbulb text-warning me-2"></i>Dica
+                    </h6>
+                    <small class="text-muted">
+                      O valor será automaticamente preenchido com o preço do serviço selecionado
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observações -->
+          <div class="mb-4">
+            <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+              <i class="fas fa-sticky-note text-secondary"></i>
+              Observações
+            </label>
+            {{ form.observacoes }}
+            {% if form.observacoes.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.observacoes.errors %}
+                  <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+            <div class="form-text">
+              <i class="fas fa-info-circle me-1"></i>Informações adicionais sobre o agendamento (opcional)
+            </div>
+          </div>
+
+          <!-- Erros gerais -->
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Atenção!</strong>
+              {% for error in form.non_field_errors %}
+                <br>{{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <!-- Botões de ação -->
+          <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
+            <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-custom">
+              <i class="fas fa-{% if object %}save{% else %}plus{% endif %} me-2"></i>
+              {% if object %}Atualizar Agendamento{% else %}Criar Agendamento{% endif %}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
@@ -153,13 +453,57 @@ document.addEventListener('DOMContentLoaded', function() {
         dataInput.value = dataFormatada;
     }
     
+    // Máscara para hora
+    const horaInput = document.getElementById('{{ form.hora_inicio.id_for_label }}');
+    if (horaInput) {
+        horaInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + ':' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+    }
+    
     // Auto-calcular valor baseado no serviço selecionado
     const servicoSelect = document.getElementById('{{ form.servico.id_for_label }}');
     const valorInput = document.getElementById('{{ form.valor_cobrado.id_for_label }}');
     
-    servicoSelect.addEventListener('change', function() {
-        // Aqui você pode fazer uma requisição AJAX para buscar o preço do serviço
-        // Por enquanto, vamos deixar o usuário preencher manualmente
+    if (servicoSelect && valorInput) {
+        servicoSelect.addEventListener('change', function() {
+            if (this.value && !valorInput.value) {
+                // Aqui você pode fazer uma requisição AJAX para buscar o preço do serviço
+                // Por enquanto, vamos deixar o usuário preencher manualmente
+                console.log('Serviço selecionado:', this.value);
+            }
+        });
+    }
+    
+    // Validação em tempo real
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Animação de foco nos inputs
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'transform 0.2s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
     });
 });
 </script>
