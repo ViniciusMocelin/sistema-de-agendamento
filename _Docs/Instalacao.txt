@@ -71,8 +71,9 @@ pip install -r requirements.txt
 
 
 5. Configurar Banco de Dados
-python manage.py makemigrations
+
 python manage.py migrate
+python manage.py makemigrations
 
 
 6. Criar Superusuário
