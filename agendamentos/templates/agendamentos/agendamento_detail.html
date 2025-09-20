@@ -3,405 +3,7 @@
 {% block title %}Agendamento - {{ agendamento.cliente.nome }} - Sistema de Agendamentos{% endblock %}
 
 {% block extra_css %}
-<style>
-  /* Header personalizado */
-  .detail-header {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    position: relative;
-  }
-  
-  .detail-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-color) !important;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  
-  .detail-subtitle {
-    color: var(--text-muted-color) !important;
-    margin: 8px 0 0 0;
-    font-size: 1rem;
-  }
-  
-  /* Ações no Header */
-  .header-actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  
-  @media (max-width: 768px) {
-    .header-actions {
-      position: relative;
-      top: auto;
-      right: auto;
-      margin-top: 15px;
-      justify-content: flex-start;
-      flex-wrap: wrap;
-    }
-    
-    .detail-title {
-      font-size: 1.5rem;
-    }
-  }
 
-  /* Cards styling */
-  .detail-card {
-    border-radius: 15px;
-    border: none;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    overflow: hidden;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-  }
-
-  .detail-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  }
-
-  .detail-card .card-header {
-    border: none;
-    padding: 20px 25px;
-    font-weight: 600;
-  }
-
-  .detail-card .card-body {
-    padding: 25px;
-  }
-
-  /* Status card */
-  .status-card {
-    background: var(--gradient-bg);
-    color: white !important;
-    border-radius: 15px;
-    padding: 25px;
-    margin-bottom: 25px;
-  }
-
-  .status-card * {
-    color: white !important;
-  }
-
-  .status-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .avatar-lg {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-    font-weight: bold;
-    background: var(--gradient-bg) !important;
-    color: white !important;
-    border-radius: 50%;
-  }
-  
-  .service-icon {
-    width: 80px;
-    height: 80px;
-    background: var(--info-color) !important;
-    color: white !important;
-    border-radius: 50%;
-  }
-  
-  /* Info items */
-  .info-item {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .info-item:last-child {
-    border-bottom: none;
-  }
-
-  .info-item i {
-    width: 20px;
-    color: var(--primary-color);
-  }
-
-  .info-item strong {
-    color: var(--text-color) !important;
-    min-width: 80px;
-    margin-right: 10px;
-  }
-
-  .info-item a {
-    color: var(--primary-color) !important;
-    text-decoration: none;
-  }
-
-  .info-item a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Info boxes */
-  .info-box {
-    background: var(--light-color) !important;
-    border-radius: 12px;
-    padding: 20px;
-    transition: all 0.3s ease;
-    border: 1px solid var(--border-color);
-  }
-  
-  .info-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    border-color: var(--primary-color);
-  }
-
-  .info-box i {
-    font-size: 1.5rem;
-  }
-
-  .info-box small {
-    color: var(--text-muted-color) !important;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .info-box strong {
-    color: var(--text-color) !important;
-    font-size: 1.1rem;
-  }
-  
-  /* Timeline */
-  .timeline {
-    position: relative;
-    padding-left: 0;
-  }
-  
-  .timeline-item {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 25px;
-    position: relative;
-  }
-  
-  .timeline-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 20px;
-    top: 45px;
-    width: 2px;
-    height: calc(100% + 5px);
-    background: linear-gradient(to bottom, var(--border-color), transparent);
-  }
-  
-  .timeline-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white !important;
-    margin-right: 20px;
-    z-index: 1;
-    position: relative;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-  }
-  
-  .timeline-content {
-    flex: 1;
-    background: var(--surface-color);
-    padding: 15px 20px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    margin-top: 5px;
-  }
-
-  .timeline-content h6 {
-    margin-bottom: 8px;
-    color: var(--text-color) !important;
-    font-weight: 600;
-  }
-
-  .timeline-content p {
-    margin-bottom: 5px;
-    color: var(--text-color) !important;
-  }
-
-  .timeline-content small {
-    color: var(--text-muted-color) !important;
-  }
-
-  /* Buttons */
-  .btn-custom {
-    background: var(--gradient-bg);
-    border: none;
-    color: white !important;
-    font-weight: 600;
-    padding: 12px 20px;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .btn-custom:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--shadow-color);
-    color: white !important;
-  }
-
-  /* Action buttons */
-  .action-btn {
-    width: 100%;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-
-  /* Status badge */
-  .status-badge {
-    font-size: 1rem;
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* Modal styling */
-  .modal-content {
-    border-radius: 15px;
-    border: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  }
-
-  .modal-header {
-    border-bottom: 1px solid var(--border-color);
-    background: var(--surface-color);
-    border-radius: 15px 15px 0 0;
-  }
-
-  .modal-body {
-    background: var(--surface-color);
-  }
-
-  .modal-footer {
-    border-top: 1px solid var(--border-color);
-    background: var(--surface-color);
-    border-radius: 0 0 15px 15px;
-  }
-
-  .agendamento-preview {
-    border-left: 4px solid var(--primary-color);
-    background: var(--light-color) !important;
-    border-radius: 8px;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .status-icon {
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-    }
-    
-    .avatar-lg {
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-    }
-    
-    .service-icon {
-      width: 60px;
-      height: 60px;
-    }
-
-    .timeline-item {
-      margin-bottom: 20px;
-    }
-
-    .timeline-content {
-      padding: 12px 15px;
-    }
-
-    .info-box {
-      padding: 15px;
-    }
-  }
-
-  /* Animations */
-  .detail-card {
-    animation: slideInUp 0.5s ease-out;
-  }
-
-  @keyframes slideInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Pulse animation for active status */
-  .pulse {
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-  }
-
-  /* Auto-refresh indicator */
-  .refresh-indicator {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1050;
-    background: var(--info-color);
-    color: white;
-    padding: 10px 15px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .refresh-indicator:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -768,84 +370,55 @@
   </div>
 </div>
 
+{% comment %}
+INFORMAÇÃO SOBRE OS SCRIPTS
+
+OBJETIVO INICIAL:
+O plano original era mover todos os arquivos CSS e JavaScript para a pasta 'static' para manter o código do projeto mais limpo e organizado.
+
+MOTIVO DA EXCEÇÃO:
+Foi identificado que este script em particular NÃO PODE ser movido para um arquivo .js externo. O motivo é que ele utiliza variáveis do Django (identificadas por {{ ... }}), que são processadas pelo servidor antes de a página ser entregue ao navegador. Arquivos .js externos não têm acesso a essas informações.
+
+SOLUÇÃO IMPLEMENTADA:
+A solução adotada foi deixar este script específico aqui no HTML (para que ele possa acessar as variáveis do Django) e mover todos os outros scripts que não dependem de variáveis do servidor para arquivos .js separados na pasta 'static'. Esta é a prática recomendada para este tipo de situação, garantindo a organização do código sem comprometer a funcionalidade.
+{% endcomment %}
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Animação nos cards de informação
-    const infoBoxes = document.querySelectorAll('.info-box');
-    infoBoxes.forEach(box => {
-        box.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-3px) scale(1.02)';
-        });
-        
-        box.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-    
-    // Confirmar ações importantes
-    const actionButtons = document.querySelectorAll('a[href*="status"]');
-    actionButtons.forEach(button => {
-        if (button.textContent.includes('Finalizar') || button.textContent.includes('Confirmar')) {
-            button.addEventListener('click', function(e) {
-                const action = this.textContent.trim();
-                if (!confirm(`Tem certeza que deseja ${action.toLowerCase()}?`)) {
-                    e.preventDefault();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-atualizar página para agendamentos em andamento
+        const agendamentoStatus = '{{ agendamento.status }}';
+        if (agendamentoStatus === 'em_andamento') {
+            // Mostrar indicador de auto-refresh
+            const refreshIndicator = document.createElement('div');
+            refreshIndicator.className = 'refresh-indicator';
+            refreshIndicator.innerHTML = `
+                <i class="fas fa-sync-alt me-2"></i>
+                <small>Auto-refresh em <span id="countdown">5:00</span></small>
+            `;
+            document.body.appendChild(refreshIndicator);
+            
+            // Countdown
+            let timeLeft = 300; // 5 minutos em segundos
+            const countdownElement = document.getElementById('countdown');
+            
+            const countdown = setInterval(function() {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    location.reload();
                 }
+            }, 1000);
+            
+            // Permitir cancelar o auto-refresh
+            refreshIndicator.addEventListener('click', function() {
+                clearInterval(countdown);
+                this.remove();
             });
         }
     });
-    
-    // Auto-atualizar página para agendamentos em andamento
-    const agendamentoStatus = '{{ agendamento.status }}';
-    if (agendamentoStatus === 'em_andamento') {
-        // Mostrar indicador de auto-refresh
-        const refreshIndicator = document.createElement('div');
-        refreshIndicator.className = 'refresh-indicator';
-        refreshIndicator.innerHTML = `
-            <i class="fas fa-sync-alt me-2"></i>
-            <small>Auto-refresh em <span id="countdown">5:00</span></small>
-        `;
-        document.body.appendChild(refreshIndicator);
-        
-        // Countdown
-        let timeLeft = 300; // 5 minutos em segundos
-        const countdownElement = document.getElementById('countdown');
-        
-        const countdown = setInterval(function() {
-            timeLeft--;
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                location.reload();
-            }
-        }, 1000);
-        
-        // Permitir cancelar o auto-refresh
-        refreshIndicator.addEventListener('click', function() {
-            clearInterval(countdown);
-            this.remove();
-        });
-    }
-    
-    // Animação de entrada escalonada
-    const cards = document.querySelectorAll('.detail-card');
-    cards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-    });
-    
-    // Scroll suave para seções
-    const timelineItems = document.querySelectorAll('.timeline-item');
-    timelineItems.forEach(item => {
-        item.addEventListener('click', function() {
-            this.style.transform = 'scale(1.02)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 200);
-        });
-    });
-});
 </script>
 {% endblock %}
