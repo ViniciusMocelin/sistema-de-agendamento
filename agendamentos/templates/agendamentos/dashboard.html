@@ -3,272 +3,7 @@
 {% block title %}Dashboard - Sistema de Agendamentos{% endblock %}
 
 {% block extra_css %}
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<style>
-  /* Header personalizado do Dashboard */
-  .dashboard-header {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    position: relative;
-  }
-  
-  .dashboard-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-color) !important;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  
-  .dashboard-subtitle {
-    color: var(--text-muted-color) !important;
-    margin: 8px 0 0 0;
-    font-size: 1rem;
-  }
-  
-  /* Ações no Header */
-  .header-actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  
-  @media (max-width: 768px) {
-    .header-actions {
-      position: relative;
-      top: auto;
-      right: auto;
-      margin-top: 15px;
-      justify-content: flex-start;
-      flex-wrap: wrap;
-    }
-    
-    .dashboard-title {
-      font-size: 1.5rem;
-    }
-  }
 
-  .btn-custom {
-    background: var(--gradient-bg);
-    border: none;
-    color: white !important;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-
-  .btn-custom:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--shadow-color);
-    color: white !important;
-  }
-
-  .theme-card {
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-
-  .card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  }
-
-  .action-card {
-    border-radius: 15px;
-    transition: all 0.3s ease;
-  }
-
-  .action-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px var(--shadow-color);
-  }
-
-  .avatar-sm {
-    width: 35px;
-    height: 35px;
-    font-size: 14px;
-    font-weight: bold;
-  }
-
-  .table th {
-    border-top: none;
-    font-weight: 600;
-    font-size: 0.875rem;
-  }
-
-  .btn-group-sm .btn {
-    padding: 0.25rem 0.5rem;
-  }
-
-  /* Dropdown de Temas */
-  .tema-dropdown-item {
-    padding: 8px 16px !important;
-    transition: all 0.3s ease;
-  }
-
-  .tema-dropdown-item:hover {
-    background-color: var(--light-color) !important;
-    border-radius: 8px;
-    margin: 2px 8px;
-  }
-
-  .tema-dropdown-item.active {
-    background-color: var(--light-color) !important;
-    border-radius: 8px;
-    margin: 2px 8px;
-    border-left: 3px solid var(--primary-color);
-  }
-
-  .tema-preview {
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .tema-dropdown-item:hover .tema-preview {
-    transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .dropdown-header {
-    font-weight: 600;
-    color: var(--primary-color) !important;
-    font-size: 0.875rem;
-  }
-
-  .dropdown-divider {
-    margin: 8px 16px;
-    border-color: var(--border-color);
-  }
-
-  /* Dark mode toggle */
-  .dark-mode-toggle {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 30px;
-  }
-
-  .dark-mode-toggle input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .dark-mode-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 30px;
-  }
-
-  .dark-mode-slider:before {
-    position: absolute;
-    content: "";
-    height: 22px;
-    width: 22px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-  }
-
-  .dark-mode-toggle input:checked + .dark-mode-slider {
-    background-color: var(--primary-color);
-  }
-
-  .dark-mode-toggle input:checked + .dark-mode-slider:before {
-    transform: translateX(30px);
-  }
-
-  .dark-mode-slider:hover {
-    box-shadow: 0 0 10px var(--shadow-color);
-  }
-
-  .mode-icon {
-    transition: all 0.3s ease;
-  }
-
-  .mode-text {
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-
-  /* Animação de loading para troca de tema */
-  .tema-loading {
-    position: relative;
-    pointer-events: none;
-  }
-
-  .tema-loading::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--primary-color);
-    border-top: 2px solid transparent;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-  }
-
-  /* Animações suaves */
-  .card {
-    animation: fadeInUp 0.6s ease-out;
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Delay nas animações dos cards */
-  .row .col-md-3:nth-child(1) .card { animation-delay: 0.1s; }
-  .row .col-md-3:nth-child(2) .card { animation-delay: 0.2s; }
-  .row .col-md-3:nth-child(3) .card { animation-delay: 0.3s; }
-  .row .col-md-3:nth-child(4) .card { animation-delay: 0.4s; }
-
-  /* Toast customizado */
-  .custom-toast {
-    animation: slideInRight 0.3s ease-out;
-  }
-
-  @keyframes slideInRight {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-</style>
 {% endblock %}
 
 {% block content %}
@@ -540,7 +275,7 @@
         <h5 class="mb-0">
           <i class="fas fa-calendar-alt me-2"></i>Próximos Agendamentos
         </h5>
-        <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-sm btn-light">
+        <a href="{% url 'agendamentos:agendamento_list' %}" class="btn btn-sm btn btn-dark">
           <i class="fas fa-external-link-alt me-1"></i>Ver Todos
         </a>
       </div>
@@ -677,216 +412,134 @@
   </div>
 </div>
 
+{% comment %} 
+
+ Este script deve permanecer dentro do arquivo HTML, pois ele utiliza variáveis
+ do Django (identificadas por {{ ... }}). Essas variáveis são preenchidas pelo
+ servidor antes do HTML ser enviado ao navegador. Um arquivo .js externo não
+ seria capaz de processá-las, resultando em erros.
+
+
+{% endcomment %}
+
+
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Gráfico de agendamentos por dia com cores do tema
-    const categorias = {{ grafico_agendamentos_dados.categorias|safe }};
-    const valores = {{ grafico_agendamentos_dados.valores|safe }};
-    
-    const trace = {
-        x: categorias,
-        y: valores,
-        type: 'bar',
-        marker: {
-            color: 'var(--primary-color)',
-            opacity: 0.8,
-            line: {
-                color: 'var(--secondary-color)',
-                width: 1
-            }
-        },
-        name: 'Agendamentos'
-    };
-    
-    const layout = {
-        title: {
-            text: '',
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gráfico de agendamentos por dia com cores do tema
+        const categorias = {{ grafico_agendamentos_dados.categorias|safe }};
+        const valores = {{ grafico_agendamentos_dados.valores|safe }};
+        
+        const trace = {
+            x: categorias,
+            y: valores,
+            type: 'bar',
+            marker: {
+                color: 'var(--primary-color)',
+                opacity: 0.8,
+                line: {
+                    color: 'var(--secondary-color)',
+                    width: 1
+                }
+            },
+            name: 'Agendamentos'
+        };
+        
+        const layout = {
+            title: {
+                text: '',
+                font: { 
+                    size: 16,
+                    color: 'var(--text-color)'
+                }
+            },
+            xaxis: {
+                title: 'Data',
+                tickangle: -45,
+                color: 'var(--text-color)'
+            },
+            yaxis: {
+                title: 'Quantidade',
+                color: 'var(--text-color)'
+            },
+            margin: { t: 20, b: 100, l: 50, r: 50 },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
             font: { 
-                size: 16,
+                family: 'Inter, sans-serif',
                 color: 'var(--text-color)'
             }
-        },
-        xaxis: {
-            title: 'Data',
-            tickangle: -45,
-            color: 'var(--text-color)'
-        },
-        yaxis: {
-            title: 'Quantidade',
-            color: 'var(--text-color)'
-        },
-        margin: { t: 20, b: 100, l: 50, r: 50 },
-        paper_bgcolor: 'transparent',
-        plot_bgcolor: 'transparent',
-        font: { 
-            family: 'Inter, sans-serif',
-            color: 'var(--text-color)'
-        }
-    };
-    
-    const config = {
-        responsive: true,
-        displayModeBar: false
-    };
-    
-    Plotly.newPlot('grafico-agendamentos', [trace], layout, config);
-});
-
-// Função para alterar tema
-function alterarTema(tema, event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    const clickedItem = event ? event.currentTarget : null;
-    if (clickedItem) {
-        clickedItem.classList.add('tema-loading');
-    }
-    
-    showToast('Alterando tema...', 'info');
-    
-    fetch('/auth/ajax/alterar-tema/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: `tema=${tema}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast(data.message, 'success');
-            setTimeout(() => location.reload(), 800);
-        } else {
-            showToast('Erro ao alterar tema', 'error');
-            if (clickedItem) {
-                clickedItem.classList.remove('tema-loading');
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        showToast('Erro ao alterar tema', 'error');
-        if (clickedItem) {
-            clickedItem.classList.remove('tema-loading');
-        }
+        };
+        
+        const config = {
+            responsive: true,
+            displayModeBar: false
+        };
+        
+        Plotly.newPlot('grafico-agendamentos', [trace], layout, config);
     });
-}
 
-// Função para alterar modo escuro/claro
-function alterarModo(isDark) {
-    const modo = isDark ? 'dark' : 'light';
-    const modoTexto = isDark ? 'escuro' : 'claro';
-    const modoAtual = {{ is_dark_mode|yesno:"true,false" }};
-    
-    // Verificar se realmente está mudando
-    if (isDark === modoAtual) {
-        console.log('Modo já está ativo, ignorando...');
-        return;
-    }
-    
-    console.log(`Alterando de ${modoAtual ? 'escuro' : 'claro'} para ${modoTexto}`);
-    
-    // Feedback visual imediato
-    const toggle = document.querySelector('.dark-mode-toggle');
-    if (toggle) {
-        toggle.style.opacity = '0.6';
-        toggle.style.pointerEvents = 'none';
-    }
-    
-    showToast(`Alterando para modo ${modoTexto}...`, 'info');
-    
-    fetch('/auth/ajax/alterar-modo/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: `modo=${modo}`
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            showToast(data.message, 'success');
-            setTimeout(() => location.reload(), 1000);
-        } else {
-            throw new Error(data.error || 'Erro desconhecido');
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        showToast(`Erro ao alterar para modo ${modoTexto}: ${error.message}`, 'error');
+    // Função para alterar modo escuro/claro
+    function alterarModo(isDark) {
+        const modo = isDark ? 'dark' : 'light';
+        const modoTexto = isDark ? 'escuro' : 'claro';
+        const modoAtual = {{ is_dark_mode|yesno:"true,false" }};
         
-        // Reverter o toggle
-        const toggleInput = document.querySelector('.dark-mode-toggle input');
-        if (toggleInput) {
-            toggleInput.checked = !isDark;
+        // Verificar se realmente está mudando
+        if (isDark === modoAtual) {
+            console.log('Modo já está ativo, ignorando...');
+            return;
         }
         
-        // Restaurar visual
+        console.log(`Alterando de ${modoAtual ? 'escuro' : 'claro'} para ${modoTexto}`);
+        
+        // Feedback visual imediato
+        const toggle = document.querySelector('.dark-mode-toggle');
         if (toggle) {
-            toggle.style.opacity = '1';
-            toggle.style.pointerEvents = 'auto';
+            toggle.style.opacity = '0.6';
+            toggle.style.pointerEvents = 'none';
         }
-    });
-}
-
-// Função para mostrar toast notifications
-function showToast(message, type = 'info') {
-    // Remover toasts existentes
-    const existingToasts = document.querySelectorAll('.custom-toast');
-    existingToasts.forEach(toast => toast.remove());
-    
-    // Criar novo toast
-    const toast = document.createElement('div');
-    toast.className = `custom-toast alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        min-width: 300px;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    `;
-    
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Auto remover após 3 segundos
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.remove();
-        }
-    }, 3000);
-}
-
-// Função para pegar CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        
+        showToast(`Alterando para modo ${modoTexto}...`, 'info');
+        
+        fetch('/auth/ajax/alterar-modo/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: `modo=${modo}`
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                throw new Error(data.error || 'Erro desconhecido');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showToast(`Erro ao alterar para modo ${modoTexto}: ${error.message}`, 'error');
+            
+            // Reverter o toggle
+            const toggleInput = document.querySelector('.dark-mode-toggle input');
+            if (toggleInput) {
+                toggleInput.checked = !isDark;
+            }
+            
+            // Restaurar visual
+            if (toggle) {
+                toggle.style.opacity = '1';
+                toggle.style.pointerEvents = 'auto';
+            }
+        });
     }
-    return cookieValue;
-}
 </script>
 {% endblock %}

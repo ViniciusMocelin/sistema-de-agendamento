@@ -1,0 +1,230 @@
+.form-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.form-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color) !important;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.form-subtitle {
+  color: var(--text-muted-color) !important;
+  margin: 8px 0 0 0;
+  font-size: 1rem;
+}
+
+/* Ações no Header */
+.header-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .header-actions {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-top: 15px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .form-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Form styling */
+.form-card {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.form-card .card-header {
+  background: var(--gradient-bg) !important;
+  border: none;
+  padding: 20px 30px;
+}
+
+.form-card .card-body {
+  padding: 30px;
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--text-color) !important;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px !important;
+  border: 2px solid var(--border-color) !important;
+  padding: 12px 15px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: var(--surface-color) !important;
+  color: var(--text-color) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.2rem var(--shadow-color) !important;
+  background-color: var(--surface-color) !important;
+  color: var(--text-color) !important;
+}
+
+.form-text {
+  font-size: 0.875rem;
+  color: var(--text-muted-color) !important;
+  margin-top: 5px;
+}
+
+.form-text a {
+  color: var(--primary-color) !important;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.form-text a:hover {
+  color: var(--secondary-color) !important;
+  text-decoration: underline;
+}
+
+.invalid-feedback {
+  display: block !important;
+  color: var(--danger-color) !important;
+  font-size: 0.875rem;
+  margin-top: 5px;
+}
+
+.btn-custom {
+  background: var(--gradient-bg);
+  border: none;
+  color: white !important;
+  font-weight: 600;
+  padding: 12px 25px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px var(--shadow-color);
+  color: white !important;
+}
+
+.btn-outline-secondary {
+  border: 2px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+  background: transparent;
+  font-weight: 600;
+  padding: 12px 25px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--light-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  transform: translateY(-2px);
+}
+
+.alert {
+  border-radius: 10px;
+  border: none;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.alert-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color) !important;
+  border-left: 4px solid var(--danger-color);
+}
+
+/* Input groups */
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group .form-control:first-child {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.input-group .form-control:last-child {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+/* Required field indicator */
+.required::after {
+  content: " *";
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+/* Form animations */
+.form-card {
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Textarea styling */
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Select2 compatibility */
+.select2-container--default .select2-selection--single {
+  border: 2px solid var(--border-color) !important;
+  border-radius: 10px !important;
+  height: 48px !important;
+  background-color: var(--surface-color) !important;
+}
+
+.select2-container--default
+  .select2-selection--single
+  .select2-selection__rendered {
+  color: var(--text-color) !important;
+  line-height: 44px !important;
+  padding-left: 15px !important;
+}
