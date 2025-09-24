@@ -505,6 +505,6 @@ chown django:django /home/django/health_check.sh
 echo "*/5 * * * * /home/django/health_check.sh" | crontab -u django -
 
 echo "Configuração da instância concluída!"
-echo "Aplicação disponível em: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
-echo "SSH: ssh -i ~/.ssh/id_rsa ubuntu@$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+echo "Aplicação disponível em: http://3.90.152.110"
+echo "SSH: ssh -i ~/.ssh/id_rsa ubuntu@3.90.152.110"
 echo "Logs: /var/log/user-data.log"
