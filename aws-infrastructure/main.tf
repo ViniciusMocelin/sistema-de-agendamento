@@ -23,7 +23,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-22.04-lts-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-*-22.04-amd64-server-*"]
   }
 
   filter {
@@ -193,7 +193,7 @@ resource "aws_db_instance" "postgres" {
   identifier = "${var.project_name}-postgres"
   
   engine         = "postgres"
-  engine_version = "15.4"
+  engine_version = null
   instance_class = "db.t3.micro"
   
   allocated_storage     = 20
@@ -228,13 +228,14 @@ resource "aws_instance" "web_server" {
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   subnet_id             = aws_subnet.public.id
 
-  user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    db_endpoint = aws_db_instance.postgres.endpoint
-    db_name     = aws_db_instance.postgres.db_name
-    db_username = aws_db_instance.postgres.username
-    db_password = var.db_password
+  user_data = templatefile("${path.module}/user_data.sh", {
+    db_address   = aws_db_instance.postgres.address
+    db_port      = aws_db_instance.postgres.port
+    db_name      = aws_db_instance.postgres.db_name
+    db_username  = aws_db_instance.postgres.username
+    db_password  = var.db_password
     project_name = var.project_name
-  }))
+  })
 
   tags = {
     Name = "${var.project_name}-web-server"

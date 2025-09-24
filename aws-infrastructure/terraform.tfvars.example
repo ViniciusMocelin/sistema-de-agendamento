@@ -12,7 +12,7 @@ environment = "prod"
 
 # Configurações do banco de dados
 db_username = "postgres"
-db_password = "sua_senha_super_segura_aqui"
+db_password = "senha_segura_postgre"
 
 # Domínio (opcional)
 domain_name = ""
@@ -43,12 +43,12 @@ enable_waf = false
 enable_cloudfront = false
 
 # Email para notificações
-notification_email = "seu-email@example.com"
+notification_email = "carlosmedeiroscode@gmail.com"
 
 # Tags adicionais
 tags = {
   Environment = "production"
   Project     = "sistema-agendamento"
-  Owner       = "sua-empresa"
+  Owner       = "4Minds"
   CostCenter  = "TI"
 }

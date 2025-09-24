@@ -34,7 +34,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo ✅ Todas as dependências estão instaladas
+echo [OK] Todas as dependências estão instaladas
 
 REM Configurar AWS CLI
 echo.
@@ -46,7 +46,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo ✅ AWS CLI configurado
+echo [OK] AWS CLI configurado
 
 REM Configurar chave SSH
 echo.
@@ -56,7 +56,7 @@ if not exist "%USERPROFILE%\.ssh\id_rsa.pub" (
     ssh-keygen -t rsa -b 4096 -f "%USERPROFILE%\.ssh\id_rsa" -N ""
 )
 
-echo ✅ Chave SSH configurada
+echo [OK] Chave SSH configurada
 
 REM Configurar Terraform
 echo.
@@ -86,7 +86,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo ✅ Terraform inicializado
+echo [OK] Terraform inicializado
 
 REM Planejar mudanças
 echo.
@@ -163,7 +163,7 @@ echo SSH: ssh -i %%USERPROFILE%%\.ssh\id_rsa ubuntu@%EC2_IP% >> ..\infrastructur
 echo. >> ..\infrastructure-info.txt
 echo Criado em: %DATE% %TIME% >> ..\infrastructure-info.txt
 
-echo ✅ Informações salvas em infrastructure-info.txt
+echo [OK] Informações salvas em infrastructure-info.txt
 
 cd ..
 

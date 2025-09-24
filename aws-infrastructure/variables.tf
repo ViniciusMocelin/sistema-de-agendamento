@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "project_name" {
-  description = "Nome do projeto"
+  description = "Sistema completo para agendamento de clientes com interface moderna, responsiva e sistema de temas personalizáveis."
   type        = string
   default     = "sistema-agendamento"
 }

@@ -18,15 +18,15 @@ log() {
 }
 
 success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN}[OK] $1${NC}"
 }
 
 warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}[AVISO] $1${NC}"
 }
 
 error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED}[ERRO] $1${NC}"
     exit 1
 }
 
@@ -197,15 +197,15 @@ show_final_info() {
     DOMAIN_NAME=$(terraform output -raw domain_name 2>/dev/null || echo "")
     
     echo ""
-    echo "🎉 INFRAESTRUTURA CONFIGURADA COM SUCESSO!"
+    echo "INFRAESTRUTURA CONFIGURADA COM SUCESSO!"
     echo "=========================================="
     echo ""
-    echo "📊 INFORMAÇÕES DA INFRAESTRUTURA:"
+    echo "INFORMAÇÕES DA INFRAESTRUTURA:"
     echo "  • EC2 IP: $EC2_IP"
     echo "  • RDS Endpoint: $RDS_ENDPOINT"
     echo "  • S3 Bucket: $S3_BUCKET"
     echo ""
-    echo "🌐 ACESSO À APLICAÇÃO:"
+    echo "ACESSO À APLICAÇÃO:"
     if [ -n "$DOMAIN_NAME" ]; then
         echo "  • URL: https://$DOMAIN_NAME"
     else
@@ -215,10 +215,10 @@ show_final_info() {
     echo "  • Usuário: admin"
     echo "  • Senha: admin123"
     echo ""
-    echo "🔑 CONEXÃO SSH:"
+    echo "CONEXÃO SSH:"
     echo "  ssh -i ~/.ssh/id_rsa ubuntu@$EC2_IP"
     echo ""
-    echo "📝 PRÓXIMOS PASSOS:"
+    echo "PRÓXIMOS PASSOS:"
     echo "  1. Aguarde alguns minutos para a aplicação inicializar"
     echo "  2. Acesse a aplicação e configure seu sistema"
     echo "  3. Altere a senha do admin"
@@ -226,7 +226,7 @@ show_final_info() {
     echo "  5. Configure backup automático"
     echo "  6. Configure monitoramento"
     echo ""
-    echo "⚠️  IMPORTANTE:"
+    echo "IMPORTANTE:"
     echo "  • Altere a senha do banco de dados"
     echo "  • Configure backup automático"
     echo "  • Monitore os custos da AWS"
@@ -236,7 +236,7 @@ show_final_info() {
 
 # Função principal
 main() {
-    echo "🏗️  CONFIGURAÇÃO DA INFRAESTRUTURA AWS"
+    echo "CONFIGURAÇÃO DA INFRAESTRUTURA AWS"
     echo "======================================"
     echo ""
     

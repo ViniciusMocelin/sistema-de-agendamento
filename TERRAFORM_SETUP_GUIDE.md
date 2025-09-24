@@ -7,15 +7,16 @@ Este guia mostra como configurar a infraestrutura na AWS usando os arquivos Terr
 ## Pré-requisitos
 
 ### 1. Conta AWS
-- [ ] Conta AWS ativa
-- [ ] Free Tier ativado (se aplicável)
+- [X] Conta AWS ativa
+- [X] Free Tier ativado (se aplicável)
 - [ ] Usuário IAM com permissões adequadas
 
 ### 2. Ferramentas Necessárias
-- [ ] AWS CLI v2
-- [ ] Terraform v1.0+
-- [ ] Git
-- [ ] Chave SSH (para acesso à EC2)
+- [X] AWS CLI v2
+- [X] Terraform v1.0+
+- [X] Git
+- [X] Chave SSH (para acesso à EC2)
+git@github.com:ViniciusMocelin/sistema-de-agendamento.git
 
 ## Passo 1: Configurar AWS CLI
 
@@ -89,6 +90,10 @@ terraform version
 # Gerar chave SSH
 ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa
 
+Obs: de ser erro, crie a pasta mkdir $env:USERPROFILE\.ssh
+ssh-keygen -t rsa -b 4096 -f $env:USERPROFILE\.ssh\id_rsa
+
+
 # Verificar se a chave foi criada
 ls -la ~/.ssh/
 ```
@@ -130,11 +135,11 @@ project_name = "sistema-agendamento"
 environment = "prod"
 
 # SENHA OBRIGATÓRIA - Altere para uma senha segura
-db_password = "MinhaSenh@SuperSegura123!"
+db_password = "senha_segura_postgre"
 
 # Configurações opcionais
 domain_name = "meusite.com"  # Deixe vazio se não tiver domínio
-notification_email = "admin@meusite.com"
+notification_email = "carlosmedeiroscode@gmail.com"
 ```
 
 ## Passo 5: Inicializar Terraform

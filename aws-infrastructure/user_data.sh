@@ -6,7 +6,8 @@
 set -e
 
 # Variáveis
-DB_ENDPOINT="${db_endpoint}"
+DB_ENDPOINT="${db_address}"
+DB_PORT="${db_port}"
 DB_NAME="${db_name}"
 DB_USERNAME="${db_username}"
 DB_PASSWORD="${db_password}"
@@ -15,7 +16,7 @@ PROJECT_NAME="${project_name}"
 # Log de inicialização
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-echo "🚀 Iniciando configuração da instância EC2 para $PROJECT_NAME..."
+echo "Iniciando configuração da instância EC2 para $PROJECT_NAME..."
 
 # Atualizar sistema
 apt-get update
@@ -43,9 +44,9 @@ apt-get install -y \
 if ! id "django" &>/dev/null; then
     useradd -m -s /bin/bash django
     usermod -aG sudo django
-    echo "✅ Usuário django criado"
+    echo "[OK] Usuário django criado"
 else
-    echo "ℹ️  Usuário django já existe"
+    echo "[INFO] Usuário django já existe"
 fi
 
 # Configurar diretório home do django
@@ -125,7 +126,7 @@ nginx -t
 systemctl restart nginx
 systemctl enable nginx
 
-echo "✅ Nginx configurado"
+echo "[OK] Nginx configurado"
 
 # Configurar firewall
 ufw --force enable
@@ -133,7 +134,7 @@ ufw allow 22
 ufw allow 80
 ufw allow 443
 
-echo "✅ Firewall configurado"
+echo "[OK] Firewall configurado"
 
 # Instalar AWS CLI
 if ! command -v aws &> /dev/null; then
@@ -141,7 +142,7 @@ if ! command -v aws &> /dev/null; then
     unzip awscliv2.zip
     ./aws/install
     rm -rf aws awscliv2.zip
-    echo "✅ AWS CLI instalado"
+    echo "[OK] AWS CLI instalado"
 fi
 
 # Instalar CloudWatch Agent
@@ -223,7 +224,7 @@ EOF
 systemctl start amazon-cloudwatch-agent
 systemctl enable amazon-cloudwatch-agent
 
-echo "✅ CloudWatch Agent configurado"
+echo "[OK] CloudWatch Agent configurado"
 
 # Configurar aplicação Django (será feito pelo usuário django)
 cat > /home/django/setup_django.sh << 'EOF'
@@ -369,7 +370,7 @@ DB_NAME=$DB_NAME
 DB_USER=$DB_USERNAME
 DB_PASSWORD=$DB_PASSWORD
 DB_HOST=$DB_ENDPOINT
-DB_PORT=5432
+DB_PORT=${DB_PORT}
 ALLOWED_HOSTS=*
 HTTPS_REDIRECT=False
 ENV_EOF
@@ -416,13 +417,13 @@ SERVICE_EOF
 sudo systemctl daemon-reload
 sudo systemctl enable django
 
-echo "✅ Django configurado (aguardando banco de dados estar disponível)"
+echo "[OK] Django configurado (aguardando banco de dados estar disponível)"
 
 # Aguardar banco de dados estar disponível
-echo "⏳ Aguardando banco de dados estar disponível..."
+echo "Aguardando banco de dados estar disponível..."
 for i in {1..30}; do
     if pg_isready -h $DB_ENDPOINT -p 5432 -U $DB_USERNAME; then
-        echo "✅ Banco de dados disponível"
+        echo "[OK] Banco de dados disponível"
         break
     fi
     echo "Tentativa $i/30 - Aguardando banco de dados..."
@@ -440,7 +441,7 @@ echo "from django.contrib.auth import get_user_model; User = get_user_model(); U
 # Iniciar serviço Django
 sudo systemctl start django
 
-echo "✅ Django iniciado com sucesso!"
+echo "[OK] Django iniciado com sucesso!"
 EOF
 
 # Executar configuração do Django como usuário django
@@ -503,7 +504,7 @@ chown django:django /home/django/health_check.sh
 # Agendar verificação de saúde a cada 5 minutos
 echo "*/5 * * * * /home/django/health_check.sh" | crontab -u django -
 
-echo "🎉 Configuração da instância concluída!"
-echo "📊 Aplicação disponível em: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
-echo "🔑 SSH: ssh -i ~/.ssh/id_rsa ubuntu@$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
-echo "📝 Logs: /var/log/user-data.log"
+echo "Configuração da instância concluída!"
+echo "Aplicação disponível em: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+echo "SSH: ssh -i ~/.ssh/id_rsa ubuntu@$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+echo "Logs: /var/log/user-data.log"
