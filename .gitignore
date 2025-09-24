@@ -5,6 +5,7 @@
 __pycache__
 db.sqlite3
 media
+staticfiles/
 
 # Backup files # 
 *.bak 
@@ -105,6 +106,13 @@ venv/
 ENV/ 
 env.bak/ 
 venv.bak/ 
+terraform.tfvars
+*.tfvars
+*.tfstate
+*.tfstate.*
+**/.terraform/**
+crash.log
+terraform.zip
 
 # mkdocs documentation 
 /site 
