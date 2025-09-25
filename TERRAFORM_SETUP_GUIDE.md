@@ -237,15 +237,14 @@ s3_bucket_name = "sistema-agendamento-static-files-xyz12345"
 # Obter IP público
 terraform output ec2_public_ip
 ```
-
+============================================================
 ### 2. Conectar via SSH
 ```bash
 # Conectar na instância
-ssh -i ~/.ssh/id_rsa ubuntu@[IP_DA_INSTANCIA]
-
-# Exemplo:
-ssh -i ~/.ssh/id_rsa ubuntu@54.123.456.789
+ssh -i ~/.ssh/id_rsa ubuntu@107.22.116.97
 ```
+============================================================
+
 
 ### 3. Verificar Status da Aplicação
 ```bash
