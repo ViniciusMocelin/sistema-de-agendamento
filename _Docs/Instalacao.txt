@@ -1,11 +1,11 @@
-Guia Rápido de Instalação - Sistema de Agendamentos
-Pré-requisitos
+🚀 Guia Rápido de Instalação - Sistema de Agendamentos
+📋 Pré-requisitos
 Python 3.8+ instalado
 Git instalado
 Terminal/Prompt de comando
 
 ##############################################
-WINDOWS                                  ##
+🪟 WINDOWS                                  ##
 ##############################################
 
 1. Clonar o Repositório
@@ -50,7 +50,7 @@ Admin:
 127.0.0.1
 
 ###############################################
-LINUX/MAC                                 ##
+🐧 LINUX/MAC                                 ##
 ###############################################
 
 1. Clonar o Repositório
@@ -96,7 +96,7 @@ Admin:
 127.0.0.1
 
 
-Comandos para Próximas Execuções
+🔄 Comandos para Próximas Execuções
 Windows:
 cd sistema-de-agendamento
 venv\Scripts\activate
@@ -108,8 +108,8 @@ Copiar
 cd sistema-de-agendamento
 source venv/bin/activate
 python manage.py runserver
-Problemas Comuns
-ERRO: "python não é reconhecido"
+⚠️ Problemas Comuns
+❌ Erro: "python não é reconhecido"
 Windows: Use py ao invés de python
 
 cmd
@@ -117,7 +117,7 @@ Copiar
 
 py -m venv venv
 py manage.py runserver
-ERRO: "Permission denied"
+❌ Erro: "Permission denied"
 Linux/Mac: Use python3 ao invés de python
 
 bash
@@ -125,7 +125,7 @@ Copiar
 
 python3 -m venv venv
 python3 manage.py runserver
-ERRO: "No module named django"
+❌ Erro: "No module named django"
 Solução: Certifique-se de que o ambiente virtual está ativado
 
 bash
@@ -139,14 +139,14 @@ venv\Scripts\activate
 
 # Linux/Mac:
 source venv/bin/activate
-ERRO: "Port already in use"
+❌ Erro: "Port already in use"
 Solução: Usar porta diferente
 
 bash
 Copiar
 
 python manage.py runserver 8001
-Primeiro Acesso
+🎯 Primeiro Acesso
 Fazer Login com o superusuário criado
 Ir para Dashboard
 Criar primeiro serviço: Ações → Novo Serviço

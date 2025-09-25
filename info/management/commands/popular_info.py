@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 defaults=cat_data
             )
             if created:
-                self.stdout.write(f'[OK] Categoria criada: {categoria.nome}')
+                self.stdout.write(f'✓ Categoria criada: {categoria.nome}')
 
         # Criar tutoriais
         self.criar_tutoriais()
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         self.criar_dicas()
         
         self.stdout.write(
-            self.style.SUCCESS('[OK] Dados iniciais criados com sucesso!')
+            self.style.SUCCESS('✅ Dados iniciais criados com sucesso!')
         )
 
     def criar_tutoriais(self):
@@ -170,7 +170,7 @@ class Command(BaseCommand):
                 defaults=tutorial_data
             )
             if created:
-                self.stdout.write(f'[OK] Tutorial criado: {tutorial.titulo}')
+                self.stdout.write(f'✓ Tutorial criado: {tutorial.titulo}')
 
     def criar_faqs(self):
         categorias = {
@@ -218,7 +218,7 @@ class Command(BaseCommand):
                 defaults=faq_data
             )
             if created:
-                self.stdout.write(f'[OK] FAQ criado: {faq.pergunta[:50]}...')
+                self.stdout.write(f'✓ FAQ criado: {faq.pergunta[:50]}...')
 
     def criar_dicas(self):
         dicas = [
@@ -258,4 +258,4 @@ class Command(BaseCommand):
                 defaults=dica_data
             )
             if created:
-                self.stdout.write(f'[OK] Dica criada: {dica.titulo}')
+                self.stdout.write(f'✓ Dica criada: {dica.titulo}')
