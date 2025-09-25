@@ -20,7 +20,8 @@ ALLOWED_HOSTS = [
     "localhost", 
     "127.0.0.1", 
     "0.0.0.0", 
-    "107.22.116.97"
+    "107.22.116.97",
+    "testserver"  # Para testes Django
 ] + (os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else [])
 
 # Application definition

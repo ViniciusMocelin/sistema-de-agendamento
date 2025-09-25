@@ -1,0 +1,417 @@
+/* AUTH CSS - Sistema de Agendamento 4Minds */
+/* Estilos para páginas de autenticação */
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body principal */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+/* Container de autenticação */
+.auth-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    max-width: 400px;
+    margin: 20px;
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+}
+
+/* Header de autenticação */
+.auth-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+}
+
+.auth-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* Body de autenticação */
+.auth-body {
+    padding: 2rem;
+}
+
+/* Formulários */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: #1e293b;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    color: #1e293b;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-color: #ffffff;
+    color: #1e293b;
+}
+
+.form-control::placeholder {
+    color: #94a3b8;
+}
+
+.form-control.is-invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.invalid-feedback {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Botões */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-height: 48px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    color: white;
+}
+
+.btn-outline-primary {
+    background: transparent;
+    color: #3b82f6;
+    border: 2px solid #3b82f6;
+    width: 100%;
+}
+
+.btn-outline-primary:hover {
+    background: #3b82f6;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-link {
+    background: none;
+    color: #3b82f6;
+    text-decoration: none;
+    padding: 8px 0;
+    font-weight: 500;
+}
+
+.btn-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* Ícones */
+.fas,
+.far,
+.fab {
+    margin-right: 8px;
+}
+
+/* Links */
+a {
+    color: #3b82f6;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: #1d4ed8;
+    text-decoration: none;
+}
+
+/* Checkbox personalizado */
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    accent-color: #3b82f6;
+}
+
+.form-check-label {
+    color: #64748b;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* Mensagens de erro/sucesso */
+.alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: none;
+    font-weight: 500;
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-left: 4px solid #10b981;
+}
+
+.alert-info {
+    background-color: rgba(6, 182, 212, 0.1);
+    color: #06b6d4;
+    border-left: 4px solid #06b6d4;
+}
+
+/* Links de navegação */
+.auth-links {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.auth-links a {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0 10px;
+}
+
+.auth-links a:hover {
+    color: #3b82f6;
+}
+
+/* Loading spinner */
+.spinner-border {
+    width: 1rem;
+    height: 1rem;
+    border-width: 2px;
+    margin-right: 8px;
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+    .auth-container {
+        margin: 10px;
+        border-radius: 15px;
+    }
+
+    .auth-header {
+        padding: 1.5rem;
+    }
+
+    .auth-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .auth-body {
+        padding: 1.5rem;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animações */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(180deg);
+    }
+}
+
+/* Estados de foco */
+.form-control:focus {
+    transform: translateY(-1px);
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Melhorias de acessibilidade */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Estilos para elementos específicos do Django */
+.errorlist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.errorlist li {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Melhorias visuais */
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8, #3b82f6);
+    background-size: 200% 100%;
+    animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Garantir que todos os elementos sejam visíveis */
+* {
+    color: #1e293b !important;
+}
+
+.btn-primary,
+.btn-primary * {
+    color: white !important;
+}
+
+.auth-header,
+.auth-header * {
+    color: white !important;
+}
+
+/* Correções específicas para problemas de herança */
+.form-control,
+.form-control::placeholder {
+    color: #1e293b !important;
+}
+
+.form-label {
+    color: #1e293b !important;
+}
+
+.btn-outline-primary {
+    color: #3b82f6 !important;
+}
+
+.btn-outline-primary:hover {
+    color: white !important;
+}
