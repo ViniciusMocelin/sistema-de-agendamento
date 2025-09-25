@@ -4,13 +4,23 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'sQubdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Carregar variáveis de ambiente do arquivo .env.local se existir
+env_local_path = BASE_DIR / '.env.local'
+if env_local_path.exists():
+    with open(env_local_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                os.environ.setdefault(key.strip(), value.strip())
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", 
-    "django-insecure-66zn5&gupp_qti161gwv@t5z1@h=vq5^o%mjf+*3e!l*ut&v(a"
+    "django-insecure-66zn5&gupp_qti161gwv@t5z1@h=vq5^o%mjf+*3e!l*ut&v(a"  # Chave de desenvolvimento
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
