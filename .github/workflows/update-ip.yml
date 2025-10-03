@@ -1,0 +1,216 @@
+name: Update EC2 IP
+
+on:
+  schedule:
+    # Executa a cada 6 horas para verificar se o IP mudou
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: "Force update even if IP has not changed"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  update-ip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3 requests
+
+      - name: Get current EC2 IP
+        id: get-current-ip
+        run: |
+          CURRENT_IP=$(aws ec2 describe-instances --instance-ids i-04d14b81170c26323 --region us-east-1 --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+          echo "current_ip=$CURRENT_IP" >> $GITHUB_OUTPUT
+          echo "Current EC2 IP: $CURRENT_IP"
+
+      - name: Get stored IP from config files
+        id: get-stored-ip
+        run: |
+          # Procurar IP em arquivos de configuração
+          STORED_IP=""
+          if [ -f ".env.example" ]; then
+            STORED_IP=$(grep -oP 'ALLOWED_HOSTS=.*?\K(\d+\.\d+\.\d+\.\d+)' .env.example | head -1)
+          fi
+
+          if [ -z "$STORED_IP" ] && [ -f "env.example" ]; then
+            STORED_IP=$(grep -oP 'ALLOWED_HOSTS=.*?\K(\d+\.\d+\.\d+\.\d+)' env.example | head -1)
+          fi
+
+          if [ -z "$STORED_IP" ] && [ -f ".env.production.example" ]; then
+            STORED_IP=$(grep -oP 'ALLOWED_HOSTS=.*?\K(\d+\.\d+\.\d+\.\d+)' .env.production.example | head -1)
+          fi
+
+          if [ -z "$STORED_IP" ] && [ -f "env.production.example" ]; then
+            STORED_IP=$(grep -oP 'ALLOWED_HOSTS=.*?\K(\d+\.\d+\.\d+\.\d+)' env.production.example | head -1)
+          fi
+
+          echo "stored_ip=$STORED_IP" >> $GITHUB_OUTPUT
+          echo "Stored IP: $STORED_IP"
+
+      - name: Check if IP needs update
+        id: check-update
+        run: |
+          CURRENT_IP="${{ steps.get-current-ip.outputs.current_ip }}"
+          STORED_IP="${{ steps.get-stored-ip.outputs.stored_ip }}"
+          FORCE_UPDATE="${{ github.event.inputs.force_update }}"
+
+          echo "Current IP: $CURRENT_IP"
+          echo "Stored IP: $STORED_IP"
+          echo "Force update: $FORCE_UPDATE"
+
+          if [ "$FORCE_UPDATE" = "true" ] || [ "$CURRENT_IP" != "$STORED_IP" ]; then
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "✅ IP needs update"
+          else
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ IP has not changed, no update needed"
+          fi
+
+      - name: Update configuration files
+        if: steps.check-update.outputs.needs_update == 'true'
+        run: |
+          CURRENT_IP="${{ steps.get-current-ip.outputs.current_ip }}"
+
+          echo "Updating configuration files with IP: $CURRENT_IP"
+
+          # Lista de arquivos para atualizar
+          FILES_TO_UPDATE=(
+            ".env.example"
+            "env.example"
+            ".env.production.example"
+            "env.production.example"
+            "aws-infrastructure/terraform.tfvars.example"
+          )
+
+          for file in "${FILES_TO_UPDATE[@]}"; do
+            if [ -f "$file" ]; then
+              echo "Updating $file..."
+              
+              # Backup original
+              cp "$file" "$file.backup"
+              
+              # Atualizar ALLOWED_HOSTS
+              sed -i "s/ALLOWED_HOSTS=.*/ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,$CURRENT_IP/g" "$file"
+              
+              # Atualizar comentários de IP
+              sed -i "s/# IP da EC2:.*/# IP da EC2: $CURRENT_IP/g" "$file"
+              sed -i "s/# Application URL:.*/# Application URL: http:\/\/$CURRENT_IP/g" "$file"
+              
+              echo "✅ Updated $file"
+            fi
+          done
+
+      - name: Create IP info file
+        if: steps.check-update.outputs.needs_update == 'true'
+        run: |
+          CURRENT_IP="${{ steps.get-current-ip.outputs.current_ip }}"
+
+          cat > ip-info.json << EOF
+          {
+            "ec2_instance_id": "i-04d14b81170c26323",
+            "region": "us-east-1",
+            "public_ip": "$CURRENT_IP",
+            "old_ip": "${{ steps.get-stored-ip.outputs.stored_ip }}",
+            "last_updated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "application_url": "http://$CURRENT_IP",
+            "admin_url": "http://$CURRENT_IP/admin/",
+            "ssh_command": "ssh -i ~/.ssh/id_rsa ubuntu@$CURRENT_IP",
+            "updated_by": "github-actions",
+            "workflow_run_id": "${{ github.run_id }}"
+          }
+          EOF
+
+          echo "✅ Created ip-info.json"
+
+      - name: Commit and push changes
+        if: steps.check-update.outputs.needs_update == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Adicionar arquivos modificados
+          git add .
+
+          # Fazer commit
+          CURRENT_IP="${{ steps.get-current-ip.outputs.current_ip }}"
+          OLD_IP="${{ steps.get-stored-ip.outputs.stored_ip }}"
+
+          if [ -n "$OLD_IP" ]; then
+            COMMIT_MSG="Update: EC2 IP changed to $CURRENT_IP (from $OLD_IP) - $(date -u +%Y-%m-%d\ %H:%M:%S)"
+          else
+            COMMIT_MSG="Update: EC2 IP set to $CURRENT_IP - $(date -u +%Y-%m-%d\ %H:%M:%S)"
+          fi
+
+          git commit -m "$COMMIT_MSG"
+          git push
+
+          echo "✅ Changes committed and pushed"
+
+      - name: Trigger deployment
+        if: steps.check-update.outputs.needs_update == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data } = await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy.yml',
+              ref: 'main',
+              inputs: {
+                environment: 'production'
+              }
+            });
+
+            console.log('✅ Deployment workflow triggered');
+
+      - name: Summary
+        run: |
+          CURRENT_IP="${{ steps.get-current-ip.outputs.current_ip }}"
+          STORED_IP="${{ steps.get-stored-ip.outputs.stored_ip }}"
+          NEEDS_UPDATE="${{ steps.check-update.outputs.needs_update }}"
+
+          echo "## 📊 IP Update Summary"
+          echo ""
+          echo "**Current EC2 IP:** $CURRENT_IP"
+          echo "**Previous IP:** $STORED_IP"
+          echo "**Update Required:** $NEEDS_UPDATE"
+          echo ""
+
+          if [ "$NEEDS_UPDATE" = "true" ]; then
+            echo "### ✅ Actions Taken:"
+            echo "- Updated configuration files"
+            echo "- Created ip-info.json"
+            echo "- Committed changes to Git"
+            echo "- Triggered deployment workflow"
+            echo ""
+            echo "### 🌐 Application URLs:"
+            echo "- **Application:** http://$CURRENT_IP"
+            echo "- **Admin:** http://$CURRENT_IP/admin/"
+            echo "- **Dashboard:** http://$CURRENT_IP/dashboard/"
+          else
+            echo "### ℹ️ No Update Needed"
+            echo "IP has not changed, configuration is up to date."
+          fi
