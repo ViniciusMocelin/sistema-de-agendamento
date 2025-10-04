@@ -191,30 +191,30 @@ resource "aws_db_subnet_group" "main" {
 # RDS PostgreSQL
 resource "aws_db_instance" "postgres" {
   identifier = "${var.project_name}-postgres"
-  
+
   engine         = "postgres"
   engine_version = null
   instance_class = "db.t3.micro"
-  
+
   allocated_storage     = 20
   max_allocated_storage = 100
   storage_type          = "gp2"
   storage_encrypted     = true
-  
+
   db_name  = "agendamentos_db"
   username = var.db_username
   password = var.db_password
-  
+
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
-  
+
   backup_retention_period = 7
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "sun:04:00-sun:05:00"
-  
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "sun:04:00-sun:05:00"
+
   skip_final_snapshot = true
   deletion_protection = false
-  
+
   tags = {
     Name = "${var.project_name}-postgres"
   }
@@ -224,9 +224,9 @@ resource "aws_db_instance" "postgres" {
 resource "aws_instance" "web_server" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t2.micro"
-  key_name              = aws_key_pair.deployer.key_name
+  key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-  subnet_id             = aws_subnet.public.id
+  subnet_id              = aws_subnet.public.id
 
   user_data = templatefile("${path.module}/user_data.sh", {
     db_address   = aws_db_instance.postgres.address
