@@ -1,0 +1,492 @@
+name: Terraform Deploy to AWS
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'aws-infrastructure/**'
+      - 'core/**'
+      - 'agendamentos/**'
+      - 'authentication/**'
+      - 'info/**'
+      - 'requirements.txt'
+      - 'manage.py'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'aws-infrastructure/**'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action to perform"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  TF_VERSION: "1.6.0"
+  AWS_REGION: "us-east-1"
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  validate:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive aws-infrastructure/
+
+      - name: Terraform Init
+        working-directory: aws-infrastructure
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: aws-infrastructure
+        run: terraform validate
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-django pytest-cov flake8
+
+      - name: Run linting
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Run tests
+        run: |
+          python manage.py check --deploy
+          python manage.py test --verbosity=2
+
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        working-directory: aws-infrastructure
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: aws-infrastructure
+        run: |
+          terraform plan -out=tfplan
+          terraform show -no-color tfplan > tfplan.txt
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-plan
+          path: aws-infrastructure/tfplan.txt
+
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('aws-infrastructure/tfplan.txt', 'utf8');
+            const output = `## Terraform Plan Results
+            
+            <details>
+            <summary>Show Plan</summary>
+            
+            \`\`\`terraform
+            ${plan}
+            \`\`\`
+            
+            </details>`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Create terraform.tfvars
+        working-directory: aws-infrastructure
+        run: |
+          cat > terraform.tfvars << EOF
+          aws_region = "${{ env.AWS_REGION }}"
+          project_name = "sistema-agendamento"
+          environment = "${{ github.event.inputs.environment || 'production' }}"
+          db_username = "postgres"
+          db_password = "${{ secrets.DB_PASSWORD }}"
+          domain_name = "${{ secrets.DOMAIN_NAME || '' }}"
+          instance_type = "t2.micro"
+          db_instance_class = "db.t3.micro"
+          allocated_storage = 20
+          max_allocated_storage = 100
+          backup_retention_period = 7
+          multi_az = false
+          deletion_protection = false
+          enable_monitoring = true
+          cpu_threshold = 80
+          memory_threshold = 80
+          disk_threshold = 85
+          enable_ssl = true
+          enable_waf = false
+          enable_cloudfront = false
+          notification_email = "${{ secrets.NOTIFICATION_EMAIL || 'carlosmedeiroscode@gmail.com' }}"
+          tags = {
+            Environment = "${{ github.event.inputs.environment || 'production' }}"
+            Project     = "sistema-agendamento"
+            Owner       = "4Minds"
+            CostCenter  = "TI"
+            ManagedBy   = "terraform"
+            DeployedBy  = "github-actions"
+            Commit      = "${{ github.sha }}"
+            Branch      = "${{ github.ref_name }}"
+          }
+          EOF
+
+      - name: Terraform Init
+        working-directory: aws-infrastructure
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: aws-infrastructure
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: aws-infrastructure
+        run: terraform apply -auto-approve tfplan
+
+      - name: Get Outputs
+        id: terraform-outputs
+        working-directory: aws-infrastructure
+        run: |
+          echo "ec2_public_ip=$(terraform output -raw ec2_public_ip)" >> $GITHUB_OUTPUT
+          echo "rds_endpoint=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT
+          echo "s3_bucket_name=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+
+      - name: Wait for EC2 to be ready
+        run: |
+          echo "Waiting for EC2 instance to be ready..."
+          sleep 120
+
+      - name: Test EC2 connectivity
+        run: |
+          echo "Testing connectivity to ${{ steps.terraform-outputs.outputs.ec2_public_ip }}"
+          for i in {1..10}; do
+            if curl -f -s --max-time 30 "http://${{ steps.terraform-outputs.outputs.ec2_public_ip }}/health/" > /dev/null; then
+              echo "✅ Application is responding"
+              break
+            else
+              echo "⏳ Attempt $i/10 - Application not ready yet, waiting..."
+              sleep 30
+            fi
+          done
+
+      - name: Deploy Application Code
+        run: |
+          echo "Deploying application code to EC2..."
+          
+          # Generate SSH key for deployment
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add EC2 to known hosts
+          ssh-keyscan -H ${{ steps.terraform-outputs.outputs.ec2_public_ip }} >> ~/.ssh/known_hosts
+          
+          # Deploy application
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ steps.terraform-outputs.outputs.ec2_public_ip }} << 'EOF'
+            set -e
+            echo "🚀 Starting application deployment..."
+            
+            # Update system
+            sudo apt-get update
+            
+            # Install git if not present
+            sudo apt-get install -y git
+            
+            # Clone or update repository
+            if [ -d "/home/django/sistema-agendamento" ]; then
+              cd /home/django/sistema-agendamento
+              git pull origin main
+            else
+              sudo -u django git clone https://github.com/ViniciusMocelin/sistema-de-agendamento.git /home/django/sistema-agendamento
+              cd /home/django/sistema-agendamento
+            fi
+            
+            # Set proper ownership
+            sudo chown -R django:django /home/django/sistema-agendamento
+            
+            # Switch to django user
+            sudo -u django bash << 'DJANGO_EOF'
+              cd /home/django/sistema-agendamento
+              
+              # Activate virtual environment
+              source venv/bin/activate
+              
+              # Install/update dependencies
+              echo "📦 Installing dependencies..."
+              pip install --upgrade pip
+              pip install -r requirements.txt
+              
+              # Run migrations
+              echo "🗄️ Running migrations..."
+              python manage.py migrate --settings=core.settings_production
+              
+              # Collect static files
+              echo "📁 Collecting static files..."
+              python manage.py collectstatic --noinput --settings=core.settings_production
+              
+              # Create superuser if needed
+              echo "🔐 Ensuring superuser exists..."
+              python manage.py create_4minds_superuser --force --no-input --settings=core.settings_production || echo "Superuser may already exist"
+              
+              echo "✅ Application deployment completed"
+            DJANGO_EOF
+            
+            # Restart services
+            echo "🔄 Restarting services..."
+            sudo systemctl restart django
+            sudo systemctl restart nginx
+            
+            # Check service status
+            echo "✅ Checking service status..."
+            sudo systemctl status django --no-pager -l
+            sudo systemctl status nginx --no-pager -l
+            
+            echo "🎉 Deployment completed successfully!"
+          EOF
+
+      - name: Verify Deployment
+        run: |
+          echo "Verifying deployment..."
+          sleep 30
+          
+          EC2_IP="${{ steps.terraform-outputs.outputs.ec2_public_ip }}"
+          
+          # Test main page
+          if curl -f -s "http://$EC2_IP/" > /dev/null; then
+            echo "✅ Main page working"
+          else
+            echo "⚠️ Main page may have issues"
+          fi
+          
+          # Test admin page
+          if curl -f -s "http://$EC2_IP/admin/" > /dev/null; then
+            echo "✅ Admin page working"
+          else
+            echo "⚠️ Admin page may have issues"
+          fi
+          
+          # Test health endpoint
+          if curl -f -s "http://$EC2_IP/health/" > /dev/null; then
+            echo "✅ Health endpoint working"
+          else
+            echo "⚠️ Health endpoint may have issues"
+          fi
+
+      - name: Update Repository with IP
+        run: |
+          EC2_IP="${{ steps.terraform-outputs.outputs.ec2_public_ip }}"
+          
+          # Update .env.example files
+          for file in .env.example env.example .env.production.example env.production.example; do
+            if [ -f "$file" ]; then
+              sed -i "s/ALLOWED_HOSTS=.*/ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,$EC2_IP/g" "$file"
+              echo "Updated $file with IP: $EC2_IP"
+            fi
+          done
+          
+          # Commit changes
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update IP to $EC2_IP - Deploy ${{ github.sha }}" || echo "No changes to commit"
+          git push || echo "Could not push changes"
+
+      - name: Create Deployment Summary
+        run: |
+          EC2_IP="${{ steps.terraform-outputs.outputs.ec2_public_ip }}"
+          RDS_ENDPOINT="${{ steps.terraform-outputs.outputs.rds_endpoint }}"
+          S3_BUCKET="${{ steps.terraform-outputs.outputs.s3_bucket_name }}"
+          
+          cat > deployment-summary.md << EOF
+          # 🚀 Deployment Summary
+          
+          **Deployment ID:** ${{ github.run_id }}
+          **Environment:** ${{ github.event.inputs.environment || 'production' }}
+          **Commit:** ${{ github.sha }}
+          **Branch:** ${{ github.ref_name }}
+          **Deployed by:** ${{ github.actor }}
+          **Deployed at:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          ## 🌐 Application URLs
+          - **Main Application:** http://$EC2_IP
+          - **Admin Panel:** http://$EC2_IP/admin/
+          - **Dashboard:** http://$EC2_IP/dashboard/
+          - **Health Check:** http://$EC2_IP/health/
+          
+          ## 🔐 Admin Credentials
+          - **Username:** @4minds
+          - **Password:** @4mindsPassword
+          
+          ## 🏗️ Infrastructure
+          - **EC2 Instance:** $EC2_IP
+          - **RDS Endpoint:** $RDS_ENDPOINT
+          - **S3 Bucket:** $S3_BUCKET
+          - **Region:** ${{ env.AWS_REGION }}
+          
+          ## 📊 Monitoring
+          - **CloudWatch Logs:** /aws/ec2/sistema-agendamento/
+          - **Health Check:** Every 5 minutes
+          - **Backup:** Daily at 2 AM UTC
+          
+          ## 🔧 Management Commands
+          \`\`\`bash
+          # SSH to server
+          ssh -i ~/.ssh/id_rsa ubuntu@$EC2_IP
+          
+          # Check application status
+          sudo systemctl status django
+          sudo systemctl status nginx
+          
+          # View logs
+          sudo journalctl -u django -f
+          \`\`\`
+          EOF
+          
+          echo "## 📋 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          cat deployment-summary.md >> $GITHUB_STEP_SUMMARY
+
+  destroy:
+    name: Destroy Infrastructure
+    runs-on: ubuntu-latest
+    needs: [validate]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Create terraform.tfvars
+        working-directory: aws-infrastructure
+        run: |
+          cat > terraform.tfvars << EOF
+          aws_region = "${{ env.AWS_REGION }}"
+          project_name = "sistema-agendamento"
+          environment = "${{ github.event.inputs.environment || 'production' }}"
+          db_username = "postgres"
+          db_password = "${{ secrets.DB_PASSWORD }}"
+          EOF
+
+      - name: Terraform Init
+        working-directory: aws-infrastructure
+        run: terraform init
+
+      - name: Terraform Destroy
+        working-directory: aws-infrastructure
+        run: terraform destroy -auto-approve
+
+      - name: Cleanup Summary
+        run: |
+          echo "## 🗑️ Infrastructure Destroyed" >> $GITHUB_STEP_SUMMARY
+          echo "All AWS resources have been destroyed for environment: ${{ github.event.inputs.environment || 'production' }}" >> $GITHUB_STEP_SUMMARY
