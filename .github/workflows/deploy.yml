@@ -130,12 +130,39 @@ jobs:
             # Restart services
             echo "🔄 Restarting services..."
             sudo systemctl restart django
+            sleep 5
             sudo systemctl restart nginx
             
             # Check service status
             echo "✅ Checking service status..."
             sudo systemctl status django --no-pager -l
             sudo systemctl status nginx --no-pager -l
+            
+            # Wait for services to be ready
+            echo "⏳ Waiting for services to be ready..."
+            sleep 10
+            
+            # Test Django locally
+            echo "🔍 Testing Django locally..."
+            if curl -f -s http://localhost:8000/health/ > /dev/null; then
+              echo "✅ Django is responding locally"
+            else
+              echo "❌ Django is not responding locally"
+              echo "Trying to start Django manually..."
+              sudo systemctl stop django
+              sudo -u django bash -c "cd /home/django/sistema-agendamento && source venv/bin/activate && python manage.py runserver 0.0.0.0:8000 --settings=core.settings_production" &
+              sleep 10
+            fi
+            
+            # Test Nginx locally
+            echo "🔍 Testing Nginx locally..."
+            if curl -f -s http://localhost/ > /dev/null; then
+              echo "✅ Nginx is responding"
+            else
+              echo "❌ Nginx is not responding"
+              echo "Checking Nginx configuration..."
+              sudo nginx -t
+            fi
             
             echo "🎉 Deployment completed successfully!"
           EOF

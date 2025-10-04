@@ -1,0 +1,351 @@
+name: Fix 502 Error - Emergency Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      ec2_ip:
+        description: "EC2 Instance IP"
+        required: true
+        type: string
+      action:
+        description: "Action to perform"
+        required: true
+        default: "diagnose"
+        type: choice
+        options:
+          - diagnose
+          - fix
+          - restart
+          - full-redeploy
+
+jobs:
+  fix-502:
+    name: Fix 502 Bad Gateway
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Wait for EC2 to be ready
+        run: |
+          echo "Waiting for EC2 to be ready..."
+          sleep 30
+
+      - name: Test EC2 connectivity
+        run: |
+          echo "Testing connectivity to ${{ github.event.inputs.ec2_ip }}"
+          for i in {1..5}; do
+            if curl -f -s --max-time 30 "http://${{ github.event.inputs.ec2_ip }}/health/" > /dev/null; then
+              echo "✅ Application is responding"
+              break
+            else
+              echo "⏳ Attempt $i/5 - Application not ready yet, waiting..."
+              sleep 30
+            fi
+          done
+
+      - name: Diagnose 502 Error
+        if: github.event.inputs.action == 'diagnose'
+        run: |
+          echo "🔍 Diagnosing 502 error on ${{ github.event.inputs.ec2_ip }}"
+          
+          # Generate SSH key for deployment
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add EC2 to known hosts
+          ssh-keyscan -H ${{ github.event.inputs.ec2_ip }} >> ~/.ssh/known_hosts
+          
+          # Run diagnosis
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ github.event.inputs.ec2_ip }} << 'EOF'
+            echo "🔍 DIAGNÓSTICO DO ERRO 502"
+            echo "=========================="
+            
+            echo "1. Status dos serviços:"
+            sudo systemctl status nginx --no-pager -l
+            sudo systemctl status django --no-pager -l
+            
+            echo "2. Verificando porta 8000:"
+            netstat -tlnp | grep :8000 || echo "Porta 8000 não está aberta"
+            
+            echo "3. Logs do Nginx:"
+            sudo tail -20 /var/log/nginx/django_error.log || echo "Nenhum log de erro"
+            
+            echo "4. Logs do Django:"
+            sudo journalctl -u django --no-pager -l -n 20 || echo "Nenhum log do Django"
+            
+            echo "5. Teste local do Django:"
+            curl -f -s http://localhost:8000/health/ && echo "✅ Django OK" || echo "❌ Django não responde"
+            
+            echo "6. Teste local do Nginx:"
+            curl -f -s http://localhost/ && echo "✅ Nginx OK" || echo "❌ Nginx não responde"
+            
+            echo "7. Configuração do Nginx:"
+            sudo nginx -t || echo "❌ Configuração do Nginx com erro"
+            
+            echo "8. Permissões:"
+            ls -la /home/django/sistema-agendamento/ || echo "Diretório não existe"
+            
+            echo "9. Arquivo .env:"
+            cat /home/django/sistema-agendamento/.env || echo "Arquivo .env não existe"
+            
+            echo "10. Ambiente virtual:"
+            ls -la /home/django/sistema-agendamento/venv/bin/ || echo "Ambiente virtual não existe"
+          EOF
+
+      - name: Fix 502 Error
+        if: github.event.inputs.action == 'fix'
+        run: |
+          echo "🔧 Fixing 502 error on ${{ github.event.inputs.ec2_ip }}"
+          
+          # Generate SSH key for deployment
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add EC2 to known hosts
+          ssh-keyscan -H ${{ github.event.inputs.ec2_ip }} >> ~/.ssh/known_hosts
+          
+          # Run fix script
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ github.event.inputs.ec2_ip }} << 'EOF'
+            set -e
+            echo "🔧 Iniciando correção do erro 502..."
+            
+            # Parar serviços
+            sudo systemctl stop django || true
+            sudo systemctl stop nginx || true
+            
+            # Corrigir permissões
+            sudo chown -R django:django /home/django/sistema-agendamento/
+            sudo chmod +x /home/django/sistema-agendamento/venv/bin/*
+            
+            # Criar diretório de logs
+            sudo mkdir -p /home/django/sistema-agendamento/logs
+            sudo chown django:django /home/django/sistema-agendamento/logs
+            
+            # Verificar arquivo .env
+            if [ ! -f "/home/django/sistema-agendamento/.env" ]; then
+              echo "Criando arquivo .env..."
+              cat > /home/django/sistema-agendamento/.env << 'ENV_EOF'
+DEBUG=False
+SECRET_KEY=django-insecure-change-me-in-production
+DB_NAME=agendamentos_db
+DB_USER=postgres
+DB_PASSWORD=senha_segura_postgre
+DB_HOST=localhost
+DB_PORT=5432
+ALLOWED_HOSTS=*
+HTTPS_REDIRECT=False
+ENV_EOF
+              sudo chown django:django /home/django/sistema-agendamento/.env
+            fi
+            
+            # Verificar configuração do Gunicorn
+            if [ ! -f "/home/django/sistema-agendamento/gunicorn.conf.py" ]; then
+              echo "Criando configuração do Gunicorn..."
+              cat > /home/django/sistema-agendamento/gunicorn.conf.py << 'GUNICORN_EOF'
+bind = "127.0.0.1:8000"
+workers = 2
+worker_class = "sync"
+worker_connections = 1000
+max_requests = 1000
+max_requests_jitter = 100
+timeout = 30
+keepalive = 2
+preload_app = True
+daemon = False
+pidfile = "/home/django/sistema-agendamento/gunicorn.pid"
+accesslog = "/home/django/sistema-agendamento/logs/gunicorn_access.log"
+errorlog = "/home/django/sistema-agendamento/logs/gunicorn_error.log"
+loglevel = "info"
+GUNICORN_EOF
+              sudo chown django:django /home/django/sistema-agendamento/gunicorn.conf.py
+            fi
+            
+            # Ativar ambiente virtual e instalar dependências
+            cd /home/django/sistema-agendamento
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            
+            # Executar migrações
+            python manage.py migrate --settings=core.settings_production
+            
+            # Coletar arquivos estáticos
+            python manage.py collectstatic --noinput --settings=core.settings_production
+            
+            # Criar superusuário se necessário
+            python manage.py create_4minds_superuser --force --no-input --settings=core.settings_production || echo "Superuser may already exist"
+            
+            # Iniciar serviços
+            sudo systemctl start django
+            sleep 5
+            sudo systemctl start nginx
+            
+            # Verificar status
+            sudo systemctl status django --no-pager -l
+            sudo systemctl status nginx --no-pager -l
+            
+            # Testar localmente
+            if curl -f -s http://localhost:8000/health/ > /dev/null; then
+              echo "✅ Django está respondendo localmente"
+            else
+              echo "❌ Django não está respondendo localmente"
+            fi
+            
+            if curl -f -s http://localhost/ > /dev/null; then
+              echo "✅ Nginx está respondendo"
+            else
+              echo "❌ Nginx não está respondendo"
+            fi
+            
+            echo "🔧 Correção concluída!"
+          EOF
+
+      - name: Restart Services
+        if: github.event.inputs.action == 'restart'
+        run: |
+          echo "🔄 Restarting services on ${{ github.event.inputs.ec2_ip }}"
+          
+          # Generate SSH key for deployment
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add EC2 to known hosts
+          ssh-keyscan -H ${{ github.event.inputs.ec2_ip }} >> ~/.ssh/known_hosts
+          
+          # Restart services
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ github.event.inputs.ec2_ip }} << 'EOF'
+            echo "🔄 Reiniciando serviços..."
+            
+            sudo systemctl restart django
+            sleep 5
+            sudo systemctl restart nginx
+            
+            echo "Status após reinicialização:"
+            sudo systemctl status django --no-pager -l
+            sudo systemctl status nginx --no-pager -l
+            
+            echo "Teste de conectividade:"
+            curl -f -s http://localhost:8000/health/ && echo "✅ Django OK" || echo "❌ Django não responde"
+            curl -f -s http://localhost/ && echo "✅ Nginx OK" || echo "❌ Nginx não responde"
+          EOF
+
+      - name: Full Redeploy
+        if: github.event.inputs.action == 'full-redeploy'
+        run: |
+          echo "🚀 Full redeploy on ${{ github.event.inputs.ec2_ip }}"
+          
+          # Generate SSH key for deployment
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add EC2 to known hosts
+          ssh-keyscan -H ${{ github.event.inputs.ec2_ip }} >> ~/.ssh/known_hosts
+          
+          # Full redeploy
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ github.event.inputs.ec2_ip }} << 'EOF'
+            set -e
+            echo "🚀 Iniciando redeploy completo..."
+            
+            # Parar serviços
+            sudo systemctl stop django || true
+            sudo systemctl stop nginx || true
+            
+            # Backup atual
+            sudo cp -r /home/django/sistema-agendamento /home/django/sistema-agendamento.backup.$(date +%Y%m%d_%H%M%S) || true
+            
+            # Atualizar código
+            cd /home/django
+            if [ -d "sistema-agendamento" ]; then
+              cd sistema-agendamento
+              git pull origin main || echo "Git pull failed, continuing..."
+            else
+              sudo -u django git clone https://github.com/ViniciusMocelin/sistema-de-agendamento.git sistema-agendamento
+              cd sistema-agendamento
+            fi
+            
+            # Corrigir permissões
+            sudo chown -R django:django /home/django/sistema-agendamento/
+            
+            # Ativar ambiente virtual
+            source venv/bin/activate
+            
+            # Instalar dependências
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            
+            # Executar migrações
+            python manage.py migrate --settings=core.settings_production
+            
+            # Coletar arquivos estáticos
+            python manage.py collectstatic --noinput --settings=core.settings_production
+            
+            # Criar superusuário
+            python manage.py create_4minds_superuser --force --no-input --settings=core.settings_production || echo "Superuser may already exist"
+            
+            # Iniciar serviços
+            sudo systemctl start django
+            sleep 5
+            sudo systemctl start nginx
+            
+            # Verificar status
+            sudo systemctl status django --no-pager -l
+            sudo systemctl status nginx --no-pager -l
+            
+            echo "🚀 Redeploy concluído!"
+          EOF
+
+      - name: Verify Fix
+        run: |
+          echo "✅ Verificando se o erro foi corrigido..."
+          sleep 30
+          
+          # Test main page
+          if curl -f -s "http://${{ github.event.inputs.ec2_ip }}/" > /dev/null; then
+            echo "✅ Main page working"
+          else
+            echo "⚠️ Main page may still have issues"
+          fi
+          
+          # Test admin page
+          if curl -f -s "http://${{ github.event.inputs.ec2_ip }}/admin/" > /dev/null; then
+            echo "✅ Admin page working"
+          else
+            echo "⚠️ Admin page may still have issues"
+          fi
+          
+          # Test health endpoint
+          if curl -f -s "http://${{ github.event.inputs.ec2_ip }}/health/" > /dev/null; then
+            echo "✅ Health endpoint working"
+          else
+            echo "⚠️ Health endpoint may still have issues"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## 🔧 502 Error Fix Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Action:** ${{ github.event.inputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "**EC2 IP:** ${{ github.event.inputs.ec2_ip }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 Application URLs:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Application:** http://${{ github.event.inputs.ec2_ip }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Admin:** http://${{ github.event.inputs.ec2_ip }}/admin/" >> $GITHUB_STEP_SUMMARY
+          echo "- **Health:** http://${{ github.event.inputs.ec2_ip }}/health/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔐 Admin Credentials:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Username:** @4minds" >> $GITHUB_STEP_SUMMARY
+          echo "- **Password:** @4mindsPassword" >> $GITHUB_STEP_SUMMARY
