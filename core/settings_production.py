@@ -2,6 +2,13 @@ import os
 from pathlib import Path
 from .settings import *
 
+# Carregar variáveis de ambiente do arquivo .env
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,8 +26,12 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "0.0.0.0",
     "13.223.47.98",
-    os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else [],
 ]
+
+# Adicionar hosts da variável de ambiente
+env_hosts = os.environ.get("ALLOWED_HOSTS", "")
+if env_hosts:
+    ALLOWED_HOSTS.extend([host.strip() for host in env_hosts.split(",") if host.strip()])
 
 # Database - PostgreSQL para produção
 DATABASES = {
@@ -37,7 +48,13 @@ DATABASES = {
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+# Verificar se o diretório static existe antes de adicionar
+static_dir = os.path.join(BASE_DIR, "static")
+if os.path.exists(static_dir):
+    STATICFILES_DIRS = [static_dir]
+else:
+    STATICFILES_DIRS = []
 
 # Media files
 MEDIA_URL = "/media/"
@@ -100,6 +117,10 @@ CACHES = {
     }
 }
 
-# WhiteNoise para arquivos estáticos
-MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# WhiteNoise para arquivos estáticos (se disponível)
+try:
+    import whitenoise
+    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+except ImportError:
+    pass
