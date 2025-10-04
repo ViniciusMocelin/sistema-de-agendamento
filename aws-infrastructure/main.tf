@@ -104,10 +104,10 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# Key Pair
+# Key Pair - Usar chave existente ou criar nova
 resource "aws_key_pair" "deployer" {
   key_name   = "${var.project_name}-key"
-  public_key = file("~/.ssh/id_rsa.pub")
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7... (será substituída pelo GitHub Actions)"
 }
 
 # Security Group para EC2

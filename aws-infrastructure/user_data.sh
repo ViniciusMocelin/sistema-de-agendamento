@@ -50,7 +50,7 @@ else
 fi
 
 # Configurar diretório home do django
-mkdir -p /home/django/sistema-agendamento
+mkdir -p /home/django/sistema-de-agendamento
 chown -R django:django /home/django
 
 # Configurar Nginx
@@ -82,14 +82,14 @@ server {
 
     # Static files
     location /static/ {
-        alias /home/django/sistema-agendamento/staticfiles/;
+        alias /home/django/sistema-de-agendamento/staticfiles/;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
     # Media files
     location /media/ {
-        alias /home/django/sistema-agendamento/media/;
+        alias /home/django/sistema-de-agendamento/media/;
         expires 1y;
         add_header Cache-Control "public";
     }
@@ -235,8 +235,8 @@ cd /home/django
 
 # Clonar repositório (substitua pela URL real)
 # git clone https://github.com/seu-usuario/sistema-de-agendamento.git sistema-de-agendamento
-# Por enquanto, vamos criar uma estrutura básica
-mkdir -p sistema-de-agendamento
+# Clonar repositório do GitHub
+git clone https://github.com/ViniciusMocelin/sistema-de-agendamento.git sistema-de-agendamento
 cd sistema-de-agendamento
 
 # Criar ambiente virtual
@@ -245,10 +245,7 @@ source venv/bin/activate
 
 # Instalar dependências básicas
 pip install --upgrade pip
-pip install django gunicorn psycopg2-binary python-decouple whitenoise
-
-# Criar estrutura básica do Django
-django-admin startproject core .
+pip install -r requirements.txt
 
 # Configurar settings.py para produção
 cat > core/settings_production.py << 'SETTINGS_EOF'
@@ -271,8 +268,12 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '0.0.0.0',
     '13.223.47.98',
-    os.environ.get('ALLOWED_HOSTS', '').split(',')
 ]
+
+# Adicionar hosts da variável de ambiente
+env_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if env_hosts:
+    ALLOWED_HOSTS.extend([host.strip() for host in env_hosts.split(',') if host.strip()])
 
 # Database - PostgreSQL para produção
 DATABASES = {
@@ -506,6 +507,6 @@ chown django:django /home/django/health_check.sh
 echo "*/5 * * * * /home/django/health_check.sh" | crontab -u django -
 
 echo "Configuração da instância concluída!"
-echo "Aplicação disponível em: http://3.90.152.110"
-echo "SSH: ssh -i ~/.ssh/id_rsa ubuntu@3.90.152.110"
+echo "Aplicação disponível em: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+echo "SSH: ssh -i ~/.ssh/id_rsa ubuntu@$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
 echo "Logs: /var/log/user-data.log"
