@@ -435,7 +435,20 @@ done
 # Executar migrações e coletar arquivos estáticos
 source venv/bin/activate
 python manage.py migrate --settings=core.settings_production
-python manage.py collectstatic --noinput --settings=core.settings_production
+
+# Coletar arquivos estáticos com logs detalhados
+echo "Coletando arquivos estáticos..."
+python manage.py collectstatic --noinput --settings=core.settings_production --verbosity=2
+
+# Verificar se os arquivos foram coletados
+echo "Verificando arquivos estáticos coletados..."
+ls -la staticfiles/
+ls -la staticfiles/admin/css/ || echo "Diretório admin/css não encontrado"
+
+# Corrigir permissões dos arquivos estáticos
+echo "Corrigindo permissões dos arquivos estáticos..."
+chown -R www-data:www-data staticfiles/
+chmod -R 755 staticfiles/
 
 # Criar superusuário (opcional)
 echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'admin123')" | python manage.py shell --settings=core.settings_production
