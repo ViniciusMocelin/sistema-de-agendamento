@@ -123,4 +123,21 @@ try:
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 except ImportError:
-    pass
+    # Se WhiteNoise não estiver disponível, usar configuração básica
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
+# Configuração adicional para servir arquivos estáticos
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
+
+# Forçar Django a servir arquivos estáticos em produção
+if not DEBUG:
+    # Adicionar URL para servir arquivos estáticos
+    from django.conf.urls.static import static
+    from django.conf import settings
+    
+    # Esta configuração será aplicada no urls.py
+    STATIC_URL = "/static/"
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
