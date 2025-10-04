@@ -49,7 +49,7 @@ try {
 Write-Host "`n🔧 Executando correções na instância EC2..." -ForegroundColor Yellow
 
 # Gerar script de correção para executar na EC2
-$fixScript = @"
+$fixScript = @'
 #!/bin/bash
 set -e
 
@@ -138,7 +138,7 @@ source venv/bin/activate
 python manage.py check --settings=core.settings_production
 
 echo "✅ Diagnóstico concluído!"
-"@
+'@
 
 # Salvar script temporário
 $fixScript | Out-File -FilePath "fix-502-temp.sh" -Encoding UTF8

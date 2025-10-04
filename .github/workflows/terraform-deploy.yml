@@ -55,7 +55,15 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Format Check
-        run: terraform fmt -check -recursive aws-infrastructure/
+        run: |
+          terraform fmt -check -recursive aws-infrastructure/ || {
+            echo "❌ Formatação incorreta detectada"
+            echo "Aplicando formatação automática..."
+            terraform fmt -recursive aws-infrastructure/
+            echo "✅ Formatação aplicada"
+            echo "Por favor, faça commit das alterações de formatação"
+            exit 1
+          }
 
       - name: Terraform Init
         working-directory: aws-infrastructure
