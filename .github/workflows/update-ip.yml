@@ -113,7 +113,7 @@ jobs:
               cp "$file" "$file.backup"
               
               # Atualizar ALLOWED_HOSTS
-              sed -i "s/ALLOWED_HOSTS=.*/ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,54.161.2.107,$CURRENT_IP/g" "$file"
+              sed -i "s/ALLOWED_HOSTS=.*/ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,$CURRENT_IP/g" "$file"
               
               # Atualizar comentários de IP
               sed -i "s/# IP da EC2:.*/# IP da EC2: $CURRENT_IP/g" "$file"
