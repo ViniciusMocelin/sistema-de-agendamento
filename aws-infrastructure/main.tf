@@ -235,6 +235,12 @@ resource "aws_instance" "web_server" {
     db_username  = aws_db_instance.postgres.username
     db_password  = var.db_password
     project_name = var.project_name
+    DB_ENDPOINT  = aws_db_instance.postgres.address
+    DB_PORT      = aws_db_instance.postgres.port
+    DB_NAME      = aws_db_instance.postgres.db_name
+    DB_USERNAME  = aws_db_instance.postgres.username
+    DB_PASSWORD  = var.db_password
+    PROJECT_NAME = var.project_name
   })
 
   tags = {

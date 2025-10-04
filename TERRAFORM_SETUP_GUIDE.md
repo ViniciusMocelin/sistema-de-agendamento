@@ -241,7 +241,7 @@ terraform output ec2_public_ip
 ### 2. Conectar via SSH
 ```bash
 # Conectar na instância
-ssh -i ~/.ssh/id_rsa ubuntu@54.161.2.107
+ssh -i ~/.ssh/id_rsa ubuntu@13.223.47.98
 ```
 ============================================================
 

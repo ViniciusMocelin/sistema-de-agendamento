@@ -4,17 +4,17 @@ on:
   push:
     branches: [main, master]
     paths:
-      - 'aws-infrastructure/**'
-      - 'core/**'
-      - 'agendamentos/**'
-      - 'authentication/**'
-      - 'info/**'
-      - 'requirements.txt'
-      - 'manage.py'
+      - "aws-infrastructure/**"
+      - "core/**"
+      - "agendamentos/**"
+      - "authentication/**"
+      - "info/**"
+      - "requirements.txt"
+      - "manage.py"
   pull_request:
     branches: [main, master]
     paths:
-      - 'aws-infrastructure/**'
+      - "aws-infrastructure/**"
   workflow_dispatch:
     inputs:
       action:
@@ -44,7 +44,7 @@ jobs:
   validate:
     name: Validate Terraform
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -157,16 +157,16 @@ jobs:
             const fs = require('fs');
             const plan = fs.readFileSync('aws-infrastructure/tfplan.txt', 'utf8');
             const output = `## Terraform Plan Results
-            
+
             <details>
             <summary>Show Plan</summary>
-            
+
             \`\`\`terraform
             ${plan}
             \`\`\`
-            
+
             </details>`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -277,15 +277,15 @@ jobs:
       - name: Deploy Application Code
         run: |
           echo "Deploying application code to EC2..."
-          
+
           # Generate SSH key for deployment
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
+
           # Add EC2 to known hosts
           ssh-keyscan -H ${{ steps.terraform-outputs.outputs.ec2_public_ip }} >> ~/.ssh/known_hosts
-          
+
           # Deploy application
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ steps.terraform-outputs.outputs.ec2_public_ip }} << 'EOF'
             set -e
@@ -353,23 +353,23 @@ jobs:
         run: |
           echo "Verifying deployment..."
           sleep 30
-          
+
           EC2_IP="${{ steps.terraform-outputs.outputs.ec2_public_ip }}"
-          
+
           # Test main page
           if curl -f -s "http://$EC2_IP/" > /dev/null; then
             echo "✅ Main page working"
           else
             echo "⚠️ Main page may have issues"
           fi
-          
+
           # Test admin page
           if curl -f -s "http://$EC2_IP/admin/" > /dev/null; then
             echo "✅ Admin page working"
           else
             echo "⚠️ Admin page may have issues"
           fi
-          
+
           # Test health endpoint
           if curl -f -s "http://$EC2_IP/health/" > /dev/null; then
             echo "✅ Health endpoint working"
@@ -380,7 +380,7 @@ jobs:
       - name: Update Repository with IP
         run: |
           EC2_IP="${{ steps.terraform-outputs.outputs.ec2_public_ip }}"
-          
+
           # Update .env.example files
           for file in .env.example env.example .env.production.example env.production.example; do
             if [ -f "$file" ]; then
@@ -388,7 +388,7 @@ jobs:
               echo "Updated $file with IP: $EC2_IP"
             fi
           done
-          
+
           # Commit changes
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -401,52 +401,52 @@ jobs:
           EC2_IP="${{ steps.terraform-outputs.outputs.ec2_public_ip }}"
           RDS_ENDPOINT="${{ steps.terraform-outputs.outputs.rds_endpoint }}"
           S3_BUCKET="${{ steps.terraform-outputs.outputs.s3_bucket_name }}"
-          
+
           cat > deployment-summary.md << EOF
           # 🚀 Deployment Summary
-          
+
           **Deployment ID:** ${{ github.run_id }}
           **Environment:** ${{ github.event.inputs.environment || 'production' }}
           **Commit:** ${{ github.sha }}
           **Branch:** ${{ github.ref_name }}
           **Deployed by:** ${{ github.actor }}
           **Deployed at:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
-          
+
           ## 🌐 Application URLs
           - **Main Application:** http://$EC2_IP
           - **Admin Panel:** http://$EC2_IP/admin/
           - **Dashboard:** http://$EC2_IP/dashboard/
           - **Health Check:** http://$EC2_IP/health/
-          
+
           ## 🔐 Admin Credentials
           - **Username:** @4minds
           - **Password:** @4mindsPassword
-          
+
           ## 🏗️ Infrastructure
           - **EC2 Instance:** $EC2_IP
           - **RDS Endpoint:** $RDS_ENDPOINT
           - **S3 Bucket:** $S3_BUCKET
           - **Region:** ${{ env.AWS_REGION }}
-          
+
           ## 📊 Monitoring
           - **CloudWatch Logs:** /aws/ec2/sistema-agendamento/
           - **Health Check:** Every 5 minutes
           - **Backup:** Daily at 2 AM UTC
-          
+
           ## 🔧 Management Commands
           \`\`\`bash
           # SSH to server
           ssh -i ~/.ssh/id_rsa ubuntu@$EC2_IP
-          
+
           # Check application status
           sudo systemctl status django
           sudo systemctl status nginx
-          
+
           # View logs
           sudo journalctl -u django -f
           \`\`\`
           EOF
-          
+
           echo "## 📋 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           cat deployment-summary.md >> $GITHUB_STEP_SUMMARY
 

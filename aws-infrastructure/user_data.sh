@@ -270,7 +270,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '0.0.0.0',
-    '54.161.2.107',
+    '13.223.47.98',
     os.environ.get('ALLOWED_HOSTS', '').split(',')
 ]
 
