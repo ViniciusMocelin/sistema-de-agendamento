@@ -157,7 +157,7 @@
             </div>
             
             <div class="menu-item">
-                <a href="{% url 'authentication:profile' %}" class="menu-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}">
+                <a href="{% url 'agendamentos:configuracoes' %}" class="menu-link {% if 'configuracoes' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="menu-icon fas fa-user-cog"></i>
                     <span class="menu-text">Configurações</span>
                 </a>

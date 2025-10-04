@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Configurações - Sistema de Agendamento{% endblock %}
+
+{% block extra_css %}
+<style>
+    .config-section {
+        background: #fff;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-left: 4px solid #007bff;
+    }
+    
+    .config-section h3 {
+        color: #007bff;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    
+    .config-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .config-item:last-child {
+        border-bottom: none;
+    }
+    
+    .config-label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .config-value {
+        color: #666;
+    }
+    
+    .btn-config {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+    
+    .btn-config:hover {
+        background: #0056b3;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-danger-config {
+        background: #dc3545;
+    }
+    
+    .btn-danger-config:hover {
+        background: #c82333;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .info-box {
+        background: #e7f3ff;
+        border: 1px solid #b8daff;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .info-box h5 {
+        color: #004085;
+        margin-bottom: 10px;
+    }
+    
+    .info-box p {
+        color: #004085;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-cog"></i> Configurações do Sistema</h2>
+                <div>
+                    <span class="badge badge-success">Sistema Ativo</span>
+                </div>
+            </div>
+            
+            <!-- Informações do Sistema -->
+            <div class="info-box">
+                <h5><i class="fas fa-info-circle"></i> Informações do Sistema</h5>
+                <p>
+                    <strong>Sistema de Agendamento 4Minds</strong> - Versão 1.0<br>
+                    Gerencie suas configurações e preferências do sistema aqui.
+                </p>
+            </div>
+            
+            <!-- Configurações de Perfil -->
+            <div class="config-section">
+                <h3><i class="fas fa-user"></i> Perfil do Usuário</h3>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Nome de Usuário</div>
+                        <div class="config-value">{{ user.username }}</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Email</div>
+                        <div class="config-value">{{ user.email|default:"Não informado" }}</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Senha</div>
+                        <div class="config-value">••••••••</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+            </div>
+            
+            <!-- Configurações do Sistema -->
+            <div class="config-section">
+                <h3><i class="fas fa-cogs"></i> Configurações do Sistema</h3>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Fuso Horário</div>
+                        <div class="config-value">America/Sao_Paulo</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Idioma</div>
+                        <div class="config-value">Português (Brasil)</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Notificações por Email</div>
+                        <div class="config-value">
+                            <span class="status-badge status-active">Ativo</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn-config">Configurar</a>
+                </div>
+            </div>
+            
+            <!-- Configurações de Agendamento -->
+            <div class="config-section">
+                <h3><i class="fas fa-calendar-alt"></i> Configurações de Agendamento</h3>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Horário de Funcionamento</div>
+                        <div class="config-value">08:00 - 18:00 (Segunda a Sexta)</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Intervalo entre Agendamentos</div>
+                        <div class="config-value">30 minutos</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Antecedência Mínima</div>
+                        <div class="config-value">2 horas</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Confirmação Automática</div>
+                        <div class="config-value">
+                            <span class="status-badge status-active">Ativo</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn-config">Configurar</a>
+                </div>
+            </div>
+            
+            <!-- Configurações de Notificação -->
+            <div class="config-section">
+                <h3><i class="fas fa-bell"></i> Notificações</h3>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Lembrete de Agendamento</div>
+                        <div class="config-value">24 horas antes</div>
+                    </div>
+                    <a href="#" class="btn-config">Alterar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Notificação de Cancelamento</div>
+                        <div class="config-value">
+                            <span class="status-badge status-active">Ativo</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn-config">Configurar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Relatório Semanal</div>
+                        <div class="config-value">
+                            <span class="status-badge status-active">Ativo</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn-config">Configurar</a>
+                </div>
+            </div>
+            
+            <!-- Configurações Avançadas -->
+            <div class="config-section">
+                <h3><i class="fas fa-tools"></i> Configurações Avançadas</h3>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Backup Automático</div>
+                        <div class="config-value">Diário às 02:00</div>
+                    </div>
+                    <a href="#" class="btn-config">Configurar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Logs do Sistema</div>
+                        <div class="config-value">Últimos 30 dias</div>
+                    </div>
+                    <a href="#" class="btn-config">Visualizar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Cache do Sistema</div>
+                        <div class="config-value">1 hora</div>
+                    </div>
+                    <a href="#" class="btn-config">Limpar</a>
+                </div>
+            </div>
+            
+            <!-- Ações do Sistema -->
+            <div class="config-section">
+                <h3><i class="fas fa-exclamation-triangle"></i> Ações do Sistema</h3>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Exportar Dados</div>
+                        <div class="config-value">Exportar todos os dados do sistema</div>
+                    </div>
+                    <a href="#" class="btn-config">Exportar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Importar Dados</div>
+                        <div class="config-value">Importar dados de outro sistema</div>
+                    </div>
+                    <a href="#" class="btn-config">Importar</a>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Reset do Sistema</div>
+                        <div class="config-value">⚠️ Apagar todos os dados</div>
+                    </div>
+                    <a href="#" class="btn-config btn-danger-config">Reset</a>
+                </div>
+            </div>
+            
+            <!-- Informações Técnicas -->
+            <div class="config-section">
+                <h3><i class="fas fa-server"></i> Informações Técnicas</h3>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Versão do Django</div>
+                        <div class="config-value">5.2.6</div>
+                    </div>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Versão do Python</div>
+                        <div class="config-value">3.10+</div>
+                    </div>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Banco de Dados</div>
+                        <div class="config-value">SQLite / PostgreSQL</div>
+                    </div>
+                </div>
+                
+                <div class="config-item">
+                    <div>
+                        <div class="config-label">Última Atualização</div>
+                        <div class="config-value">{{ "now"|date:"d/m/Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'agendamentos:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Adicionar confirmação para ações perigosas
+    $('.btn-danger-config').click(function(e) {
+        e.preventDefault();
+        if (confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os dados do sistema!\n\nTem certeza que deseja continuar?')) {
+            if (confirm('Esta ação é IRREVERSÍVEL! Tem ABSOLUTA certeza?')) {
+                // Aqui você pode implementar a lógica de reset
+                alert('Função de reset não implementada por segurança.');
+            }
+        }
+    });
+    
+    // Adicionar tooltips para botões
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

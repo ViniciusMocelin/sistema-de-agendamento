@@ -52,18 +52,6 @@ class RegisterView(CreateView):
         return super().form_valid(form)
 
 
-class RegisterView(CreateView):
-    """View para registro de novos usuários"""
-    model = User
-    form_class = CustomUserCreationForm
-    template_name = 'authentication/register.html'
-    success_url = reverse_lazy('authentication:login')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Usuário criado com sucesso! Faça login para continuar.')
-        return super().form_valid(form)
-
-
 # ========================================
 # VIEWS DE GERENCIAMENTO DE USUÁRIOS
 # ========================================
