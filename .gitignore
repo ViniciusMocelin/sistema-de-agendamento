@@ -139,4 +139,9 @@ GitHub.sublime-settings
 
 # Arquivos Terraform
 terraform.zip
-aws-infrastructure
+aws-infrastructure/.terraform/
+aws-infrastructure/.terraform.lock.hcl
+aws-infrastructure/terraform.tfstate
+aws-infrastructure/terraform.tfstate.backup
+aws-infrastructure/*.tfplan
+aws-infrastructure/tfplan
