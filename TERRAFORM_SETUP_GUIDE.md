@@ -9,7 +9,7 @@ Este guia mostra como configurar a infraestrutura na AWS usando os arquivos Terr
 ### 1. Conta AWS
 - [X] Conta AWS ativa
 - [X] Free Tier ativado (se aplicável)
-- [ ] Usuário IAM com permissões adequadas
+- [X] Usuário IAM com permissões adequadas
 
 ### 2. Ferramentas Necessárias
 - [X] AWS CLI v2
@@ -217,7 +217,7 @@ terraform output
 
 **Saída esperada:**
 ```
-ec2_public_ip = "54.123.456.789"
+ec2_public_ip = "13.223.47.98"
 rds_endpoint = "sistema-agendamento-postgres.abc123.us-east-1.rds.amazonaws.com"
 s3_bucket_name = "sistema-agendamento-static-files-xyz12345"
 ```
